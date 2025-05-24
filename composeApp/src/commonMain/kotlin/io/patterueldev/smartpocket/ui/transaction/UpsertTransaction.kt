@@ -1,7 +1,7 @@
 package io.patterueldev.smartpocket.ui.transaction
 
 import DynamicFormView
-import FormField
+import io.patterueldev.smartpocket.ui.dynamicform.FormField
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
