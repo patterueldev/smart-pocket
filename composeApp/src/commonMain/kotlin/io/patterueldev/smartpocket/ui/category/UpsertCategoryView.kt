@@ -26,6 +26,10 @@ abstract class CategoryEntryViewModel: ViewModel() {
     open var name: String by mutableStateOf("")
 }
 
+class DefaultCategoryEntryViewModel: CategoryEntryViewModel() {
+    override var name: String by mutableStateOf("Test")
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryEntryScreen(
