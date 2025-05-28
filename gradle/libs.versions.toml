@@ -10,6 +10,7 @@ androidx-core = "1.16.0"
 androidx-espresso = "3.6.1"
 androidx-lifecycle = "2.9.0"
 androidx-testExt = "1.2.1"
+colorpickerCompose = "1.1.2"
 composeMultiplatform = "1.8.1"
 junit = "4.13.2"
 kotlin = "2.1.21"
@@ -20,6 +21,7 @@ logback = "1.5.18"
 koin = "4.0.3"
 
 [libraries]
+colorpicker-compose = { module = "com.github.skydoves:colorpicker-compose", version.ref = "colorpickerCompose" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }

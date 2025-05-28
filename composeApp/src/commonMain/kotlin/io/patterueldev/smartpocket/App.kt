@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import io.patterueldev.smartpocket.ui.category.CategoryEntryScreen
 import io.patterueldev.smartpocket.ui.category.CategoryEntryViewModel
 import io.patterueldev.smartpocket.ui.category.DefaultCategoryEntryViewModel
+import io.patterueldev.smartpocket.ui.dashboard.DashboardView
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication
 import org.koin.compose.viewmodel.koinViewModel
@@ -35,6 +36,9 @@ fun App() {
             var currentScreen by remember { mutableStateOf("home") }
             when (currentScreen) {
                 "home" -> {
+                    DashboardView()
+                }
+                "category" -> {
                     CategoryEntryScreen(viewModel = koinViewModel<CategoryEntryViewModel>())
                 }
 
