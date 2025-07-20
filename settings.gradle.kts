@@ -1,4 +1,4 @@
-rootProject.name = "savealong"
+rootProject.name = "smart-pocket"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

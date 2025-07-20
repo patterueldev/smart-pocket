@@ -22,27 +22,9 @@ class TransactionParseUseCase(
         val raw = request.raw
         val params = ChatCompletionCreateParams.builder()
             .model(ChatModel.GPT_4O_MINI)
-            .addSystemMessage(
-                """
-                Parse the following receipt into JSON.
-                Use ONLY these categories if applicable:
-                - Food
-                - Health & Wellness
-                - Tech
-                - Bills
-                
-                Use ONLY these payment methods if present in the receipt:
-                - Cash
-                - GCash
-                - BPI CC
-                - BDO CC
-                - BPI Vybe
-                - Maya
-                - BPI Savings
-                
-                If a category or payment method cannot be determined, set it to null.
-                """.trimIndent())
+            .addSystemMessage("Parse the following receipt into JSON.")
             .addSystemMessage("The receipt date/time is in $timezone timezone. Convert it to UTC in the format YYYY-MM-DD'T'HH:mm:ss'Z'.")
+            .addSystemMessage("The payment method detected might read Maya or BDO, but it's just the POS terminal name. Consider reading other clues in the receipt to determine the actual payment method.")
             .addUserMessage(raw)
             .responseFormat(ResponseFormatJsonSchema.from(ParsedTransaction))
             .build()

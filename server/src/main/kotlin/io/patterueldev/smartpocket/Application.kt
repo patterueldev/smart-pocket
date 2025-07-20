@@ -21,8 +21,9 @@ fun main() {
 
 val appModule = module {
     single<OpenAIClient> {
+        val openAiKey = System.getenv("OPENAI_API_KEY")
         OpenAIOkHttpClient.builder()
-            .apiKey("<YOUR_OPENAI_API_KEY>")
+            .apiKey(openAiKey ?: "")
             .build()
     }
     single { TransactionParseUseCase(get()) }

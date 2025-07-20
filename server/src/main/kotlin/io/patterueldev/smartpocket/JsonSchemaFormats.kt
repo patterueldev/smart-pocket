@@ -8,8 +8,9 @@ fun ResponseFormatJsonSchema.Companion.from(type: SchemaType) = ResponseFormatJs
     .jsonSchema(
         ResponseFormatJsonSchema.JsonSchema.builder()
             .name(type.schemaName())
-            .schema(JsonValue.Companion.from(type.schemaMap()))
+            .description(type.schemaDescription())
             .strict(true)
+            .schema(JsonValue.Companion.from(type.schemaMap()))
             .build()
     )
     .build()

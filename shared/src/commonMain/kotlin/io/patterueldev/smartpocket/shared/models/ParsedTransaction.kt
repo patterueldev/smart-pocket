@@ -12,6 +12,7 @@ data class ParsedTransaction(
 ) {
     companion object: SchemaType {
         override fun schemaName(): String = "ParsedTransaction"
+        override fun schemaDescription(): String = "A parsed transaction containing date, merchant, payment method, and items."
         override fun schemaMap() = mapOf(
             "type" to "object",
             "properties" to mapOf(
@@ -26,7 +27,7 @@ data class ParsedTransaction(
                             "name" to mapOf("type" to "string"),
                             "price" to mapOf("type" to "string"),
                             "quantity" to mapOf("type" to "number"),
-                            "category" to mapOf("type" to "string"),
+                            "category" to mapOf("type" to "string")
                         ),
                         "required" to listOf("name", "price", "quantity", "category"),
                         "additionalProperties" to false
