@@ -1,71 +1,52 @@
 package io.patterueldev.smartpocket
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import io.patterueldev.smartpocket.parsedtransaction.ParsedTransactionView
+import io.patterueldev.smartpocket.parsedtransaction.ParsedTransactionViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
-
-interface DashboardViewModel {
-    fun onScanReceiptClick()
-    fun onSyncClick()
-}
+import org.koin.compose.KoinApplication
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.module.dsl.viewModel
+import org.koin.core.parameter.parametersOf
+import org.koin.dsl.module
 
 @Composable
 @Preview
 fun App(
-    viewModel: DashboardViewModel? = null
+    navController: NavHostController = rememberNavController(),
+    receiptScannerPresenter: ReceiptScannerPresenter?,
 ) {
+    KoinApplication(
+        application = {
+            modules(
+                module {
+                    viewModel { DashboardViewModel() }
+                    viewModel { (scannedReceipt: ScannedReceipt) -> ParsedTransactionViewModel(scannedReceipt) }
+                },
+                module {}
+            )
+        }
+    ) {
+
+    }
     MaterialTheme {
-        Column(
-            modifier = Modifier
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text("Dashboard", style = MaterialTheme.typography.headlineMedium)
-            Text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.")
-            Spacer(Modifier.height(24.dp))
-            Button(
-                onClick = {
-                    viewModel?.onScanReceiptClick()
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text("Scan Receipt")
-                    Text("Scan your receipts easily with your camera", style = MaterialTheme.typography.bodySmall)
-                }
+        NavHost(navController = navController, startDestination = "dashboard") {
+            composable("dashboard") {
+                DashboardView(receiptScannerPresenter, navController)
             }
-            Spacer(Modifier.height(16.dp))
-            Button(
-                onClick = {
-                    viewModel?.onSyncClick()
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text("Sync")
-                    Text("Lipsum subtitle for sync action", style = MaterialTheme.typography.bodySmall)
-                }
+
+            composable<ScannedReceipt> { backStackEntry ->
+                val scannedReceipt: ScannedReceipt = backStackEntry.toRoute()
+                val viewModel: ParsedTransactionViewModel = koinViewModel(
+                    parameters = { parametersOf(scannedReceipt) }
+                )
+                ParsedTransactionView(viewModel)
             }
         }
     }
