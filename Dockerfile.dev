@@ -1,0 +1,9 @@
+FROM gradle:8.7.0-jdk21 AS dev
+
+WORKDIR /workspace
+
+# Install entr for hot-reload file watching
+RUN apt-get update && apt-get install -y entr && rm -rf /var/lib/apt/lists/*
+
+# Default command: watch for source changes and re-run in dev mode
+CMD find . -name '*.kt' -o -name '*.java' | entr -n -r ./gradlew run -Pdevelopment

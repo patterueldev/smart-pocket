@@ -1,4 +1,4 @@
-package io.patterueldev.savealong
+package io.patterueldev.smartpocket
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

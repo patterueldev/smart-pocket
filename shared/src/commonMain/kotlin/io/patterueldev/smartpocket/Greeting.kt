@@ -1,4 +1,4 @@
-package io.patterueldev.savealong
+package io.patterueldev.smartpocket
 
 class Greeting {
     private val platform = getPlatform()

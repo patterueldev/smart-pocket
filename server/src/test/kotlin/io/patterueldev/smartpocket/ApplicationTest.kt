@@ -1,4 +1,4 @@
-package io.patterueldev.savealong
+package io.patterueldev.smartpocket
 
 import io.ktor.client.request.*
 import io.ktor.client.statement.*

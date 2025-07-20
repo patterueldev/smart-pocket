@@ -1,4 +1,4 @@
-package io.patterueldev.savealong
+package io.patterueldev.smartpocket
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

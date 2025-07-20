@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  smart-pocket-dev:
+    build:
+      context: .            # build from project root
+      dockerfile: Dockerfile.dev
+    container_name: smart-pocket-dev
+    volumes:
+      - .:/workspace        # mount entire project
+    ports:
+      - "8080:8080"         # map Ktor server port
+    environment:
+      - GRADLE_OPTS=-Pdevelopment
+    network_mode: bridge

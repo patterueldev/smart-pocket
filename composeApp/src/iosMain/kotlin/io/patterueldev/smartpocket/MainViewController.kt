@@ -1,4 +1,4 @@
-package io.patterueldev.savealong
+package io.patterueldev.smartpocket
 
 import androidx.compose.ui.window.ComposeUIViewController
 

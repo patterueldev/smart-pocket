@@ -48,7 +48,7 @@ echo "🚀 Deploying on Mint server via registry-based workflow..."
 SSH_CMD="ssh $SERVER_USER@$SERVER_HOST"
 PULL_CMD="docker pull saturday.local:5000/$APP_NAME:latest"
 STOP_RM_CMD="docker stop $APP_NAME || true && docker rm $APP_NAME || true"
-RUN_CMD="docker run -d --network homeserver -p $PORT:8080 --name $APP_NAME saturday.local:5000/$APP_NAME:latest"
+RUN_CMD="docker run -d --network homeserver --name $APP_NAME saturday.local:5000/$APP_NAME:latest"
 
 if [ "$DRY_RUN" = true ]; then
   echo "[DRY RUN] $SSH_CMD \"$PULL_CMD\""

@@ -1,4 +1,4 @@
-package io.patterueldev.savealong
+package io.patterueldev.smartpocket
 
 class JVMPlatform : Platform {
     override val name: String = "Java ${System.getProperty("java.version")}"
