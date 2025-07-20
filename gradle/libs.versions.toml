@@ -16,6 +16,8 @@ kotlin = "2.2.0"
 ktor = "3.2.0"
 logback = "1.5.18"
 koin = "4.0.3"
+openai = "0.31.0"
+kotlinx-serialization = "1.8.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -38,6 +40,8 @@ ktor-serializationJson = { module = "io.ktor:ktor-serialization-kotlinx-json-jvm
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
 koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin" }
+openai-java = { module = "com.openai:openai-java", version.ref = "openai" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

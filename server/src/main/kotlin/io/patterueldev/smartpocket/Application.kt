@@ -1,5 +1,7 @@
 package io.patterueldev.smartpocket
 
+import com.openai.client.OpenAIClient
+import com.openai.client.okhttp.OpenAIOkHttpClient
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -8,7 +10,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
-import kotlinx.serialization.Serializable
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
 import org.koin.ktor.plugin.Koin
@@ -19,7 +20,12 @@ fun main() {
 }
 
 val appModule = module {
-    single { TransactionParseUseCase() }
+    single<OpenAIClient> {
+        OpenAIOkHttpClient.builder()
+            .apiKey("<YOUR_OPENAI_API_KEY>")
+            .build()
+    }
+    single { TransactionParseUseCase(get()) }
 }
 
 fun Application.module() {
@@ -43,25 +49,3 @@ fun Application.module() {
     }
 }
 
-@Serializable
-data class ParseRawRequest(
-    val raw: String,
-)
-
-@Serializable
-data class ParsedTransactionResponse(
-    val parsed: Boolean,
-    val input: String,
-    val dummyField: String
-)
-
-class TransactionParseUseCase {
-    fun execute(request: ParseRawRequest): ParsedTransactionResponse {
-        // Dummy implementation for parsing logic
-        return ParsedTransactionResponse(
-            parsed = true,
-            input = request.raw,
-            dummyField = "This is a dummy field"
-        )
-    }
-}
