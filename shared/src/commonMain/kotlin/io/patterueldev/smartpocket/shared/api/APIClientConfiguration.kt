@@ -5,6 +5,7 @@ data class APIClientConfiguration(
     // default request timeout if not specified from the request
     val requestTimeoutMillis: Long = 60000, // 60 seconds
     val requestMaxRetries: Int = 10, // default max retries for requests
+    val additionalHeaders: Map<String, String> = emptyMap(),
 ) {
     fun buildEndpoint(path: String): String {
         val filteredBaseUrl = baseUrl.removeSuffix("/")

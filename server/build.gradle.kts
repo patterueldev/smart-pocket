@@ -5,10 +5,10 @@ plugins {
     application
 }
 
-group = "io.patterueldev.smartpocket"
+group = "io.patterueldev.smartpocket.server"
 version = "1.0.0"
 application {
-    mainClass.set("io.patterueldev.smartpocket.ApplicationKt")
+    mainClass.set("io.patterueldev.smartpocket.server.ApplicationKt")
     val isDevelopment: Boolean = project.ext.has("development")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }

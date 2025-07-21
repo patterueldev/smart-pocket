@@ -2,11 +2,8 @@ package io.patterueldev.smartpocket.shared.api
 
 import io.github.kabirnayeem99.ktor2curl.CurlLogger
 import io.github.kabirnayeem99.ktor2curl.KtorToCurl
-import io.github.kabirnayeem99.ktor2curl.KtorToCurlConfig
 import io.ktor.client.HttpClient
-import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.HttpRequestRetry
-import io.ktor.client.plugins.HttpRequestRetryConfig
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.timeout
 import io.ktor.client.request.HttpRequestBuilder
@@ -25,7 +22,6 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import io.patterueldev.smartpocket.shared.api.generic.HttpRequestEndpoint
 import io.patterueldev.smartpocket.shared.models.GenericResponse
-import kotlin.js.JsExport
 import kotlin.math.min
 import kotlin.math.pow
 import kotlinx.serialization.Serializable
@@ -118,6 +114,12 @@ class APIClient(
 
             timeout {
                 requestTimeoutMillis = requestTimeout ?: configuration.requestTimeoutMillis
+            }
+
+            configuration.additionalHeaders.forEach { (key, value) ->
+                headers {
+                    append(key, value)
+                }
             }
 
             additionalRequestHeaders?.forEach { (key, value) ->

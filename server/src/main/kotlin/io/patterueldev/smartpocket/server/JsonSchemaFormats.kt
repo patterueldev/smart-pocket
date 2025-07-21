@@ -1,4 +1,4 @@
-package io.patterueldev.smartpocket
+package io.patterueldev.smartpocket.server
 
 import com.openai.core.JsonValue
 import com.openai.models.ResponseFormatJsonSchema

@@ -25,6 +25,7 @@ kotlin {
         commonMain.dependencies {
             // put your Multiplatform dependencies here
             implementation(libs.kotlinx.serialization.json)
+            api(libs.kotlinx.datetime)
 
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
@@ -42,6 +43,10 @@ kotlin {
 
         iosMain.dependencies {
             api(libs.ktor.client.darwin)
+        }
+
+        jvmMain.dependencies {
+            implementation(libs.ktor.client.okhttp)
         }
     }
 }

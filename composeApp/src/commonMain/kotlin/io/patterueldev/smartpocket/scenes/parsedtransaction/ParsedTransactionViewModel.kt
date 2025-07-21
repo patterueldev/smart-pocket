@@ -56,14 +56,14 @@ class DefaultParsedTransactionViewModel(
                 val data = response.data ?: throw Exception("No data found in response")
                 // Update the UI state with parsed data
                 merchantString = data.merchant ?: "Unknown Merchant"
-                dateString = data.dateString ?: "Unknown Date" // TODO: Convert to a more readable format
+                dateString = data.date?.toString() ?: "Unknown Date" // TODO: Convert to a more readable format
                 paymentMethodString = data.paymentMethod ?: "Unknown Payment Method"
                 items.clear()
                 data.items.forEach { item ->
                     items.add(
                         TransactionItem(
                             name = item.name ?: "Unknown Item",
-                            price = item.price ?: "0.00",
+                            price = item.price.toString(),
                             quantity = item.quantity,
                             category = item.category
                         )
