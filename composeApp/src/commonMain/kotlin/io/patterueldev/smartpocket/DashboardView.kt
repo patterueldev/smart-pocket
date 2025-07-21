@@ -49,10 +49,12 @@ fun DashboardView(
         Spacer(Modifier.height(24.dp))
         Button(
             onClick = {
-                receiptScannerPresenter?.navigateToReceiptScanner { receiptText ->
-                    val scannedReceiptRoute = ScannedReceiptRoute(rawScannedText = receiptText)
-                    navController?.navigate(scannedReceiptRoute)
-                }
+                val scannedReceiptRoute = ScannedReceiptRoute(rawScannedText = "")
+                navController?.navigate(scannedReceiptRoute)
+//                receiptScannerPresenter?.navigateToReceiptScanner { receiptText ->
+//                    val scannedReceiptRoute = ScannedReceiptRoute(rawScannedText = receiptText)
+//                    navController?.navigate(scannedReceiptRoute)
+//                }
             },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp)

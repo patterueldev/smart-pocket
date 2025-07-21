@@ -1,5 +1,8 @@
 package io.patterueldev.smartpocket.scenes.parsedtransaction
 
+import androidx.compose.material3.CalendarLocale
+import androidx.compose.material3.DatePickerState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -15,12 +18,17 @@ import io.patterueldev.smartpocket.shared.models.actual.ActualPayee
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 
 abstract class ParsedTransactionViewModel(): ViewModel() {
     var isLoading: Boolean by mutableStateOf(true)
     var errorString: String? by mutableStateOf(null)
     var payee: ActualPayee? by mutableStateOf(null)
-    var dateString: String by mutableStateOf("")
+    var date: Instant by mutableStateOf(Clock.System.now())
     var account: ActualAccount? by mutableStateOf(null)
     var items = mutableStateListOf<TransactionItem>()
 
@@ -48,7 +56,14 @@ class DefaultParsedTransactionViewModel(
         // to extract relevant fields like date, amount, merchant, etc.
 
         scope.launch {
-            // Simulate parsing delay
+            // if blank, skip;
+            if (scannedReceiptRoute.rawScannedText.isBlank()) {
+                isLoading = true
+                // simulate a delay to mimic network call
+                kotlinx.coroutines.delay(2000)
+                isLoading = false
+                return@launch
+            }
             try {
                 isLoading = true
                 val response: ParsedTransactionResponse = apiClient.requestWithEndpoint(
@@ -59,7 +74,7 @@ class DefaultParsedTransactionViewModel(
                 val data = response.data ?: throw Exception("No data found in response")
                 // Update the UI state with parsed data
                 payee = data.actualPayee
-                dateString = data.date?.toString() ?: "Unknown Date" // TODO: Convert to a more readable format
+                data.date?.let { date = it.toInstant(TimeZone.currentSystemDefault()) }
                 account = data.actualAccount
                 items.clear()
                 data.items.forEach { item ->

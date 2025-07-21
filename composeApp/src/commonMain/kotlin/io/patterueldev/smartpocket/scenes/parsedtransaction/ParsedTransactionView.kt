@@ -1,9 +1,12 @@
 package io.patterueldev.smartpocket.scenes.parsedtransaction
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -12,16 +15,36 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DividerDefaults
+import kotlinx.datetime.Instant
+import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun ParsedTransactionView(
@@ -31,38 +54,40 @@ fun ParsedTransactionView(
         // Trigger loading of parsed transaction data
         viewModel.parseTransaction()
     }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .safeContentPadding()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.Start
-    ) {
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .safeContentPadding()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            FormBody(viewModel)
+        }
+
         if (viewModel.isLoading) {
-            Text("Loading...", style = MaterialTheme.typography.bodyLarge)
-            return@Column
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
         }
-        if (viewModel.errorString != null) {
-            Text("Error: ${viewModel.errorString}", style = MaterialTheme.typography.bodyLarge)
-            return@Column
-        }
-        FormBody(viewModel)
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FormBody(viewModel: ParsedTransactionViewModel) {
     Text("Parsed Transaction", style = MaterialTheme.typography.headlineMedium)
 
     Spacer(Modifier.height(16.dp))
 
-    // ✅ Date Field
-    OutlinedTextField(
-        value = viewModel.dateString,
-        onValueChange = { /* TODO: date picker or manual edit */ },
-        label = { Text("Date") },
-        modifier = Modifier.fillMaxWidth()
-    )
+    // ✅ Date Field with DatePicker
+    DateField(viewModel)
 
     Spacer(Modifier.height(8.dp))
 
@@ -110,6 +135,75 @@ private fun FormBody(viewModel: ParsedTransactionViewModel) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DateField(
+    viewModel: ParsedTransactionViewModel
+) {
+    // ✅ Control dialog visibility
+    var showDatePicker: Boolean by remember { mutableStateOf(false) }
+
+    // ✅ Show current date as text
+    val formattedDate = remember(viewModel.date) {
+        viewModel.date.toString() // Or format nicely
+    }
+
+    // ✅ Read-only textfield that triggers the dialog
+    Box {
+        OutlinedTextField(
+            value = formattedDate,
+            onValueChange = {},
+            label = { Text("Date") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    println("Clicked date field")
+                    showDatePicker = true
+                },
+            readOnly = true,
+            enabled = true,
+        )
+        // icon caret
+        IconButton(
+            onClick = { showDatePicker = true },
+            modifier = Modifier.align(Alignment.CenterEnd)
+        ) {
+            Icon(
+                imageVector = Icons.Default.CalendarToday,
+                contentDescription = "Select Date"
+            )
+        }
+    }
+
+    // ✅ Show dialog when user taps
+    if (showDatePicker) {
+        val dateState = rememberDatePickerState(
+            initialSelectedDateMillis = viewModel.date.toEpochMilliseconds()
+        )
+
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        dateState.selectedDateMillis?.let { millis ->
+                            viewModel.date = Instant.fromEpochMilliseconds(millis)
+                        }
+                        showDatePicker = false
+                    }
+                ) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = dateState)
+        }
+    }
+}
+
 @Composable
 private fun DropfownField(
     label: String,
@@ -145,4 +239,15 @@ fun ItemRow(
         }
         // Edit and Delete buttons can be added here
     }
+}
+
+@Composable
+@Preview
+fun ParsedTransactionViewPreview() {
+    val viewModel = object : ParsedTransactionViewModel() {
+        override fun parseTransaction() {
+            isLoading = true
+        }
+    }
+    ParsedTransactionView(viewModel)
 }
