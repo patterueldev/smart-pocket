@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import io.patterueldev.smartpocket.parsedtransaction.DefaultParsedTransactionViewModel
 import io.patterueldev.smartpocket.parsedtransaction.ParsedTransactionView
 import io.patterueldev.smartpocket.parsedtransaction.ParsedTransactionViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -27,7 +28,7 @@ fun App(
             modules(
                 module {
                     viewModel { DashboardViewModel() }
-                    viewModel { (scannedReceipt: ScannedReceipt) -> ParsedTransactionViewModel(scannedReceipt) }
+                    viewModel <ParsedTransactionViewModel> { (scannedReceipt: ScannedReceipt) -> DefaultParsedTransactionViewModel(scannedReceipt) }
                 },
                 module {}
             )
