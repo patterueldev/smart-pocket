@@ -15,6 +15,9 @@ import io.patterueldev.smartpocket.shared.api.APIClientConfiguration
 import io.patterueldev.smartpocket.shared.api.APISessionManager
 import io.patterueldev.smartpocket.shared.models.ParseRawRequest
 import io.patterueldev.smartpocket.shared.models.ReceiptTransactionRequest
+import io.patterueldev.smartpocket.shared.models.actual.GetAccountsResponse
+import io.patterueldev.smartpocket.shared.models.actual.GetActualCategoryGroupsResponse
+import io.patterueldev.smartpocket.shared.models.actual.GetPayeesResponse
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
 import org.koin.ktor.plugin.Koin
@@ -68,6 +71,7 @@ val appModule = module {
     }
     single { TransactionParseUseCase(openAIClient = get(), apiClient = get(), serverConfiguration = get()) }
     single { ReceiptTransactionUseCase(apiClient = get(), configuration = get()) }
+    single { GetActualGroupedCategoriesUseCase(apiClient = get(), serverConfiguration = get()) }
 }
 
 fun Application.module() {
@@ -79,6 +83,11 @@ fun Application.module() {
     }
     val transactionParseUseCase by inject<TransactionParseUseCase>()
     val receiptTransactionUseCase by inject<ReceiptTransactionUseCase>()
+    val getActualGroupedCategoriesUseCase by inject<GetActualGroupedCategoriesUseCase>()
+
+    val apiClient by inject<APIClient>()
+    val serverConfiguration by inject<ServerConfiguration>()
+
     routing {
         get("/") {
             call.respondText("Hello, world!!!")
@@ -94,6 +103,33 @@ fun Application.module() {
             val request = call.receive<ReceiptTransactionRequest>()
             val result = receiptTransactionUseCase(request)
             call.respond(result)
+        }
+
+        get("/metadata/grouped-categories") {
+            val groupedCategoriesResponse: GetActualCategoryGroupsResponse = apiClient.requestWithEndpoint(
+                endpoint = ActualBudgetEndpoint.GetCategoryGroups(
+                    budgetId = serverConfiguration.budgetSyncId,
+                )
+            )
+            call.respond(groupedCategoriesResponse)
+        }
+
+        get("/metadata/payees") {
+            val payeesResponse: GetPayeesResponse = apiClient.requestWithEndpoint(
+                endpoint = ActualBudgetEndpoint.GetPayees(
+                    budgetId = serverConfiguration.budgetSyncId,
+                )
+            )
+            call.respond(payeesResponse)
+        }
+
+        get("/metadata/accounts") {
+            val accountsResponse: GetAccountsResponse = apiClient.requestWithEndpoint(
+                endpoint = ActualBudgetEndpoint.GetAccounts(
+                    budgetId = serverConfiguration.budgetSyncId,
+                )
+            )
+            call.respond(accountsResponse)
         }
     }
 }

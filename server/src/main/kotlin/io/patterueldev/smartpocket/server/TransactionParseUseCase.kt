@@ -5,6 +5,9 @@ import com.openai.models.ChatCompletionCreateParams
 import com.openai.models.ChatModel
 import com.openai.models.ResponseFormatJsonSchema
 import io.patterueldev.smartpocket.shared.api.APIClient
+import io.patterueldev.smartpocket.shared.models.actual.GetAccountsResponse
+import io.patterueldev.smartpocket.shared.models.actual.GetCategoriesResponse
+import io.patterueldev.smartpocket.shared.models.actual.GetPayeesResponse
 import io.patterueldev.smartpocket.shared.models.ParseRawRequest
 import io.patterueldev.smartpocket.shared.models.ParsedTransaction
 import io.patterueldev.smartpocket.shared.models.ParsedTransactionResponse
@@ -37,7 +40,7 @@ class TransactionParseUseCase(
                 .replace(Regex("[^a-z0-9_]"), "") // Remove non-alphanumeric characters except underscores
         }
         val categoriesMap = categoriesResponse.data.associate { category ->
-            snakeCaser(category.name) to category.id
+            snakeCaser(category.name) to category
         }
         // get the categories snake_cased
         val categoriesSnakeCased = categoriesMap.keys.toList()
@@ -52,7 +55,7 @@ class TransactionParseUseCase(
         val filteredPayees = payeesResponse.data.filter { it.transferAccount == null }
         // create a map of payee names to IDs
         val payeesMap = filteredPayees.associate { payee ->
-            snakeCaser(payee.name) to payee.name
+            snakeCaser(payee.name) to payee
         }
         // get the payees snake_cased
         val payeesSnakeCased = payeesMap.keys.toList()
@@ -65,7 +68,7 @@ class TransactionParseUseCase(
         )
         // create a map of account names to IDs
         val accountsMap = accountsResponse.data.associate { account ->
-            snakeCaser(account.name) to account.id
+            snakeCaser(account.name) to account
         }
         // get the accounts snake_cased
         val accountsSnakeCased = accountsMap.keys.toList()
@@ -104,22 +107,24 @@ class TransactionParseUseCase(
         try {
             // map the merchant to the payee
             // PS: Payee are more flexible, so we can use the name instead of the ID
-            data = data?.copy(
-                merchant = data.merchant?.let { payeesMap[it] ?: it },
-                paymentMethod = data.paymentMethod?.let { accountsMap[it] ?: it } // map the payment method to the account ID
-            )
+            data = data?.merchantKey?.let { merchantKey ->
+                val actualPayee = payeesMap[merchantKey] ?: return@let data
+                data.copy(actualPayee = actualPayee)
+            }
 
             // map the payment method to the account ID
-            data = data?.copy(
-                paymentMethod = data.paymentMethod?.let { accountsMap[it] ?: it }
-            )
+            data = data?.paymentMethodKey?.let { paymentMethodKey ->
+                val actualAccount = accountsMap[paymentMethodKey] ?: return@let data
+                data.copy(actualAccount = actualAccount)
+            }
 
             // map the items' categories to the category IDs
             data = data?.copy(
                 items = data.items.map { item ->
-                    item.copy(
-                        category = item.category?.let { categoriesMap[it] ?: it }
-                    )
+                    item.categoryKey?.let { categoryKey ->
+                        val actualCategory = categoriesMap[categoryKey] ?: return@let item
+                        item.copy(actualCategory = actualCategory)
+                    } ?: item // if category is null, return the item as is
                 }
             )
         } catch (e: Exception) {

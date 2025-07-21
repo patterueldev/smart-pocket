@@ -1,5 +1,9 @@
 package io.patterueldev.smartpocket.shared.models
 
+import io.patterueldev.smartpocket.shared.models.actual.ActualAccount
+import io.patterueldev.smartpocket.shared.models.actual.ActualCategory
+import io.patterueldev.smartpocket.shared.models.actual.ActualCategoryGroup
+import io.patterueldev.smartpocket.shared.models.actual.ActualPayee
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -7,9 +11,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ParsedTransaction(
     val date: LocalDateTime? = null,
-    val merchant: String? = null,
+    @SerialName("merchant") val merchantKey: String? = null,
     val items: List<ParsedTransactionItem> = emptyList(),
-    val paymentMethod: String? = null,
+    @SerialName("paymentMethod") val paymentMethodKey: String? = null,
+
+    val actualPayee: ActualPayee? = null,
+    val actualAccount: ActualAccount? = null,
 ) {
     companion object: SchemaType {
         var merchants: List<String> = emptyList()
@@ -62,5 +69,7 @@ data class ParsedTransactionItem(
     @SerialName("name") val name: String? = null,
     @SerialName("price") val price: Double = 0.0,
     @SerialName("quantity") val quantity: Int = 1,
-    @SerialName("category") val category: String? = null,
+    @SerialName("category") val categoryKey: String? = null,
+
+    val actualCategory: ActualCategory? = null,
 )

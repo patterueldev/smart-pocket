@@ -2,11 +2,8 @@ package io.patterueldev.smartpocket.server
 
 import io.ktor.http.HttpMethod
 import io.patterueldev.smartpocket.shared.api.generic.HttpRequestEndpoint
-import io.patterueldev.smartpocket.shared.models.ActualBatchTransactionsRequest
-import io.patterueldev.smartpocket.shared.models.ActualTransaction
-import io.patterueldev.smartpocket.shared.models.ActualTransactionRequest
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import io.patterueldev.smartpocket.shared.models.actual.ActualBatchTransactionsRequest
+import io.patterueldev.smartpocket.shared.models.actual.ActualTransactionRequest
 import kotlinx.serialization.json.Json
 
 sealed class ActualBudgetEndpoint(
@@ -71,43 +68,11 @@ sealed class ActualBudgetEndpoint(
         path = "/v1/budgets/$budgetId/accounts",
         method = HttpMethod.Companion.Get
     )
+
+    data class GetCategoryGroups(
+        val budgetId: String,
+    ) : ActualBudgetEndpoint(
+        path = "/v1/budgets/$budgetId/categorygroups",
+        method = HttpMethod.Companion.Get
+    )
 }
-
-@Serializable
-data class GetCategoriesResponse(
-    val data: List<ActualCategory> = emptyList()
-)
-
-@Serializable
-data class ActualCategory(
-    val id: String,
-    val name: String,
-    @SerialName("is_income") val isIncome: Boolean,
-    val hidden: Boolean,
-    @SerialName("group_id") val groupId: String
-)
-
-@Serializable
-data class GetPayeesResponse(
-    val data: List<ActualPayee> = emptyList()
-)
-
-@Serializable
-data class ActualPayee(
-    val id: String,
-    val name: String,
-    @SerialName("transfer_acct") val transferAccount: String? = null
-)
-
-@Serializable
-data class GetAccountsResponse(
-    val data: List<ActualAccount> = emptyList()
-)
-
-@Serializable
-data class ActualAccount(
-    val id: String,
-    val name: String,
-    @SerialName("offbudget") val offBudget: Boolean,
-    val closed: Boolean
-)

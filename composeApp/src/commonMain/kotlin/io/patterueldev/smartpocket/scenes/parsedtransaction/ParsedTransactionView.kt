@@ -69,7 +69,7 @@ private fun FormBody(viewModel: ParsedTransactionViewModel) {
     // ✅ Merchant Dropdown
     DropfownField(
         label = "Merchant",
-        selectedItem = viewModel.merchantString,
+        selectedItem = viewModel.payee?.name,
         items = listOf("Merchant 1", "Merchant 2", "Merchant 3"), // Replace with actual merchants
         onItemSelected = {
 
@@ -81,7 +81,7 @@ private fun FormBody(viewModel: ParsedTransactionViewModel) {
     // ✅ Payment Method Dropdown
     DropfownField(
         label = "Payment Method",
-        selectedItem = viewModel.paymentMethodString,
+        selectedItem = viewModel.account?.name,
         items = listOf("Cash", "Credit Card", "Debit Card", "Mobile Payment"), // Replace with actual methods
         onItemSelected = { /* update VM */ }
     )
@@ -140,7 +140,7 @@ fun ItemRow(
         Text("Name: ${item.name}", style = MaterialTheme.typography.bodyLarge)
         Text("Price: ${item.price}", style = MaterialTheme.typography.bodyMedium)
         Text("Quantity: ${item.quantity}", style = MaterialTheme.typography.bodyMedium)
-        item.category?.let {
+        item.category?.name?.let {
             Text("Category: $it", style = MaterialTheme.typography.bodyMedium)
         }
         // Edit and Delete buttons can be added here

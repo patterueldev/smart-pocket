@@ -9,6 +9,9 @@ import io.patterueldev.smartpocket.ScannedReceiptRoute
 import io.patterueldev.smartpocket.api.SmartPocketEndpoint
 import io.patterueldev.smartpocket.shared.api.APIClient
 import io.patterueldev.smartpocket.shared.models.ParsedTransactionResponse
+import io.patterueldev.smartpocket.shared.models.actual.ActualAccount
+import io.patterueldev.smartpocket.shared.models.actual.ActualCategory
+import io.patterueldev.smartpocket.shared.models.actual.ActualPayee
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,9 +19,9 @@ import kotlinx.coroutines.launch
 abstract class ParsedTransactionViewModel(): ViewModel() {
     var isLoading: Boolean by mutableStateOf(true)
     var errorString: String? by mutableStateOf(null)
-    var merchantString: String by mutableStateOf("")
+    var payee: ActualPayee? by mutableStateOf(null)
     var dateString: String by mutableStateOf("")
-    var paymentMethodString: String by mutableStateOf("")
+    var account: ActualAccount? by mutableStateOf(null)
     var items = mutableStateListOf<TransactionItem>()
 
     open fun parseTransaction() {
@@ -31,7 +34,7 @@ data class TransactionItem(
     val name: String = "",
     val price: String = "",
     val quantity: Int = 1,
-    val category: String? = null
+    val category: ActualCategory? = null
 )
 
 class DefaultParsedTransactionViewModel(
@@ -55,9 +58,9 @@ class DefaultParsedTransactionViewModel(
                 )
                 val data = response.data ?: throw Exception("No data found in response")
                 // Update the UI state with parsed data
-                merchantString = data.merchant ?: "Unknown Merchant"
+                payee = data.actualPayee
                 dateString = data.date?.toString() ?: "Unknown Date" // TODO: Convert to a more readable format
-                paymentMethodString = data.paymentMethod ?: "Unknown Payment Method"
+                account = data.actualAccount
                 items.clear()
                 data.items.forEach { item ->
                     items.add(
@@ -65,7 +68,7 @@ class DefaultParsedTransactionViewModel(
                             name = item.name ?: "Unknown Item",
                             price = item.price.toString(),
                             quantity = item.quantity,
-                            category = item.category
+                            category = item.actualCategory,
                         )
                     )
                 }

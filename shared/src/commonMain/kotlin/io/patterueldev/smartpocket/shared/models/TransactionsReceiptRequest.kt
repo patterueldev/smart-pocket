@@ -19,3 +19,4 @@ data class ReceiptItem(
     val price: Long,
     val categoryId: String,
 )
+

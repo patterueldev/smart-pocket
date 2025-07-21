@@ -3,10 +3,10 @@ package io.patterueldev.smartpocket.server
 import io.patterueldev.smartpocket.shared.api.APIClient
 import io.patterueldev.smartpocket.shared.api.ActualBudgetGenericResponse
 import io.patterueldev.smartpocket.shared.api.ReceiptTransactionResponse
-import io.patterueldev.smartpocket.shared.models.ActualBatchTransactionsRequest
-import io.patterueldev.smartpocket.shared.models.ActualTransaction
-import io.patterueldev.smartpocket.shared.models.ActualTransactionRequest
-import io.patterueldev.smartpocket.shared.models.GetTransactionsResponse
+import io.patterueldev.smartpocket.shared.models.actual.ActualBatchTransactionsRequest
+import io.patterueldev.smartpocket.shared.models.actual.ActualTransaction
+import io.patterueldev.smartpocket.shared.models.actual.ActualTransactionRequest
+import io.patterueldev.smartpocket.shared.models.actual.GetTransactionsResponse
 import io.patterueldev.smartpocket.shared.models.ReceiptTransactionRequest
 import kotlinx.datetime.LocalDateTime
 
