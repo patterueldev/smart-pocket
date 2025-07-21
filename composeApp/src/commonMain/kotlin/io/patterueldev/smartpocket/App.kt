@@ -1,7 +1,10 @@
 package io.patterueldev.smartpocket
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -47,20 +50,21 @@ fun App(
             )
         }
     ) {
+        MaterialTheme {
+            Surface(modifier = Modifier.fillMaxSize()) {
+                NavHost(navController = navController, startDestination = "dashboard") {
+                    composable("dashboard") {
+                        DashboardView(receiptScannerPresenter, navController)
+                    }
 
-    }
-    MaterialTheme {
-        NavHost(navController = navController, startDestination = "dashboard") {
-            composable("dashboard") {
-                DashboardView(receiptScannerPresenter, navController)
-            }
-
-            composable<ScannedReceiptRoute> { backStackEntry ->
-                val scannedReceiptRoute: ScannedReceiptRoute = backStackEntry.toRoute()
-                val viewModel: ParsedTransactionViewModel = koinViewModel(
-                    parameters = { parametersOf(scannedReceiptRoute) }
-                )
-                ParsedTransactionView(viewModel)
+                    composable<ScannedReceiptRoute> { backStackEntry ->
+                        val scannedReceiptRoute: ScannedReceiptRoute = backStackEntry.toRoute()
+                        val viewModel: ParsedTransactionViewModel = koinViewModel(
+                            parameters = { parametersOf(scannedReceiptRoute) }
+                        )
+                        ParsedTransactionView(viewModel)
+                    }
+                }
             }
         }
     }

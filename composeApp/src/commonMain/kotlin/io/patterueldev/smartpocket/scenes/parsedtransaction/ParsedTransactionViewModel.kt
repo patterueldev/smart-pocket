@@ -15,6 +15,9 @@ import io.patterueldev.smartpocket.shared.models.ParsedTransactionResponse
 import io.patterueldev.smartpocket.shared.models.actual.ActualAccount
 import io.patterueldev.smartpocket.shared.models.actual.ActualCategory
 import io.patterueldev.smartpocket.shared.models.actual.ActualPayee
+import io.patterueldev.smartpocket.shared.models.actual.GetAccountsResponse
+import io.patterueldev.smartpocket.shared.models.actual.GetActualCategoryGroupsResponse
+import io.patterueldev.smartpocket.shared.models.actual.GetPayeesResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,9 +31,12 @@ abstract class ParsedTransactionViewModel(): ViewModel() {
     var isLoading: Boolean by mutableStateOf(true)
     var errorString: String? by mutableStateOf(null)
     var payee: ActualPayee? by mutableStateOf(null)
+    var payees = mutableStateListOf<ActualPayee>()
     var date: Instant by mutableStateOf(Clock.System.now())
     var account: ActualAccount? by mutableStateOf(null)
+    var accounts = mutableStateListOf<ActualAccount>()
     var items = mutableStateListOf<TransactionItem>()
+    var categories = mutableStateListOf<ActualCategory>()
 
     open fun parseTransaction() {
         // This method should be overridden in the subclass to implement the parsing logic
@@ -87,6 +93,26 @@ class DefaultParsedTransactionViewModel(
                         )
                     )
                 }
+
+                // load payees, accounts, and categories
+                val payeesResponse: GetPayeesResponse = apiClient.requestWithEndpoint(
+                    endpoint = SmartPocketEndpoint.MetadataPayees
+                )
+                payees.clear()
+                payees.addAll(payeesResponse.data)
+
+                val accountsResponse: GetAccountsResponse = apiClient.requestWithEndpoint(
+                    endpoint = SmartPocketEndpoint.MetadataAccounts
+                )
+                accounts.clear()
+                accounts.addAll(accountsResponse.data)
+
+                val groupedCategoriesResponse: GetActualCategoryGroupsResponse = apiClient.requestWithEndpoint(
+                    endpoint = SmartPocketEndpoint.MetadataGroupedCategories
+                )
+                categories.clear()
+                categories.addAll(groupedCategoriesResponse.data.map { it.categories }.flatten())
+
             } catch (e: Exception) {
                 errorString = e.message ?: "An error occurred while parsing the transaction."
                 isLoading = false

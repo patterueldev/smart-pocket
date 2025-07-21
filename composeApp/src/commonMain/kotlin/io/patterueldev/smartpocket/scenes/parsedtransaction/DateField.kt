@@ -43,12 +43,7 @@ fun DateField(
             value = formattedDate,
             onValueChange = {},
             label = { Text("Date") },
-            modifier = Modifier.Companion
-                .fillMaxWidth()
-                .clickable {
-                    println("Clicked date field")
-                    showDatePicker = true
-                },
+            modifier = Modifier.Companion.fillMaxWidth(),
             readOnly = true,
             enabled = true,
         )

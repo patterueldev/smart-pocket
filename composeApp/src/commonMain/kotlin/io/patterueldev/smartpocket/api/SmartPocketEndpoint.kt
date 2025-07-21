@@ -17,4 +17,19 @@ sealed class SmartPocketEndpoint(
         method = HttpMethod.Companion.Post,
         jsonPayload = Json.Default.encodeToString(ParseRawRequest(receiptString))
     )
+
+    data object MetadataGroupedCategories: SmartPocketEndpoint(
+        path = "/metadata/grouped-categories",
+        method = HttpMethod.Companion.Get,
+    )
+
+    data object MetadataPayees: SmartPocketEndpoint(
+        path = "/metadata/payees",
+        method = HttpMethod.Companion.Get,
+    )
+
+    data object MetadataAccounts: SmartPocketEndpoint(
+        path = "/metadata/accounts",
+        method = HttpMethod.Companion.Get,
+    )
 }

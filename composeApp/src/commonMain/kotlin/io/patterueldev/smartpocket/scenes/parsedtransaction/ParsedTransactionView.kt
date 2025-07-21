@@ -13,18 +13,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DividerDefaults
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -78,23 +77,27 @@ private fun FormBody(viewModel: ParsedTransactionViewModel) {
     Spacer(Modifier.height(8.dp))
 
     // ✅ Merchant Dropdown
-    DropfownField(
-        label = "Merchant",
+    DropdownField(
+        label = "Payee",
         selectedItem = viewModel.payee?.name,
-        items = listOf("Merchant 1", "Merchant 2", "Merchant 3"), // Replace with actual merchants
-        onItemSelected = {
-
+        items = viewModel.payees,
+        itemText = { it.name },
+        onItemSelected = { selected ->
+            viewModel.payee = selected
         }
     )
 
     Spacer(Modifier.height(8.dp))
 
     // ✅ Payment Method Dropdown
-    DropfownField(
-        label = "Payment Method",
+    DropdownField(
+        label = "Account",
         selectedItem = viewModel.account?.name,
-        items = listOf("Cash", "Credit Card", "Debit Card", "Mobile Payment"), // Replace with actual methods
-        onItemSelected = { /* update VM */ }
+        items = viewModel.accounts,
+        itemText = { it.name },
+        onItemSelected = { selected ->
+            viewModel.account = selected
+        }
     )
 
     Spacer(Modifier.height(16.dp))
@@ -119,26 +122,6 @@ private fun FormBody(viewModel: ParsedTransactionViewModel) {
             }
         }
     }
-}
-
-@Composable
-private fun DropfownField(
-    label: String,
-    selectedItem: String?,
-    items: List<String>,
-    onItemSelected: (String) -> Unit
-) {
-    OutlinedTextField(
-        value = selectedItem ?: "",
-        onValueChange = { /* no-op, handled by dropdown */ },
-        label = { Text(label) },
-        modifier = Modifier.fillMaxWidth(),
-        readOnly = true,
-        trailingIcon = {
-            // Icon for dropdown
-        }
-    )
-    // Dropdown logic here
 }
 
 @Composable
