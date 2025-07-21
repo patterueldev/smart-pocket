@@ -50,8 +50,8 @@ fun DashboardView(
         Button(
             onClick = {
                 receiptScannerPresenter?.navigateToReceiptScanner { receiptText ->
-                    val scannedReceipt = ScannedReceipt(rawScannedText = receiptText)
-                    navController?.navigate(scannedReceipt)
+                    val scannedReceiptRoute = ScannedReceiptRoute(rawScannedText = receiptText)
+                    navController?.navigate(scannedReceiptRoute)
                 }
             },
             modifier = Modifier.fillMaxWidth(),

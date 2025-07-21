@@ -4,6 +4,7 @@ import com.openai.client.OpenAIClient
 import com.openai.models.ChatCompletionCreateParams
 import com.openai.models.ChatModel
 import com.openai.models.ResponseFormatJsonSchema
+import io.patterueldev.smartpocket.shared.models.ParseRawRequest
 import io.patterueldev.smartpocket.shared.models.ParsedTransaction
 import io.patterueldev.smartpocket.shared.models.ParsedTransactionResponse
 import kotlinx.serialization.json.Json

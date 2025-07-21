@@ -1,4 +1,4 @@
-package io.patterueldev.smartpocket
+package io.patterueldev.smartpocket.shared.models
 
 import kotlinx.serialization.Serializable
 

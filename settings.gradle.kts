@@ -31,3 +31,5 @@ dependencyResolutionManagement {
 include(":composeApp")
 include(":server")
 include(":shared")
+include(":Ktor2Curl")
+project(":Ktor2Curl").projectDir = File("libs/Ktor2Curl")
