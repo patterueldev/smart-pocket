@@ -1,19 +1,20 @@
 package io.patterueldev.smartpocket.shared
 
-object AmountHelper {
-    fun toMinorUnit(amount: Double): Long {
-        return (amount * 100).toLong()
-    }
+fun Double.toMinorUnit(): Long {
+    return (this * 100).toLong()
+}
 
-    fun sumAmountsToMinorUnit(amounts: List<Double>): Long {
-        return amounts.sumOf { toMinorUnit(it) }
-    }
+fun Long.toMajorUnit(): Double {
+    return this / 100.0
+}
 
-//    fun productAmountsToMinorUnit(amounts: List<Double>): Long {
-//        return amounts.fold(1L) { acc, amount -> acc * toMinorUnit(amount) }
-//    }
+fun Double.amountMultipledBy(multiplier: Int): Double {
+    val minorUnit = this.toMinorUnit()
+    val multiplied = minorUnit * multiplier
+    return multiplied.toMajorUnit()
+}
 
-    fun toMajorUnit(amount: Long): Double {
-        return amount / 100.0
-    }
+fun List<Double>.amountSum(): Double {
+    val amt = this.sumOf { it.toMinorUnit() }
+    return amt.toMajorUnit()
 }

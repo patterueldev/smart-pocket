@@ -21,7 +21,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.raedghazal.kotlinx_datetime_ext.LocalDateTimeFormatter
+import com.raedghazal.kotlinx_datetime_ext.Locale
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,7 +38,8 @@ fun DateField(
 
     // ✅ Show current date as text
     val formattedDate = remember(selectedDate) {
-        selectedDate.toString() // Or format nicely
+        LocalDateTimeFormatter.ofPattern("MMMM dd, yyyy", Locale.en())
+            .format(selectedDate.toLocalDateTime(TimeZone.currentSystemDefault()))
     }
 
     // ✅ Read-only textfield that triggers the dialog

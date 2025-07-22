@@ -4,7 +4,8 @@ import com.raedghazal.kotlinx_datetime_ext.LocalDateTimeFormatter
 import com.raedghazal.kotlinx_datetime_ext.Locale
 import io.patterueldev.smartpocket.server.ActualBudgetEndpoint
 import io.patterueldev.smartpocket.server.ServerConfiguration
-import io.patterueldev.smartpocket.shared.AmountHelper
+import io.patterueldev.smartpocket.shared.amountMultipledBy
+import io.patterueldev.smartpocket.shared.amountSum
 import io.patterueldev.smartpocket.shared.api.APIClient
 import io.patterueldev.smartpocket.shared.models.actual.ActualBudgetGenericResponse
 import io.patterueldev.smartpocket.shared.api.AddReceiptResponse
@@ -15,6 +16,7 @@ import io.patterueldev.smartpocket.shared.models.ParsedReceiptItem
 import io.patterueldev.smartpocket.shared.models.actual.ActualBatchTransactionsRequest
 import io.patterueldev.smartpocket.shared.models.actual.ActualImportTransactionsRequest
 import io.patterueldev.smartpocket.shared.models.actual.ImportTransactionsResponse
+import io.patterueldev.smartpocket.shared.toMinorUnit
 import kotlin.uuid.ExperimentalUuidApi
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
@@ -32,7 +34,7 @@ class AddReceiptUseCase(
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    suspend operator fun invoke(request: AddReceiptRequest): AddReceiptResponse { // TODO: Change result
+    suspend operator fun invoke(request: AddReceiptRequest): AddReceiptResponse {
         try {
             val receipt = request.receipt
 
@@ -60,7 +62,7 @@ class AddReceiptUseCase(
             }
 
             val amounts: List<Double> = receipt.items.map { it.price }
-            val total: Long = AmountHelper.sumAmountsToMinorUnit(amounts)
+            val total: Long = amounts.amountSum().toMinorUnit()
 
             val principalTransaction = ActualTransaction(
                 account = accountId,
@@ -88,7 +90,7 @@ class AddReceiptUseCase(
             if (categoryIds.size > 1) {
                 // Now, create the child transactions for each category
                 val childTransactions = groupedItems.map { (categoryId, items) ->
-                    val totalForCategory = AmountHelper.sumAmountsToMinorUnit(items.map { it.price })
+                    val totalForCategory = items.map { it.price }.amountSum().toMinorUnit()
 
                     // Update the notes of the principal transaction to the consolidated items
                     val items = groupedItems[categoryId] ?: throw IllegalStateException("Items for category $categoryId not found")
@@ -141,8 +143,7 @@ class AddReceiptUseCase(
             val itemName = item.name ?: "Unnamed Item"
             val quantity = item.quantity
             val itemPrice = item.price
-            val totalPriceInMinorUnits = AmountHelper.toMinorUnit(itemPrice) * quantity
-            val totalPrice = AmountHelper.toMajorUnit(totalPriceInMinorUnits)
+            val totalPrice = itemPrice.amountMultipledBy(quantity)
             "$itemName (x$quantity) @ ₱$itemPrice → ₱$totalPrice"
         }
     }

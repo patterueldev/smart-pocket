@@ -6,8 +6,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ParsedReceiptItem(
-    val rawName: String? = null,
-    val name: String? = null,
+    val rawName: String = "",
+    val name: String = "",
     val price: Double = 0.0,
     val quantity: Int = 1,
     @SerialName("category") val categoryKey: String? = null,

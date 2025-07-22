@@ -7,7 +7,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import io.patterueldev.smartpocket.ScannedReceiptRoute
 import io.patterueldev.smartpocket.api.SmartPocketEndpoint
+import io.patterueldev.smartpocket.shared.amountSum
 import io.patterueldev.smartpocket.shared.api.APIClient
+import io.patterueldev.smartpocket.shared.models.ParsedReceipt
 import io.patterueldev.smartpocket.shared.models.ParsedReceiptResponse
 import io.patterueldev.smartpocket.shared.models.actual.ActualAccount
 import io.patterueldev.smartpocket.shared.models.actual.ActualCategory
@@ -18,92 +20,77 @@ import io.patterueldev.smartpocket.shared.models.actual.GetPayeesResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
 
-abstract class ParsedTransactionViewModel(): ViewModel() {
+data class TotalItem(
+    val label: String,
+    val amount: Double,
+    val isTotal: Boolean = false, // Indicates if this is the overall total
+)
+
+abstract class AddReceiptViewModel(): ViewModel() {
     var isLoading: Boolean by mutableStateOf(true)
     var errorString: String? by mutableStateOf(null)
-    var payee: ActualPayee? by mutableStateOf(null)
+    var parsedReceipt: ParsedReceipt by mutableStateOf(ParsedReceipt())
+        private set
+    var totalItems: MutableList<TotalItem> = mutableStateListOf()
+
+    // Metadata
     var payees = mutableStateListOf<ActualPayee>()
-    var date: Instant by mutableStateOf(Clock.System.now())
-    var account: ActualAccount? by mutableStateOf(null)
     var accounts = mutableStateListOf<ActualAccount>()
-    var items = mutableStateListOf<TransactionItem>()
     var categories = mutableStateListOf<ActualCategory>()
 
-    open fun parseTransaction() {
+    open fun parseReceipt() {
         // This method should be overridden in the subclass to implement the parsing logic
-        throw NotImplementedError("parseTransaction() must be implemented in the subclass")
+        throw NotImplementedError("parseReceipt() must be implemented in the subclass")
     }
-    fun updateItem(updatedItem: TransactionItem) {
-        val index = items.indexOfFirst { it.idx == updatedItem.idx }
-        if (index != -1) {
-            items[index] = updatedItem
-        }
+
+    open fun saveReceipt() {
+
     }
-    fun removeItem(item: TransactionItem) {
-        val index = items.indexOfFirst { it.idx == item.idx }
-        if (index != -1) {
-            items.removeAt(index)
+
+    fun updateReceipt(updater: (ParsedReceipt) -> ParsedReceipt) {
+        // This method should be overridden in the subclass to implement the receipt update logic
+        parsedReceipt = updater(parsedReceipt)
+        // After updating the receipt, we should recalculate the totals
+        calculateTotals()
+    }
+    fun calculateTotals() {
+        totalItems.clear()
+        // calculate totals per category
+
+        // First, try to group the items by categories
+        val uncategorizedKey = "uncategorized"
+        val groupedItems = parsedReceipt.items.groupBy { it.actualCategory?.id ?: uncategorizedKey }
+
+        // If there is only a single category, we can add one single transaction
+        val categoryIds = groupedItems.keys.toList()
+
+        categoryIds.forEach { categoryId ->
+            val items = groupedItems[categoryId] ?: emptyList()
+            val totalAmount = items.map { it.price }.amountSum()
+            val categoryName = items.firstOrNull()?.actualCategory?.name ?: "Uncategorized"
+            totalItems.add(TotalItem(label = categoryName, amount = totalAmount))
         }
+
+        // Overall total
+        val overallTotal = parsedReceipt.items.map { it.price }.amountSum()
+        totalItems.add(TotalItem(label = "Total", amount = overallTotal, isTotal = true))
     }
 }
 
-data class TransactionItem(
-    val idx: Int,
-    val name: String = "",
-    val price: String = "",
-    val quantity: Int = 1,
-    val category: ActualCategory? = null
-)
-
-class DefaultParsedTransactionViewModel(
+class DefaultAddReceiptViewModel(
     val scannedReceiptRoute: ScannedReceiptRoute,
     val apiClient: APIClient,
-): ParsedTransactionViewModel() {
+): AddReceiptViewModel() {
     val scope: CoroutineScope = CoroutineScope(Dispatchers.Main)
-    override fun parseTransaction() {
+    override fun parseReceipt() {
         // Logic to parse the scanned receipt text into a structured format
         // This could involve regex matching, string manipulation, or using a library
         // to extract relevant fields like date, amount, merchant, etc.
 
         scope.launch {
-            // if blank, skip;
-            if (scannedReceiptRoute.rawScannedText.isBlank()) {
-                isLoading = true
-                // simulate a delay to mimic network call
-                kotlinx.coroutines.delay(2000)
-                isLoading = false
-                return@launch
-            }
             try {
                 isLoading = true
-                val response: ParsedReceiptResponse = apiClient.requestWithEndpoint(
-                    endpoint = SmartPocketEndpoint.TransactionParse(
-                        receiptString = scannedReceiptRoute.rawScannedText
-                    )
-                )
-                val data = response.data ?: throw Exception("No data found in response")
-                // Update the UI state with parsed data
-                payee = data.actualPayee
-                data.date?.let { date = it.toInstant(TimeZone.currentSystemDefault()) }
-                account = data.actualAccount
-                items.clear()
-                var idx = 0
-                data.items.forEach { item ->
-                    items.add(
-                        TransactionItem(
-                            idx = idx++,
-                            name = item.rawName ?: "Unknown Item",
-                            price = item.price.toString(),
-                            quantity = item.quantity,
-                            category = item.actualCategory,
-                        )
-                    )
-                }
 
                 // load payees, accounts, and categories
                 val payeesResponse: GetPayeesResponse = apiClient.requestWithEndpoint(
@@ -124,6 +111,16 @@ class DefaultParsedTransactionViewModel(
                 categories.clear()
                 categories.addAll(groupedCategoriesResponse.data.map { it.categories }.flatten())
 
+                // if rawScannedText is not blank, parse the receipt
+                if (scannedReceiptRoute.rawScannedText.isNotBlank()) {
+                    val response: ParsedReceiptResponse = apiClient.requestWithEndpoint(
+                        endpoint = SmartPocketEndpoint.ParseReceipt(
+                            receiptString = scannedReceiptRoute.rawScannedText
+                        )
+                    )
+                    val parsedReceipt = response.data ?: throw Exception("No data found in response")
+                    updateReceipt { parsedReceipt }
+                }
             } catch (e: Exception) {
                 errorString = e.message ?: "An error occurred while parsing the transaction."
                 isLoading = false

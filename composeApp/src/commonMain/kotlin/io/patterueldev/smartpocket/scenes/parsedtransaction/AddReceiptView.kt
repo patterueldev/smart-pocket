@@ -10,10 +10,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,39 +30,73 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavHostController
+import io.patterueldev.smartpocket.shared.extensions.toSnakeCase
+import io.patterueldev.smartpocket.shared.models.ParsedReceiptItem
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
-fun ParsedTransactionView(
-    viewModel: ParsedTransactionViewModel
+fun AddReceiptView(
+    viewModel: AddReceiptViewModel,
+    navController: NavHostController? = null,
 ) {
     LaunchedEffect(viewModel) {
         // Trigger loading of parsed transaction data
-        viewModel.parseTransaction()
+        viewModel.parseReceipt()
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
+    Column(modifier = Modifier.fillMaxSize()) {
+        Row(
             modifier = Modifier
-                .fillMaxSize()
-                .safeContentPadding()
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.Start
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
         ) {
-            FormBody(viewModel)
+            TextButton(onClick = { navController?.popBackStack() }) {
+                Text("Back")
+            }
+            Text(
+                "Parsed Transaction",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
+            TextButton(onClick = { viewModel.saveReceipt() }) {
+                Text("Save")
+            }
         }
+        Spacer(modifier = Modifier.height(8.dp))
 
-        if (viewModel.isLoading) {
-            Box(
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)),
-                contentAlignment = Alignment.Center
+                    .safeContentPadding()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.Start
             ) {
-                CircularProgressIndicator()
+                FormBody(viewModel)
+            }
+
+            if (viewModel.isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
             }
         }
     }
@@ -72,16 +104,19 @@ fun ParsedTransactionView(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FormBody(viewModel: ParsedTransactionViewModel) {
+private fun FormBody(viewModel: AddReceiptViewModel) {
     Text("Parsed Transaction", style = MaterialTheme.typography.headlineMedium)
 
     Spacer(Modifier.height(16.dp))
 
     // ✅ Date Field with DatePicker
     DateField(
-        selectedDate = viewModel.date,
-        onDateSelected = { newDate ->
-            viewModel.date = newDate // Update the ViewModel with the selected date
+        selectedDate = viewModel.parsedReceipt.date.toInstant(TimeZone.currentSystemDefault()),
+        onDateSelected = { newDateInstant ->
+            viewModel.updateReceipt { receipt ->
+                val newDate: LocalDateTime = newDateInstant.toLocalDateTime(TimeZone.currentSystemDefault())
+                receipt.copy(date = newDate) // Update the parsed receipt date
+            }
         }
     )
 
@@ -90,11 +125,16 @@ private fun FormBody(viewModel: ParsedTransactionViewModel) {
     // ✅ Merchant Dropdown
     DropdownField(
         label = "Payee",
-        selectedItem = viewModel.payee?.name,
+        selectedItem = viewModel.parsedReceipt.actualPayee?.name,
         items = viewModel.payees,
         itemText = { it.name },
         onItemSelected = { selected ->
-            viewModel.payee = selected
+            viewModel.updateReceipt { receipt ->
+                receipt.copy(
+                    merchantKey = selected.name.toSnakeCase(),
+                    actualPayee = selected
+                )
+            }
         }
     )
 
@@ -103,13 +143,23 @@ private fun FormBody(viewModel: ParsedTransactionViewModel) {
     // ✅ Payment Method Dropdown
     DropdownField(
         label = "Account",
-        selectedItem = viewModel.account?.name,
+        selectedItem = viewModel.parsedReceipt.actualAccount?.name,
         items = viewModel.accounts,
         itemText = { it.name },
         onItemSelected = { selected ->
-            viewModel.account = selected
+            viewModel.updateReceipt { receipt ->
+                receipt.copy(
+                    paymentMethodKey = selected.name.toSnakeCase(),
+                    actualAccount = selected
+                )
+            }
         }
     )
+
+    Spacer(Modifier.height(8.dp))
+
+    // Totals Section
+    TotalsView(viewModel)
 
     Spacer(Modifier.height(16.dp))
 
@@ -122,20 +172,94 @@ private fun FormBody(viewModel: ParsedTransactionViewModel) {
             .padding(8.dp)
     ) {
         Column {
-            viewModel.items.forEach { item ->
+            for (i in 0 until viewModel.parsedReceipt.items.size) {
+                val item = viewModel.parsedReceipt.items[i]
                 ItemRow(
                     viewModel = viewModel,
                     item = item,
                     onEdit = { updatedItem ->
                         // Update ViewModel's list
-                        viewModel.updateItem(updatedItem)
+                        viewModel.updateReceipt { receipt ->
+                            val updatedItems = receipt.items.toMutableList()
+                            updatedItems[i] = updatedItem // Update the specific item
+                            receipt.copy(items = updatedItems)
+                        }
                     },
                     onDelete = {
                         // Remove item from ViewModel's list
-                        viewModel.removeItem(item) // make sure to have a prompt, if possible
+                        viewModel.updateReceipt { receipt ->
+                            val updatedItems = receipt.items.toMutableList()
+                            updatedItems.removeAt(i) // Remove the specific item
+                            receipt.copy(items = updatedItems)
+                        }
                     }
                 )
-                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                if (i < viewModel.parsedReceipt.items.size - 1) {
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                }
+            }
+        }
+    }
+
+    // ✅ Remarks Text View
+    Spacer(Modifier.height(16.dp))
+
+    var remarks: String by remember { mutableStateOf(viewModel.parsedReceipt.remarks) }
+
+    Text("Remarks", style = MaterialTheme.typography.titleMedium)
+    OutlinedTextField(
+        value = remarks,
+        onValueChange = { newRemarks ->
+            viewModel.updateReceipt { receipt ->
+                receipt.copy(remarks = newRemarks)
+            }
+        },
+        label = { Text("Remarks") },
+        modifier = Modifier.fillMaxWidth().onFocusChanged {
+            // Update the ViewModel when the field loses focus
+            viewModel.updateReceipt { receipt ->
+                receipt.copy(remarks = remarks)
+            }
+        },
+        maxLines = 5,
+        singleLine = false
+    )
+}
+
+@Composable
+fun TotalsView(
+    viewModel: AddReceiptViewModel
+) {
+    Spacer(Modifier.height(16.dp))
+    Text("Total", style = MaterialTheme.typography.titleMedium)
+
+    if (viewModel.totalItems.isEmpty()) {
+        Text("No totals available", style = MaterialTheme.typography.bodyMedium)
+    } else {
+        Column {
+            for (item in viewModel.totalItems) {
+                var labelStyle = MaterialTheme.typography.bodyLarge
+                var valueStyle = MaterialTheme.typography.bodyLarge
+                if (item.isTotal) {
+                    // Divider for the overall total
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        thickness = DividerDefaults.Thickness,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    labelStyle = MaterialTheme.typography.headlineSmall
+                    valueStyle = MaterialTheme.typography.headlineSmall
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(item.label, style = labelStyle)
+                    Text(item.amount.toString(), style = valueStyle)
+                }
+                Spacer(Modifier.height(4.dp))
             }
         }
     }
@@ -143,9 +267,9 @@ private fun FormBody(viewModel: ParsedTransactionViewModel) {
 
 @Composable
 fun ItemRow(
-    viewModel: ParsedTransactionViewModel,
-    item: TransactionItem,
-    onEdit: (TransactionItem) -> Unit,
+    viewModel: AddReceiptViewModel,
+    item: ParsedReceiptItem,
+    onEdit: (ParsedReceiptItem) -> Unit,
     onDelete: () -> Unit
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
@@ -158,10 +282,11 @@ fun ItemRow(
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            Text("Name: ${item.name}", style = MaterialTheme.typography.bodyLarge)
+            Text("Raw Name: ${item.rawName}", style = MaterialTheme.typography.bodyLarge)
+            Text("Name: ${item.name}", style = MaterialTheme.typography.bodyMedium)
             Text("Price: ${item.price}", style = MaterialTheme.typography.bodyMedium)
             Text("Quantity: ${item.quantity}", style = MaterialTheme.typography.bodyMedium)
-            item.category?.name?.let {
+            item.actualCategory?.name?.let {
                 Text("Category: $it", style = MaterialTheme.typography.bodyMedium)
             }
         }
@@ -194,12 +319,20 @@ fun ItemRow(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Edit Item", style = MaterialTheme.typography.headlineMedium)
 
+                    var editedRawName by remember { mutableStateOf(item.rawName) }
                     var editedName by remember { mutableStateOf(item.name) }
-                    var editedPrice by remember { mutableStateOf(item.price) }
+                    var editedPrice by remember { mutableStateOf(item.price.toString()) }
                     var editedQuantity by remember { mutableStateOf(item.quantity.toString()) }
-                    var editedCategory by remember { mutableStateOf(item.category) }
+                    var editedCategory by remember { mutableStateOf(item.actualCategory) }
 
                     Spacer(Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        value = editedRawName,
+                        onValueChange = { editedRawName = it },
+                        label = { Text("Raw Name") },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
 
                     OutlinedTextField(
                         value = editedName,
@@ -247,9 +380,10 @@ fun ItemRow(
                         TextButton(onClick = {
                             val updatedItem = item.copy(
                                 name = editedName,
-                                price = editedPrice,
+                                price = editedPrice.toDouble(),
                                 quantity = editedQuantity.toIntOrNull() ?: item.quantity,
-                                category = editedCategory
+                                categoryKey = editedCategory?.name?.toSnakeCase(),
+                                actualCategory = editedCategory
                             )
                             onEdit(updatedItem) // pass back edited item to ViewModel
                             showEditDialog = false
@@ -269,19 +403,12 @@ fun ItemRow(
 @Composable
 @Preview
 fun ParsedTransactionViewPreview() {
-    val viewModel = object : ParsedTransactionViewModel() {
-        override fun parseTransaction() {
+    val viewModel = object : AddReceiptViewModel() {
+        override fun parseReceipt() {
             isLoading = true
-            items.add(
-                TransactionItem(
-                    idx = 0,
-                    name = "Sample Item",
-                    price = "11.11",
-                    quantity = 1,
-                    category = null
-                )
-            )
         }
+        fun onBack() {}
+        fun onSave() {}
     }
-    ParsedTransactionView(viewModel)
+    AddReceiptView(viewModel)
 }

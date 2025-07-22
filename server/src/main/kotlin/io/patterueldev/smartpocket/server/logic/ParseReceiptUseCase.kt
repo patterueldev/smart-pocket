@@ -10,6 +10,7 @@ import io.patterueldev.smartpocket.server.ActualBudgetEndpoint
 import io.patterueldev.smartpocket.server.ServerConfiguration
 import io.patterueldev.smartpocket.server.from
 import io.patterueldev.smartpocket.shared.api.APIClient
+import io.patterueldev.smartpocket.shared.extensions.toSnakeCase
 import io.patterueldev.smartpocket.shared.models.actual.GetAccountsResponse
 import io.patterueldev.smartpocket.shared.models.actual.GetCategoriesResponse
 import io.patterueldev.smartpocket.shared.models.actual.GetPayeesResponse
@@ -42,13 +43,7 @@ class ParseReceiptUseCase(
             )
         )
         // next, for each category, we will make a snake_case version of the name and associate with the ID
-        val snakeCaser = { name: String ->
-            name.lowercase()
-                .replace("&", "and")
-                .replace(" ", "_")
-                .replace(Regex("[^a-z0-9_]"), "") // Remove non-alphanumeric characters except underscores
-        }
-        val categoriesMap = categoriesResponse.data.associateBy { category -> snakeCaser(category.name) }
+        val categoriesMap = categoriesResponse.data.associateBy { category -> category.name.toSnakeCase() }
         // get the categories snake_cased
         val categoriesSnakeCased = categoriesMap.keys.toList()
 
@@ -61,7 +56,7 @@ class ParseReceiptUseCase(
         // filter out payees that has transferAccount not null, as these are not actual payees; these are transfer accounts
         val filteredPayees = payeesResponse.data.filter { it.transferAccount == null }
         // create a map of payee names to IDs
-        val payeesMap = filteredPayees.associateBy { payee -> snakeCaser(payee.name) }
+        val payeesMap = filteredPayees.associateBy { payee -> payee.name.toSnakeCase() }
         // get the payees snake_cased
         val payeesSnakeCased = payeesMap.keys.toList()
 
@@ -72,7 +67,7 @@ class ParseReceiptUseCase(
             )
         )
         // create a map of account names to IDs
-        val accountsMap = accountsResponse.data.associateBy { account -> snakeCaser(account.name) }
+        val accountsMap = accountsResponse.data.associateBy { account -> account.name.toSnakeCase() }
         // get the accounts snake_cased
         val accountsSnakeCased = accountsMap.keys.toList()
 

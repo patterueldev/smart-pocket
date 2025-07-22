@@ -2,13 +2,16 @@ package io.patterueldev.smartpocket.shared.models
 
 import io.patterueldev.smartpocket.shared.models.actual.ActualAccount
 import io.patterueldev.smartpocket.shared.models.actual.ActualPayee
+import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class ParsedReceipt(
-    val date: LocalDateTime? = null,
+    val date: LocalDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
     @SerialName("merchant") val merchantKey: String? = null,
     val items: List<ParsedReceiptItem> = emptyList(),
     @SerialName("paymentMethod") val paymentMethodKey: String? = null,

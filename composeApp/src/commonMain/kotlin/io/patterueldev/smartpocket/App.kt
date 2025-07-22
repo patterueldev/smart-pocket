@@ -10,9 +10,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import io.patterueldev.smartpocket.scenes.parsedtransaction.DefaultParsedTransactionViewModel
-import io.patterueldev.smartpocket.scenes.parsedtransaction.ParsedTransactionView
-import io.patterueldev.smartpocket.scenes.parsedtransaction.ParsedTransactionViewModel
+import io.patterueldev.smartpocket.scenes.parsedtransaction.DefaultAddReceiptViewModel
+import io.patterueldev.smartpocket.scenes.parsedtransaction.AddReceiptView
+import io.patterueldev.smartpocket.scenes.parsedtransaction.AddReceiptViewModel
 import io.patterueldev.smartpocket.shared.api.APIClient
 import io.patterueldev.smartpocket.shared.api.APIClientConfiguration
 import io.patterueldev.smartpocket.shared.api.APISessionManager
@@ -42,8 +42,8 @@ fun App(
                         )
                     }
                     viewModel { DashboardViewModel() }
-                    viewModel <ParsedTransactionViewModel> { (scannedReceiptRoute: ScannedReceiptRoute) ->
-                        DefaultParsedTransactionViewModel(scannedReceiptRoute, get())
+                    viewModel <AddReceiptViewModel> { (scannedReceiptRoute: ScannedReceiptRoute) ->
+                        DefaultAddReceiptViewModel(scannedReceiptRoute, get())
                     }
                 },
                 module {}
@@ -59,10 +59,10 @@ fun App(
 
                     composable<ScannedReceiptRoute> { backStackEntry ->
                         val scannedReceiptRoute: ScannedReceiptRoute = backStackEntry.toRoute()
-                        val viewModel: ParsedTransactionViewModel = koinViewModel(
+                        val viewModel: AddReceiptViewModel = koinViewModel(
                             parameters = { parametersOf(scannedReceiptRoute) }
                         )
-                        ParsedTransactionView(viewModel)
+                        AddReceiptView(viewModel)
                     }
                 }
             }

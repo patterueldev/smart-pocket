@@ -12,7 +12,7 @@ sealed class SmartPocketEndpoint(
     override val requestTimeoutInMilliseconds: Long? = null,
 ): HttpRequestEndpoint() {
     override val requiresAuth: Boolean? = false
-    data class TransactionParse(val receiptString: String): SmartPocketEndpoint(
+    data class ParseReceipt(val receiptString: String): SmartPocketEndpoint(
         path = "/transactions/receipt/parse",
         method = HttpMethod.Companion.Post,
         jsonPayload = Json.Default.encodeToString(ParseRawRequest(receiptString))
