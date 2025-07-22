@@ -7,7 +7,7 @@ object FileUtils {
         val dir = File(baseDir, subDir)
         dir.mkdirs() // ✅ make sure directory exists
 
-        val file = File(dir, fileName)
+        val file = File(dir, "$fileName.json")
 
         file.writeText(content)
     }

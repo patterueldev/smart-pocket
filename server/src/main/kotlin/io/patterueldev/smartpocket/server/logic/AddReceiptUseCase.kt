@@ -16,7 +16,6 @@ import io.patterueldev.smartpocket.shared.models.actual.ActualBatchTransactionsR
 import io.patterueldev.smartpocket.shared.models.actual.ActualImportTransactionsRequest
 import io.patterueldev.smartpocket.shared.models.actual.ImportTransactionsResponse
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -38,7 +37,6 @@ class AddReceiptUseCase(
             val receipt = request.receipt
 
             val accountId = receipt.actualAccount?.id ?: throw IllegalArgumentException("Account ID is required")
-//            val payeeId = receipt.actualPayee?.id ?: throw IllegalArgumentException("Payee ID is required")
             val payeeName = receipt.actualPayee?.name ?: throw IllegalArgumentException("Payee name is required")
 
             // First, try to group the items by categories
@@ -46,69 +44,48 @@ class AddReceiptUseCase(
             // If there is only a single category, we can add one single transaction
             val categoryIds = groupedItems.keys.toList()
             // if for whatever reason the categories are empty, we return a failure response
-            if (categoryIds.isEmpty()) {
-                throw IllegalArgumentException("Receipt must have at least one category")
-            }
-
-            println("Grouped items by categories: $groupedItems")
-            println("Category IDs: $categoryIds")
-
-            val categories = receipt.items.mapNotNull { it.actualCategory }.distinct()
-            println("Categories: $categories")
+            if (categoryIds.isEmpty()) { throw IllegalArgumentException("Receipt must have at least one category") }
 
             val date: LocalDateTime = receipt.date ?: throw IllegalArgumentException("Receipt date is required")
             val formatter = LocalDateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.default())
             val formattedDate = formatter.format(date)
 
-            val batchTransactionsToAdd: MutableList<ActualTransaction> = mutableListOf()
-            var principalTransactionId: String? = null
+            var principalCategoryId: String? = null
+            var principalNotes: String? = null
+            if (categoryIds.size == 1) {
+                val categoryId = categoryIds.first()
+                val items = groupedItems[categoryId] ?: throw IllegalStateException("Items for category $categoryId not found")
+                principalCategoryId = categoryId
+                principalNotes = consolidateItemsToNotes(items)
+            }
 
             val amounts: List<Double> = receipt.items.map { it.price }
             val total: Long = AmountHelper.sumAmountsToMinorUnit(amounts)
 
-            if (categoryIds.size == 1) {
-                val categoryId = categoryIds.first()
-                // Update the notes of the principal transaction to the consolidated items
-                val items = groupedItems[categoryId] ?: throw IllegalStateException("Items for category $categoryId not found")
-                val notes = consolidateItemsToNotes(items)
-
-                batchTransactionsToAdd.add(
-                    ActualTransaction(
-                        account = accountId,
-                        amount = total,
-                        payeeName = payeeName,
-                        date = formattedDate,
-                        category = categoryIds.first(),
-                        notes = notes,
+            val principalTransaction = ActualTransaction(
+                account = accountId,
+                amount = total,
+                payeeName = payeeName,
+                date = formattedDate,
+                category = principalCategoryId,
+                isParent = categoryIds.size > 1,
+                notes = principalNotes,
+            )
+            val importTransactionsResponse: ImportTransactionsResponse = apiClient.requestWithEndpoint(
+                endpoint = ActualBudgetEndpoint.ImportTransactions(
+                    budgetId = configuration.budgetSyncId,
+                    accountId = accountId,
+                    request = ActualImportTransactionsRequest(
+                        transactions = listOf(principalTransaction),
                     )
                 )
-            } else {
-                // create the main transaction
-                val parentTransaction = ActualTransaction(
-                    account = accountId,
-                    amount = total, // Total amount for the parent transaction
-                    payeeName = payeeName,
-                    date = formattedDate,
-                    category = null, // No category for the parent transaction
-                    isParent = true,
-                )
+            )
+            if(importTransactionsResponse.data.added.size != 1) {
+                throw IllegalStateException("Failed to add principal transaction, expected 1 transaction to be added, but got ${importTransactionsResponse.data.added.size}")
+            }
+            val principalTransactionId = importTransactionsResponse.data.added.first()
 
-                val importTransactionsResponse: ImportTransactionsResponse = apiClient.requestWithEndpoint(
-                    endpoint = ActualBudgetEndpoint.ImportTransactions(
-                        budgetId = configuration.budgetSyncId,
-                        accountId = accountId,
-                        request = ActualImportTransactionsRequest(
-                            transactions = listOf(parentTransaction),
-                        )
-                    )
-                )
-
-                if(importTransactionsResponse.data.added.size != 1) {
-                    throw IllegalStateException("Failed to add principal transaction, expected 1 transaction to be added, but got ${importTransactionsResponse.data.added.size}")
-                }
-
-                principalTransactionId = importTransactionsResponse.data.added.first()
-
+            if (categoryIds.size > 1) {
                 // Now, create the child transactions for each category
                 val childTransactions = groupedItems.map { (categoryId, items) ->
                     val totalForCategory = AmountHelper.sumAmountsToMinorUnit(items.map { it.price })
@@ -128,18 +105,19 @@ class AddReceiptUseCase(
                         notes = notes,
                     )
                 }
-                batchTransactionsToAdd.addAll(childTransactions)
-            }
-
-            val addBatchTransactionsResponse: ActualBudgetGenericResponse = apiClient.requestWithEndpoint(
-                endpoint = ActualBudgetEndpoint.AddBatchTransactions(
-                    budgetId = configuration.budgetSyncId,
-                    accountId = accountId,
-                    request = ActualBatchTransactionsRequest(
-                        transactions = batchTransactionsToAdd
-                    ),
+                val addBatchTransactionsResponse: ActualBudgetGenericResponse = apiClient.requestWithEndpoint(
+                    endpoint = ActualBudgetEndpoint.AddBatchTransactions(
+                        budgetId = configuration.budgetSyncId,
+                        accountId = accountId,
+                        request = ActualBatchTransactionsRequest(
+                            transactions = childTransactions
+                        ),
+                    )
                 )
-            )
+                if (addBatchTransactionsResponse.message != "ok") {
+                    throw IllegalStateException("Failed to add batch transactions, expected 'ok' message, but got '${addBatchTransactionsResponse.message}'")
+                }
+            }
 
             // Store the transactions into json
             val fileDateFormatter = LocalDateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.en())
@@ -151,7 +129,7 @@ class AddReceiptUseCase(
                 "$fileDate-$principalTransactionId",
                 content = json.encodeToString(ParsedReceipt.serializer(), receipt),
             )
-            return AddReceiptResponse(batchTransactionsToAdd)
+            return AddReceiptResponse(true)
         } catch (e: Exception) {
             e.printStackTrace()
             return AddReceiptResponse(errorMessage = "An error occurred while processing the receipt transaction: ${e.message ?: "Unknown error"}")

@@ -110,7 +110,7 @@ class ParseReceiptUseCase(
             FileUtils.saveJson(
                 baseDir = serverConfiguration.dataDir,
                 subDir = "receipts/raw",
-                fileName = "$formattedDate-raw.json",
+                fileName = "$formattedDate-raw",
                 content = json.encodeToString(ParsedReceipt.serializer(), data),
             )
 
