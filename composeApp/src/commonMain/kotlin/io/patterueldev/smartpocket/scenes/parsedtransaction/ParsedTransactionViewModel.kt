@@ -42,9 +42,22 @@ abstract class ParsedTransactionViewModel(): ViewModel() {
         // This method should be overridden in the subclass to implement the parsing logic
         throw NotImplementedError("parseTransaction() must be implemented in the subclass")
     }
+    fun updateItem(updatedItem: TransactionItem) {
+        val index = items.indexOfFirst { it.idx == updatedItem.idx }
+        if (index != -1) {
+            items[index] = updatedItem
+        }
+    }
+    fun removeItem(item: TransactionItem) {
+        val index = items.indexOfFirst { it.idx == item.idx }
+        if (index != -1) {
+            items.removeAt(index)
+        }
+    }
 }
 
 data class TransactionItem(
+    val idx: Int,
     val name: String = "",
     val price: String = "",
     val quantity: Int = 1,
@@ -83,9 +96,11 @@ class DefaultParsedTransactionViewModel(
                 data.date?.let { date = it.toInstant(TimeZone.currentSystemDefault()) }
                 account = data.actualAccount
                 items.clear()
+                var idx = 0
                 data.items.forEach { item ->
                     items.add(
                         TransactionItem(
+                            idx = idx++,
                             name = item.name ?: "Unknown Item",
                             price = item.price.toString(),
                             quantity = item.quantity,
