@@ -105,10 +105,6 @@ fun AddReceiptView(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FormBody(viewModel: AddReceiptViewModel) {
-    Text("Parsed Transaction", style = MaterialTheme.typography.headlineMedium)
-
-    Spacer(Modifier.height(16.dp))
-
     // ✅ Date Field with DatePicker
     DateField(
         selectedDate = viewModel.parsedReceipt.date.toInstant(TimeZone.currentSystemDefault()),
@@ -210,9 +206,7 @@ private fun FormBody(viewModel: AddReceiptViewModel) {
     OutlinedTextField(
         value = remarks,
         onValueChange = { newRemarks ->
-            viewModel.updateReceipt { receipt ->
-                receipt.copy(remarks = newRemarks)
-            }
+            remarks = newRemarks
         },
         label = { Text("Remarks") },
         modifier = Modifier.fillMaxWidth().onFocusChanged {

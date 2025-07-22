@@ -43,7 +43,11 @@ fun App(
                     }
                     viewModel { DashboardViewModel() }
                     viewModel <AddReceiptViewModel> { (scannedReceiptRoute: ScannedReceiptRoute) ->
-                        DefaultAddReceiptViewModel(scannedReceiptRoute, get())
+                        DefaultAddReceiptViewModel(
+                            scannedReceiptRoute = scannedReceiptRoute,
+                            apiClient = get(),
+                            navController = navController
+                        )
                     }
                 },
                 module {}
@@ -62,7 +66,7 @@ fun App(
                         val viewModel: AddReceiptViewModel = koinViewModel(
                             parameters = { parametersOf(scannedReceiptRoute) }
                         )
-                        AddReceiptView(viewModel)
+                        AddReceiptView(viewModel, navController)
                     }
                 }
             }

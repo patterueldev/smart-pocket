@@ -16,6 +16,7 @@ import io.patterueldev.smartpocket.shared.models.ParsedReceiptItem
 import io.patterueldev.smartpocket.shared.models.actual.ActualBatchTransactionsRequest
 import io.patterueldev.smartpocket.shared.models.actual.ActualImportTransactionsRequest
 import io.patterueldev.smartpocket.shared.models.actual.ImportTransactionsResponse
+import io.patterueldev.smartpocket.shared.negative
 import io.patterueldev.smartpocket.shared.toMinorUnit
 import kotlin.uuid.ExperimentalUuidApi
 import kotlinx.datetime.Clock
@@ -48,7 +49,7 @@ class AddReceiptUseCase(
             // if for whatever reason the categories are empty, we return a failure response
             if (categoryIds.isEmpty()) { throw IllegalArgumentException("Receipt must have at least one category") }
 
-            val date: LocalDateTime = receipt.date ?: throw IllegalArgumentException("Receipt date is required")
+            val date: LocalDateTime = receipt.date
             val formatter = LocalDateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.default())
             val formattedDate = formatter.format(date)
 
@@ -61,12 +62,12 @@ class AddReceiptUseCase(
                 principalNotes = consolidateItemsToNotes(items)
             }
 
-            val amounts: List<Double> = receipt.items.map { it.price }
-            val total: Long = amounts.amountSum().toMinorUnit()
+            val amountsForPrincipal: List<Double> = receipt.items.map { it.price.amountMultipledBy(it.quantity) }
+            val totalForPrincipal: Long = amountsForPrincipal.amountSum().toMinorUnit()
 
             val principalTransaction = ActualTransaction(
                 account = accountId,
-                amount = total,
+                amount = totalForPrincipal.negative(),
                 payeeName = payeeName,
                 date = formattedDate,
                 category = principalCategoryId,
@@ -90,7 +91,8 @@ class AddReceiptUseCase(
             if (categoryIds.size > 1) {
                 // Now, create the child transactions for each category
                 val childTransactions = groupedItems.map { (categoryId, items) ->
-                    val totalForCategory = items.map { it.price }.amountSum().toMinorUnit()
+                    val amountsForCategory = items.map { it.price.amountMultipledBy(it.quantity) }
+                    val totalForCategory = amountsForCategory.amountSum().toMinorUnit()
 
                     // Update the notes of the principal transaction to the consolidated items
                     val items = groupedItems[categoryId] ?: throw IllegalStateException("Items for category $categoryId not found")
@@ -98,7 +100,7 @@ class AddReceiptUseCase(
 
                     ActualTransaction(
                         account = accountId,
-                        amount = totalForCategory,
+                        amount = totalForCategory.negative(),
                         payeeName = payeeName,
                         date = formattedDate,
                         category = categoryId,
@@ -140,7 +142,7 @@ class AddReceiptUseCase(
 
     fun consolidateItemsToNotes(items: List<ParsedReceiptItem>): String {
         return items.joinToString(separator = "; ") { item ->
-            val itemName = item.name ?: "Unnamed Item"
+            val itemName = item.name
             val quantity = item.quantity
             val itemPrice = item.price
             val totalPrice = itemPrice.amountMultipledBy(quantity)

@@ -4,8 +4,16 @@ fun Double.toMinorUnit(): Long {
     return (this * 100).toLong()
 }
 
+fun Double.negative(): Double {
+    return -this
+}
+
 fun Long.toMajorUnit(): Double {
     return this / 100.0
+}
+
+fun Long.negative(): Long {
+    return -this
 }
 
 fun Double.amountMultipledBy(multiplier: Int): Double {

@@ -5,10 +5,14 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.navigation.NavController
 import io.patterueldev.smartpocket.ScannedReceiptRoute
 import io.patterueldev.smartpocket.api.SmartPocketEndpoint
+import io.patterueldev.smartpocket.shared.amountMultipledBy
 import io.patterueldev.smartpocket.shared.amountSum
 import io.patterueldev.smartpocket.shared.api.APIClient
+import io.patterueldev.smartpocket.shared.api.AddReceiptResponse
+import io.patterueldev.smartpocket.shared.models.AddReceiptRequest
 import io.patterueldev.smartpocket.shared.models.ParsedReceipt
 import io.patterueldev.smartpocket.shared.models.ParsedReceiptResponse
 import io.patterueldev.smartpocket.shared.models.actual.ActualAccount
@@ -45,7 +49,7 @@ abstract class AddReceiptViewModel(): ViewModel() {
     }
 
     open fun saveReceipt() {
-
+        throw NotImplementedError("saveReceipt() must be implemented in the subclass")
     }
 
     fun updateReceipt(updater: (ParsedReceipt) -> ParsedReceipt) {
@@ -67,13 +71,13 @@ abstract class AddReceiptViewModel(): ViewModel() {
 
         categoryIds.forEach { categoryId ->
             val items = groupedItems[categoryId] ?: emptyList()
-            val totalAmount = items.map { it.price }.amountSum()
+            val totalAmount = items.map { it.price.amountMultipledBy(it.quantity) }.amountSum()
             val categoryName = items.firstOrNull()?.actualCategory?.name ?: "Uncategorized"
             totalItems.add(TotalItem(label = categoryName, amount = totalAmount))
         }
 
         // Overall total
-        val overallTotal = parsedReceipt.items.map { it.price }.amountSum()
+        val overallTotal = parsedReceipt.items.map { it.price.amountMultipledBy(it.quantity) }.amountSum()
         totalItems.add(TotalItem(label = "Total", amount = overallTotal, isTotal = true))
     }
 }
@@ -81,6 +85,7 @@ abstract class AddReceiptViewModel(): ViewModel() {
 class DefaultAddReceiptViewModel(
     val scannedReceiptRoute: ScannedReceiptRoute,
     val apiClient: APIClient,
+    val navController: NavController,
 ): AddReceiptViewModel() {
     val scope: CoroutineScope = CoroutineScope(Dispatchers.Main)
     override fun parseReceipt() {
@@ -125,6 +130,35 @@ class DefaultAddReceiptViewModel(
                 errorString = e.message ?: "An error occurred while parsing the transaction."
                 isLoading = false
                 return@launch
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    override fun saveReceipt() {
+        scope.launch {
+            try {
+                isLoading = true
+                // TODO: Implement validation logic for the parsed receipt before saving
+
+                // Save the parsed receipt to the server or database
+                val response: AddReceiptResponse = apiClient.requestWithEndpoint(
+                    endpoint = SmartPocketEndpoint.AddReceipt(
+                        receiptRequest = AddReceiptRequest(
+                            receipt = parsedReceipt
+                        )
+                    )
+                )
+
+                if(!response.success) {
+                    throw Exception("Failed to save the receipt: ${response.errorMessage}")
+                }
+
+                // Handle the response as needed, e.g., navigate back or show a success message
+                navController.popBackStack() // Navigate back to the previous screen
+            } catch (e: Exception) {
+                errorString = e.message ?: "An error occurred while saving the receipt."
             } finally {
                 isLoading = false
             }

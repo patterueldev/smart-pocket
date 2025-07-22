@@ -2,6 +2,7 @@ package io.patterueldev.smartpocket.api
 
 import io.ktor.http.HttpMethod
 import io.patterueldev.smartpocket.shared.api.generic.HttpRequestEndpoint
+import io.patterueldev.smartpocket.shared.models.AddReceiptRequest
 import io.patterueldev.smartpocket.shared.models.ParseRawRequest
 import kotlinx.serialization.json.Json
 
@@ -16,6 +17,13 @@ sealed class SmartPocketEndpoint(
         path = "/transactions/receipt/parse",
         method = HttpMethod.Companion.Post,
         jsonPayload = Json.Default.encodeToString(ParseRawRequest(receiptString))
+    )
+    data class AddReceipt(
+        val receiptRequest: AddReceiptRequest
+    ): SmartPocketEndpoint(
+        path = "/transactions/receipt/add",
+        method = HttpMethod.Companion.Post,
+        jsonPayload = Json.Default.encodeToString(receiptRequest),
     )
 
     data object MetadataGroupedCategories: SmartPocketEndpoint(
