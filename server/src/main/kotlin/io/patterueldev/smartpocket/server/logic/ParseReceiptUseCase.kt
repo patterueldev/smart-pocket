@@ -1,19 +1,28 @@
-package io.patterueldev.smartpocket.server
+package io.patterueldev.smartpocket.server.logic
 
 import com.openai.client.OpenAIClient
 import com.openai.models.ChatCompletionCreateParams
 import com.openai.models.ChatModel
 import com.openai.models.ResponseFormatJsonSchema
+import com.raedghazal.kotlinx_datetime_ext.LocalDateTimeFormatter
+import com.raedghazal.kotlinx_datetime_ext.Locale
+import io.patterueldev.smartpocket.server.ActualBudgetEndpoint
+import io.patterueldev.smartpocket.server.ServerConfiguration
+import io.patterueldev.smartpocket.server.from
 import io.patterueldev.smartpocket.shared.api.APIClient
 import io.patterueldev.smartpocket.shared.models.actual.GetAccountsResponse
 import io.patterueldev.smartpocket.shared.models.actual.GetCategoriesResponse
 import io.patterueldev.smartpocket.shared.models.actual.GetPayeesResponse
 import io.patterueldev.smartpocket.shared.models.ParseRawRequest
-import io.patterueldev.smartpocket.shared.models.ParsedTransaction
-import io.patterueldev.smartpocket.shared.models.ParsedTransactionResponse
+import io.patterueldev.smartpocket.shared.models.ParsedReceipt
+import io.patterueldev.smartpocket.shared.models.ParsedReceiptResponse
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
 
-class TransactionParseUseCase(
+class ParseReceiptUseCase(
     private val openAIClient: OpenAIClient,
     private val apiClient: APIClient,
     private val serverConfiguration: ServerConfiguration,
@@ -25,7 +34,7 @@ class TransactionParseUseCase(
         isLenient = true // Allow lenient parsing
     }
 
-    suspend operator fun invoke(request: ParseRawRequest): ParsedTransactionResponse {
+    suspend operator fun invoke(request: ParseRawRequest): ParsedReceiptResponse {
         // first, pull categories from actual budget API
         val categoriesResponse: GetCategoriesResponse = apiClient.requestWithEndpoint(
             endpoint = ActualBudgetEndpoint.GetCategories(
@@ -39,9 +48,7 @@ class TransactionParseUseCase(
                 .replace(" ", "_")
                 .replace(Regex("[^a-z0-9_]"), "") // Remove non-alphanumeric characters except underscores
         }
-        val categoriesMap = categoriesResponse.data.associate { category ->
-            snakeCaser(category.name) to category
-        }
+        val categoriesMap = categoriesResponse.data.associateBy { category -> snakeCaser(category.name) }
         // get the categories snake_cased
         val categoriesSnakeCased = categoriesMap.keys.toList()
 
@@ -54,9 +61,7 @@ class TransactionParseUseCase(
         // filter out payees that has transferAccount not null, as these are not actual payees; these are transfer accounts
         val filteredPayees = payeesResponse.data.filter { it.transferAccount == null }
         // create a map of payee names to IDs
-        val payeesMap = filteredPayees.associate { payee ->
-            snakeCaser(payee.name) to payee
-        }
+        val payeesMap = filteredPayees.associateBy { payee -> snakeCaser(payee.name) }
         // get the payees snake_cased
         val payeesSnakeCased = payeesMap.keys.toList()
 
@@ -67,16 +72,14 @@ class TransactionParseUseCase(
             )
         )
         // create a map of account names to IDs
-        val accountsMap = accountsResponse.data.associate { account ->
-            snakeCaser(account.name) to account
-        }
+        val accountsMap = accountsResponse.data.associateBy { account -> snakeCaser(account.name) }
         // get the accounts snake_cased
         val accountsSnakeCased = accountsMap.keys.toList()
 
         // ----- now we can proceed with the OpenAI request -----
-        ParsedTransaction.merchants = payeesSnakeCased
-        ParsedTransaction.paymentMethods = accountsSnakeCased
-        ParsedTransaction.categories = categoriesSnakeCased
+        ParsedReceipt.merchants = payeesSnakeCased
+        ParsedReceipt.paymentMethods = accountsSnakeCased
+        ParsedReceipt.categories = categoriesSnakeCased
 
         println("Loaded categories: $categoriesSnakeCased")
         println("Loaded payees: $payeesSnakeCased")
@@ -86,40 +89,47 @@ class TransactionParseUseCase(
         val params = ChatCompletionCreateParams.builder()
             .model(ChatModel.GPT_4O_MINI)
             .addSystemMessage("Parse the following receipt into JSON.")
-            .addSystemMessage("The payment method detected might read Maya or BDO, but it's just the POS terminal name. Consider reading other clues in the receipt to determine the actual payment method.")
             .addUserMessage(raw)
-            .responseFormat(ResponseFormatJsonSchema.from(ParsedTransaction))
+            .responseFormat(ResponseFormatJsonSchema.Companion.from(ParsedReceipt))
             .build()
         val completion = openAIClient.chat().completions().create(params)
 
         val output: String? = completion.choices().firstOrNull()?.message()?.content()?.orElse(null)
         // print
         println("OpenAI response: $output")
-        var data: ParsedTransaction? = output?.let {
-            try {
-                json.decodeFromString(ParsedTransaction.serializer(), it)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null // Handle parsing error
-            }
-        }
+
         // associate the parsed transaction with the payee and account IDs
-        try {
+        val data: ParsedReceipt = try {
+            output ?: throw IllegalArgumentException("OpenAI response is null")
+            var data = json.decodeFromString(ParsedReceipt.serializer(), output)
+
+            // save raw receipt text to a file
+            val formatter = LocalDateTimeFormatter.ofPattern("yyyyMMddHHmmss", Locale.en())
+            val now = Clock.System.now().toLocalDateTime(timeZone = TimeZone.currentSystemDefault())
+            val formattedDate = formatter.format(now)
+            FileUtils.saveJson(
+                baseDir = serverConfiguration.dataDir,
+                subDir = "receipts/raw",
+                fileName = "$formattedDate-raw.json",
+                content = json.encodeToString(ParsedReceipt.serializer(), data),
+            )
+
+            data = data.copy(rawReceiptText = raw)
             // map the merchant to the payee
             // PS: Payee are more flexible, so we can use the name instead of the ID
-            data = data?.merchantKey?.let { merchantKey ->
+            data.merchantKey?.let { merchantKey ->
                 val actualPayee = payeesMap[merchantKey] ?: return@let data
-                data.copy(actualPayee = actualPayee)
+                data = data.copy(actualPayee = actualPayee)
             }
 
             // map the payment method to the account ID
-            data = data?.paymentMethodKey?.let { paymentMethodKey ->
+            data.paymentMethodKey?.let { paymentMethodKey ->
                 val actualAccount = accountsMap[paymentMethodKey] ?: return@let data
-                data.copy(actualAccount = actualAccount)
+                data = data.copy(actualAccount = actualAccount)
             }
 
             // map the items' categories to the category IDs
-            data = data?.copy(
+            data = data.copy(
                 items = data.items.map { item ->
                     item.categoryKey?.let { categoryKey ->
                         val actualCategory = categoriesMap[categoryKey] ?: return@let item
@@ -127,10 +137,13 @@ class TransactionParseUseCase(
                     } ?: item // if category is null, return the item as is
                 }
             )
+            data
         } catch (e: Exception) {
             e.printStackTrace()
             // if there's an error mapping the payee or payment method, we can still return the parsed transaction
+            ParsedReceipt()
         }
-        return ParsedTransactionResponse(data)
+        return ParsedReceiptResponse(data)
     }
 }
+

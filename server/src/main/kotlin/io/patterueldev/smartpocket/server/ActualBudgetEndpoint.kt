@@ -3,6 +3,7 @@ package io.patterueldev.smartpocket.server
 import io.ktor.http.HttpMethod
 import io.patterueldev.smartpocket.shared.api.generic.HttpRequestEndpoint
 import io.patterueldev.smartpocket.shared.models.actual.ActualBatchTransactionsRequest
+import io.patterueldev.smartpocket.shared.models.actual.ActualImportTransactionsRequest
 import io.patterueldev.smartpocket.shared.models.actual.ActualTransactionRequest
 import kotlinx.serialization.json.Json
 
@@ -46,6 +47,16 @@ sealed class ActualBudgetEndpoint(
         path = "/v1/budgets/$budgetId/accounts/$accountId/transactions/batch",
         method = HttpMethod.Companion.Post,
         jsonPayload = Json.Default.encodeToString(request)
+    )
+
+    data class ImportTransactions(
+        val budgetId: String,
+        val accountId: String,
+        val request: ActualImportTransactionsRequest,
+    ) : ActualBudgetEndpoint(
+        path = "/v1/budgets/$budgetId/accounts/$accountId/transactions/import",
+        method = HttpMethod.Companion.Post,
+        jsonPayload = Json.Default.encodeToString(request),
     )
 
     data class GetCategories(

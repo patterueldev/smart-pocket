@@ -1,9 +1,10 @@
-package io.patterueldev.smartpocket.server
+package io.patterueldev.smartpocket.server.logic
 
+import io.patterueldev.smartpocket.server.ActualBudgetEndpoint
+import io.patterueldev.smartpocket.server.ServerConfiguration
 import io.patterueldev.smartpocket.shared.api.APIClient
 import io.patterueldev.smartpocket.shared.models.actual.ActualCategoryGroup
 import io.patterueldev.smartpocket.shared.models.actual.GetActualCategoryGroupsResponse
-import io.patterueldev.smartpocket.shared.models.actual.GetCategoriesResponse
 
 class GetActualGroupedCategoriesUseCase(
     private val apiClient: APIClient,

@@ -10,11 +10,14 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
+import io.patterueldev.smartpocket.server.logic.GetActualGroupedCategoriesUseCase
+import io.patterueldev.smartpocket.server.logic.AddReceiptUseCase
+import io.patterueldev.smartpocket.server.logic.ParseReceiptUseCase
 import io.patterueldev.smartpocket.shared.api.APIClient
 import io.patterueldev.smartpocket.shared.api.APIClientConfiguration
 import io.patterueldev.smartpocket.shared.api.APISessionManager
 import io.patterueldev.smartpocket.shared.models.ParseRawRequest
-import io.patterueldev.smartpocket.shared.models.ReceiptTransactionRequest
+import io.patterueldev.smartpocket.shared.models.AddReceiptRequest
 import io.patterueldev.smartpocket.shared.models.actual.GetAccountsResponse
 import io.patterueldev.smartpocket.shared.models.actual.GetActualCategoryGroupsResponse
 import io.patterueldev.smartpocket.shared.models.actual.GetPayeesResponse
@@ -23,34 +26,16 @@ import org.koin.ktor.ext.inject
 import org.koin.ktor.plugin.Koin
 
 fun main() {
-    val openAiKey = System.getenv("OPENAI_API_KEY")
-    val actualRestBaseURL = System.getenv("ACTUAL_REST_API_URL")
-    println("OpenAI Key: $openAiKey")
-    println("Actual REST Base URL: $actualRestBaseURL")
+    // For debugging purposes, we can print the environment variable ACTUAL_REST_API_URL
+    val url = System.getenv("ACTUAL_REST_API_URL")
+    println("ACTUAL_REST_API_URL: $url")
+
     embeddedServer(Netty, port = 8080, watchPaths = listOf("classes"), host = "0.0.0.0", module = Application::module)
         .start(wait = true)
 }
 
-data class ServerConfiguration(
-    val openAiKey: String,
-    val actualRestBaseURL: String,
-    val actualRestAPIKey: String,
-    val budgetSyncId: String,
-)
-
 val appModule = module {
-    single {
-        val openAiKey = System.getenv("OPENAI_API_KEY") ?: throw IllegalArgumentException("OPENAI_API_KEY is not set")
-        val actualRestBaseURL = System.getenv("ACTUAL_REST_API_URL") ?: throw IllegalArgumentException("ACTUAL_REST_API_URL is not set")
-        val actualAPIKey = System.getenv("ACTUAL_REST_API_KEY") ?: throw IllegalArgumentException("ACTUAL_API_KEY is not set")
-        val budgetSyncId = System.getenv("BUDGET_SYNC_ID") ?: throw IllegalArgumentException("BUDGET_SYNC_ID is not set")
-        ServerConfiguration(
-            openAiKey = openAiKey,
-            actualRestBaseURL = actualRestBaseURL,
-            actualRestAPIKey = actualAPIKey,
-            budgetSyncId = budgetSyncId,
-        )
-    }
+    single { ServerConfiguration.fromEnvironment() }
     single<OpenAIClient> {
         val configuration: ServerConfiguration = get()
         OpenAIOkHttpClient.builder()
@@ -69,8 +54,8 @@ val appModule = module {
             sessionManager = APISessionManager(),
         )
     }
-    single { TransactionParseUseCase(openAIClient = get(), apiClient = get(), serverConfiguration = get()) }
-    single { ReceiptTransactionUseCase(apiClient = get(), configuration = get()) }
+    single { ParseReceiptUseCase(openAIClient = get(), apiClient = get(), serverConfiguration = get()) }
+    single { AddReceiptUseCase(apiClient = get(), configuration = get()) }
     single { GetActualGroupedCategoriesUseCase(apiClient = get(), serverConfiguration = get()) }
 }
 
@@ -81,8 +66,8 @@ fun Application.module() {
     install(Koin) {
         modules(appModule)
     }
-    val transactionParseUseCase by inject<TransactionParseUseCase>()
-    val receiptTransactionUseCase by inject<ReceiptTransactionUseCase>()
+    val parseReceiptUseCase by inject<ParseReceiptUseCase>()
+    val addReceiptUseCase by inject<AddReceiptUseCase>()
     val getActualGroupedCategoriesUseCase by inject<GetActualGroupedCategoriesUseCase>()
 
     val apiClient by inject<APIClient>()
@@ -93,15 +78,15 @@ fun Application.module() {
             call.respondText("Hello, world!!!")
         }
 
-        post("/transactions/parse") {
+        post("/transactions/receipt/parse") {
             val request = call.receive<ParseRawRequest>()
-            val result = transactionParseUseCase(request)
+            val result = parseReceiptUseCase(request)
             call.respond(result)
         }
 
-        post("/transactions/receipt") {
-            val request = call.receive<ReceiptTransactionRequest>()
-            val result = receiptTransactionUseCase(request)
+        post("/transactions/receipt/add") {
+            val request = call.receive<AddReceiptRequest>()
+            val result = addReceiptUseCase(request)
             call.respond(result)
         }
 

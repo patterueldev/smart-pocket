@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ActualTransaction(
-    val id: String = "",
+    val id: String? = null,
     val account: String,
     val amount: Long,
     val payee: String? = null, // if payee is provided, payee_name is ignored

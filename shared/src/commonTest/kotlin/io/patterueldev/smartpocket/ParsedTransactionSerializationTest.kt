@@ -1,6 +1,6 @@
 package io.patterueldev.smartpocket
 
-import io.patterueldev.smartpocket.shared.models.ParsedTransaction
+import io.patterueldev.smartpocket.shared.models.ParsedReceipt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.serialization.json.Json
@@ -12,11 +12,11 @@ class ParsedTransactionSerializationTest {
         val json = rawJson
 
         // when
-        val parsedTransaction = Json.decodeFromString<ParsedTransaction>(json)
+        val parsedReceipt = Json.decodeFromString<ParsedReceipt>(json)
 
         // then
 //        assertEquals("2023-07-19'T'10:31:00'Z'", parsedTransaction.date.toString())
-        assertEquals("mercury_drugstore", parsedTransaction.merchant)
+        assertEquals("mercury_drugstore", parsedReceipt.merchant)
     }
 
     private val rawJson = """

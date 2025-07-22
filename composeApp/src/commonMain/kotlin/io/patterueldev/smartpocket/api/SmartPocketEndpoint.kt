@@ -13,7 +13,7 @@ sealed class SmartPocketEndpoint(
 ): HttpRequestEndpoint() {
     override val requiresAuth: Boolean? = false
     data class TransactionParse(val receiptString: String): SmartPocketEndpoint(
-        path = "/transactions/parse",
+        path = "/transactions/receipt/parse",
         method = HttpMethod.Companion.Post,
         jsonPayload = Json.Default.encodeToString(ParseRawRequest(receiptString))
     )
