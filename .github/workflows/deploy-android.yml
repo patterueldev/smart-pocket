@@ -1,0 +1,79 @@
+name: Android - Build & Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-android:
+    runs-on: macos-latest
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Extract version from package.json
+        id: version
+        working-directory: apps/smart-pocket-mobile
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Building release version: $VERSION"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        working-directory: apps/smart-pocket-mobile
+        run: npm install
+
+      - name: Decode Android Keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
+          echo "✅ release.keystore created from base64 secret"
+
+      - name: Create credentials.json
+        run: |
+          cat > credentials.json << EOF
+          {
+            "android": {
+              "keystore": {
+                "keystorePath": "release.keystore",
+                "keystorePassword": "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}",
+                "keyAlias": "${{ secrets.ANDROID_KEY_ALIAS }}",
+                "keyPassword": "${{ secrets.ANDROID_KEY_PASSWORD }}"
+              }
+            }
+          }
+          EOF
+          echo "✅ credentials.json created for EAS Build"
+
+      - name: Build Android APK with EAS Build
+        working-directory: apps/smart-pocket-mobile
+        env:
+          NODE_ENV: production
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          npx eas-cli build --platform android --profile production --local --non-interactive --output=./app-production.apk
+          echo "✅ APK built successfully"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3 # return to v3 for Gitea Actions
+        with:
+          name: android-production-apk
+          path: apps/smart-pocket-mobile/app-production.apk
+          retention-days: 30

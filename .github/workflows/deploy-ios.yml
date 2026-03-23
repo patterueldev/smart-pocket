@@ -1,0 +1,70 @@
+name: iOS - Build & Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Extract version from package.json
+        id: version
+        working-directory: apps/smart-pocket-mobile
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Building release version: $VERSION"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        working-directory: apps/smart-pocket-mobile
+        run: npm install
+
+      - name: Prebuild Expo
+        working-directory: apps/smart-pocket-mobile
+        run: npx expo prebuild --clean
+
+      - name: Archive iOS
+        working-directory: apps/smart-pocket-mobile/ios
+        run: |
+          xcodebuild -workspace SmartPocket.xcworkspace \
+                     -scheme SmartPocket \
+                     -configuration Release \
+                     -sdk iphoneos \
+                     -destination generic/platform=iOS \
+                     -archivePath build/SmartPocket.xcarchive \
+                     archive \
+                     CODE_SIGN_IDENTITY="" \
+                     CODE_SIGNING_REQUIRED=NO \
+                     CODE_SIGNING_ALLOWED=NO \
+                     DEVELOPMENT_TEAM=""
+
+      - name: Export IPA
+        working-directory: apps/smart-pocket-mobile/ios
+        run: |
+          mkdir -p build/Payload
+          cp -r build/SmartPocket.xcarchive/Products/Applications/SmartPocket.app build/Payload/
+          cd build
+          zip -r SmartPocket.ipa Payload/
+          rm -rf Payload
+
+      - name: Upload IPA to AltStore Source Manager
+        working-directory: apps/smart-pocket-mobile/ios/build
+        run: |
+          curl -X POST ${{ secrets.ALTSTORE_SOURCE_MANAGER_HOST }}/api/versions/ci-upload \
+            -H "X-Access-Key: ${{ secrets.ALTSTORE_ACCESS_KEY }}:${{ secrets.ALTSTORE_SECRET }}" \
+            -F "appId=${{ secrets.ALTSTORE_APP_ID }}" \
+            -F "localizedDescription=Production release ${{ steps.version.outputs.VERSION }}" \
+            -F "ipa=@SmartPocket.ipa"
+          echo "✅ IPA uploaded to AltStore Source Manager"
