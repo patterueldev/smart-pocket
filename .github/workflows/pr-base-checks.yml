@@ -1,0 +1,31 @@
+name: PR / Base Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  check-pr-base:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR base branch
+        run: |
+          PR_HEAD_REF="${{ github.event.pull_request.head.ref }}"
+          PR_BASE_REF="${{ github.event.pull_request.base.ref }}"
+
+          # Enforce strict rule: any PR targeting `main` must come from `develop`.
+          if [ "${PR_BASE_REF}" = "main" ]; then
+            if [ "${PR_HEAD_REF}" != "develop" ]; then
+              echo "❌ PR to 'main' must originate from 'develop'"
+              echo "PR Source Branch: ${PR_HEAD_REF}"
+              echo "PR Base Branch: ${PR_BASE_REF}"
+              echo "Expected Source Branch: develop"
+              exit 1
+            else
+              echo "✅ PR to 'main' is from 'develop'"
+            fi
+          else
+            echo "✅ PR base is not 'main' — no further base restriction enforced"
+            echo "PR Source Branch: ${PR_HEAD_REF}"
+            echo "PR Base Branch: ${PR_BASE_REF}"
+          fi

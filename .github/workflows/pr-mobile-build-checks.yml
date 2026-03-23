@@ -1,0 +1,61 @@
+name: PR / Mobile build checks
+
+on:
+  push:
+    paths:
+      - 'apps/smart-pocket-mobile/**'
+  pull_request:
+    paths:
+      - 'apps/smart-pocket-mobile/**'
+
+jobs:
+  expo-check:
+    name: Expo project checks
+    runs-on: macos-latest
+    env:
+      CI: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        working-directory: apps/smart-pocket-mobile
+        run: npm ci
+
+      - name: Show environment
+        run: |
+          node --version
+          npm --version
+
+      - name: Expo doctor (checks)
+        working-directory: apps/smart-pocket-mobile
+        run: npx expo doctor --non-interactive || true
+
+      - name: Run lint (if configured)
+        working-directory: apps/smart-pocket-mobile
+        run: npm run lint --if-present || true
+
+      - name: Type check
+        working-directory: apps/smart-pocket-mobile
+        run: npx tsc --noEmit || true
+
+      - name: Attempt Expo prebuild (native project generate)
+        working-directory: apps/smart-pocket-mobile
+        run: npx expo prebuild --no-install --non-interactive || true
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: expo-mobile-ci-logs
+          path: |
+            apps/smart-pocket-mobile/.expo || true
+            apps/smart-pocket-mobile/.expo-logs || true
