@@ -29,3 +29,11 @@ $ faas-cli up --publish
 $ faas-cli publish
 $ faas-cli deploy
 ```
+
+## Re-authenticate faas-cli
+```sh
+# get the password from faasd
+$ limactl shell faasd sudo cat /var/lib/faasd/secrets/basic-auth-password
+export OPENFAAS_URL=https://functions.patteruel.dev
+echo '<password-from-faasd>' | faas-cli login -u admin --password-stdin
+```

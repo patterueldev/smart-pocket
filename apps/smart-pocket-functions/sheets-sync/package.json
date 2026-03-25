@@ -2,21 +2,15 @@
   "name": "sheets-sync-function",
   "version": "1.0.0",
   "description": "Google Sheets Sync FaaS Function",
-  "main": "dist/handler.js",
+  "main": "handler.js",
   "scripts": {
-    "build": "tsc",
-    "dev": "ts-node src/handler.ts",
     "test": "echo \"Error: no test specified\" && exit 0"
   },
   "keywords": [],
   "author": "Smart Pocket",
   "license": "MIT",
   "dependencies": {
-    "googleapis": "^118.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0",
-    "ts-node": "^10.9.0"
+    "@actual-app/api": "^26.3.0",
+    "googleapis": "^171.4.0"
   }
 }
