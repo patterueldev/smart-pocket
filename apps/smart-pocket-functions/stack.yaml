@@ -8,12 +8,11 @@ functions:
     handler: ./sheets-sync
     image: git.patteruel.dev/pat/smart-pocket/sheets-sync:dev
     environment:
-      ACTUAL_BUDGET_SERVER_URL: some-server-url
-      ACTUAL_BUDGET_PASSWORD: some-password
-      ACTUAL_BUDGET_ID: some-budget-id
       ACTUAL_BUDGET_CURRENCY: PHP
     secrets:
       - actual-budget-password
+      - actual-budget-sync-id
+      - actual-budget-server-url
 
 
   dev-sp-transactions:

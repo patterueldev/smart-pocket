@@ -1,21 +1,13 @@
 const { ActualBudget } = require('./lib');
 const { ActualBudgetRepository } = require('./repository');
+const { ConfigLoader } = require('./config');
 
-console.log("Environment variables:", {
-  ACTUAL_BUDGET_SERVER_URL: process.env.ACTUAL_BUDGET_SERVER_URL,
-  ACTUAL_BUDGET_PASSWORD: process.env.ACTUAL_BUDGET_PASSWORD ? '***' : undefined,
-  ACTUAL_BUDGET_ID: process.env.ACTUAL_BUDGET_ID,
-  ACTUAL_BUDGET_CURRENCY: process.env.ACTUAL_BUDGET_CURRENCY
-});
+// Load configuration (handles secrets and environment variables)
+const configLoader = new ConfigLoader();
+const config = configLoader.loadConfig();
 
 // Initialize service
-const actualBudget = new ActualBudget({
-  serverURL: process.env.ACTUAL_BUDGET_SERVER_URL || 'http://localhost:5006',
-  password: process.env.ACTUAL_BUDGET_PASSWORD,
-  budgetId: process.env.ACTUAL_BUDGET_ID,
-  currency: process.env.ACTUAL_BUDGET_CURRENCY || 'USD'
-});
-
+const actualBudget = new ActualBudget(config);
 const repository = new ActualBudgetRepository(actualBudget);
 
 exports.service = {
