@@ -1,5 +1,5 @@
-const ActualBudget = require('./ActualBudget');
-const ActualBudgetRepository = require('./ActualBudgetRepository');
+const { ActualBudget } = require('./lib');
+const { ActualBudgetRepository } = require('./repository');
 
 // Initialize service
 const actualBudget = new ActualBudget({
