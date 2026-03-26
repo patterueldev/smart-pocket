@@ -1,9 +1,15 @@
 const { ActualBudget } = require('./lib');
 const { ActualBudgetRepository } = require('./repository');
 
+console.log("Environment variables:", {
+  ACTUAL_BUDGET_SERVER_URL: process.env.ACTUAL_BUDGET_SERVER_URL,
+  ACTUAL_BUDGET_PASSWORD: process.env.ACTUAL_BUDGET_PASSWORD ? '***' : undefined,
+  ACTUAL_BUDGET_ID: process.env.ACTUAL_BUDGET_ID,
+  ACTUAL_BUDGET_CURRENCY: process.env.ACTUAL_BUDGET_CURRENCY
+});
+
 // Initialize service
 const actualBudget = new ActualBudget({
-  dataDir: process.env.ACTUAL_BUDGET_DATA_DIR || '/tmp/actual-cache',
   serverURL: process.env.ACTUAL_BUDGET_SERVER_URL || 'http://localhost:5006',
   password: process.env.ACTUAL_BUDGET_PASSWORD,
   budgetId: process.env.ACTUAL_BUDGET_ID,

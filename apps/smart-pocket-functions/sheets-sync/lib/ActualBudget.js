@@ -1,6 +1,4 @@
 const api = require('@actual-app/api');
-const fs = require('fs');
-const path = require('path');
 
 /**
  * ActualBudget Service
@@ -8,16 +6,18 @@ const path = require('path');
  * Wraps @actual-app/api library with initialization and budget loading logic.
  * Handles the pattern: init → download/load budget → perform operation → shutdown
  * 
+ * Note: Designed for serverless/FaaS - no persistent file caching (stateless).
+ * Each invocation downloads budget from server.
+ * 
  * Responsibilities:
  * - API initialization with config
- * - Budget loading (from cache or server download)
+ * - Budget loading from server
  * - Budget shutdown
  * - withBudget wrapper for clean operation handling
  */
 class ActualBudget {
   constructor(config = {}) {
     this.config = {
-      dataDir: config.dataDir || '/tmp/actual-cache',
       serverURL: config.serverURL || 'http://localhost:5006',
       password: config.password,
       budgetId: config.budgetId, // syncId
@@ -25,26 +25,21 @@ class ActualBudget {
       ...config
     };
     
-    // Cache mapping: syncId → budgetId for faster subsequent loads
+    // Cache mapping: syncId → budgetId (in-memory only)
     this.syncIdToBudgetIdMap = {};
     this.isInitialized = false;
   }
 
   /**
    * Initialize API with config
-   * Creates cache directory if needed
+   * For FaaS, uses system temp directory (ephemeral)
    */
   async init() {
     if (this.isInitialized) return;
 
-    // Ensure data directory exists
-    if (!fs.existsSync(this.config.dataDir)) {
-      fs.mkdirSync(this.config.dataDir, { recursive: true });
-    }
-
-    // Initialize API
+    // Initialize API without persistent data directory
+    // API will use system temp automatically
     const initConfig = {
-      dataDir: this.config.dataDir,
       serverURL: this.config.serverURL,
     };
 
@@ -80,28 +75,13 @@ class ActualBudget {
   }
 
   /**
-   * Refresh the syncId → budgetId mapping by scanning the data directory
+   * Refresh the syncId → budgetId mapping
+   * For FaaS, this is in-memory only (no persistence)
    */
   refreshSyncIdToBudgetIdMap() {
-    try {
-      const files = fs.readdirSync(this.config.dataDir);
-      const budgetDirs = files.filter(file => {
-        const fullPath = path.join(this.config.dataDir, file);
-        return fs.statSync(fullPath).isDirectory();
-      });
-
-      budgetDirs.forEach(budgetId => {
-        const metadataPath = path.join(this.config.dataDir, budgetId, 'metadata.json');
-        if (fs.existsSync(metadataPath)) {
-          const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
-          if (metadata.cloudFileId) {
-            this.syncIdToBudgetIdMap[metadata.cloudFileId] = budgetId;
-          }
-        }
-      });
-    } catch (error) {
-      console.warn('Failed to refresh budget cache map', error.message);
-    }
+    // In serverless, we don't persist to filesystem
+    // In-memory map is reset on each invocation
+    // This is acceptable as each invocation downloads fresh budget
   }
 
   /**

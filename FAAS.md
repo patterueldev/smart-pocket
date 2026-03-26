@@ -26,6 +26,10 @@ $ faas-cli up --platforms linux/amd64 --publish
 # For all platforms:
 $ faas-cli up --publish
 
+# Logging
+export OPENFAAS_URL=https://functions.patteruel.dev
+faas-cli logs dev-sp-sheets-sync
+
 $ faas-cli publish
 $ faas-cli deploy
 ```
