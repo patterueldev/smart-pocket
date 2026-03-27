@@ -7,12 +7,12 @@ interface HealthResponse {
 }
 
 class HealthController {
-  name: string = 'HealthController';
+  name: string = 'HealthController v1.0.0';
 
   check(req: Request, res: Response<HealthResponse>): void {
     res.status(200).json({
       success: true,
-      message: 'Service is healthy',
+      message: 'Service is healthy - Hot reload working great!',
       timestamp: new Date().toISOString(),
     });
   }
