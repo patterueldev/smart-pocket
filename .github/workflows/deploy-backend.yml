@@ -61,7 +61,7 @@ jobs:
 
   summary:
     name: QA Server - Summary
-    needs: [build-and-push]
+    needs: [build-backend]
     runs-on: ubuntu-latest
     if: always()
     
