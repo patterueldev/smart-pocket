@@ -78,7 +78,7 @@ RUN printf '%s\n' \
   > /etc/supervisor/conf.d/supervisord.conf
 
 # Create necessary directories with proper permissions
-RUN mkdir -p /var/run/nginx /var/log/nginx && \
+RUN mkdir -p /var/run/nginx /var/log/nginx /var/cache/nginx && \
     chown -R nginx:nginx /var/run/nginx /var/cache/nginx /var/log/nginx
 
 # Expose ports: 80 for nginx (public), 3001 for Node.js (internal)

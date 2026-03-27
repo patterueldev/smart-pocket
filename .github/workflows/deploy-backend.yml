@@ -43,7 +43,7 @@ jobs:
         id: build
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./apps/smart-pocket-backend
           file: ./docker/Backend.prod.dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
