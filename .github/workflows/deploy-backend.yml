@@ -9,6 +9,13 @@ on:
 jobs:
   build-backend:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+      image_digest: ${{ steps.build.outputs.digest }}
 
     steps:
       - name: Checkout code
@@ -71,16 +78,16 @@ jobs:
           echo "## 🚀 QA Server Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [ "${{ needs.build-and-push.result }}" == "success" ]; then
+          if [ "${{ needs.build-backend.result }}" == "success" ]; then
             echo "✅ **Build & Push**: Success" >> $GITHUB_STEP_SUMMARY
-            echo "- Image: \`git.patteruel.dev/${{ github.repository }}/api:qa\`" >> $GITHUB_STEP_SUMMARY
-            echo "- Digest: \`${{ needs.build-and-push.outputs.image_digest }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- Image: \`ghcr.io/${{ github.repository }}/smart-pocket-backend:qa\`" >> $GITHUB_STEP_SUMMARY
+            echo "- Digest: \`${{ needs.build-backend.outputs.image_digest }}\`" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ **Build & Push**: Failed" >> $GITHUB_STEP_SUMMARY
           fi
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
-          echo "1. Pull image manually on QA server: \`docker pull git.patteruel.dev/${{ github.repository }}/api:qa\`" >> $GITHUB_STEP_SUMMARY
+          echo "1. Pull image manually on QA server: \`docker pull ghcr.io/${{ github.repository }}/smart-pocket-backend:qa\`" >> $GITHUB_STEP_SUMMARY
           echo "2. Restart services: \`pnpm run docker:quality -- restart\`" >> $GITHUB_STEP_SUMMARY
           echo "3. Check health: \`curl http://localhost:3002/health\`" >> $GITHUB_STEP_SUMMARY
