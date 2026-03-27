@@ -8,12 +8,12 @@ on:
 
 jobs:
   build-backend:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Set up Docker
         uses: docker/setup-docker-action@v5
       
