@@ -26,7 +26,9 @@ const validateRequest = (schema: Joi.Schema) => {
       return;
     }
 
-    (req as any).validatedBody = value;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const validatedReq = req as any;
+    validatedReq.validatedBody = value;
     next();
   };
 };

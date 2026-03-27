@@ -42,11 +42,10 @@ class App {
       });
     });
 
-    this.app.use(
-      (err: any, req: Request, res: Response, next: NextFunction) => {
-        errorHandler.handle(err, req, res, next);
-      }
-    );
+    this.app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      errorHandler.handle(err as any, req, res, next);
+    });
   }
 
   getApp(): Express {

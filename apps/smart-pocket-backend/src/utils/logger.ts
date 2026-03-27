@@ -1,11 +1,12 @@
 import config from '../config/env';
 
 interface LogData {
-  [key: string]: any;
+  [key: string]: string | number | boolean | object;
 }
 
 class Logger {
   log(message: string, data?: LogData | null): void {
+    // eslint-disable-next-line no-console
     console.log(`[LOG] ${message}`, data || '');
   }
 
@@ -23,6 +24,7 @@ class Logger {
 
   debug(message: string, data?: LogData | null): void {
     if (config.isDevelopment) {
+      // eslint-disable-next-line no-console
       console.debug(`[DEBUG] ${message}`, data || '');
     }
   }

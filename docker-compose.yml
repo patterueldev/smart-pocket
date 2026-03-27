@@ -1,0 +1,26 @@
+services:
+  smart-pocket-backend:
+    build: 
+      context: ./apps/smart-pocket-backend
+      dockerfile: ../../docker/Backend.dev.dockerfile
+    container_name: smart-pocket-backend
+    volumes:
+      - ./apps/smart-pocket-backend/src:/app/src
+      - ./apps/smart-pocket-backend/package.json:/app/package.json
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+    # If not using cloudflared, uncomment the following lines to expose the backend on port 3000
+    # ports:
+    #   - "3000:3000"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    command: 
+      - tunnel
+      - --no-autoupdate
+      - run
+      - --token
+      - ${CLOUDFLARED_TOKEN}

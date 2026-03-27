@@ -6,12 +6,7 @@ interface CustomError extends Error {
 }
 
 class ErrorHandler {
-  handle(
-    err: CustomError,
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): void {
+  handle(err: CustomError, _req: Request, res: Response, _next: NextFunction): void {
     logger.error('Request error', err);
 
     const status = err.status || 500;
