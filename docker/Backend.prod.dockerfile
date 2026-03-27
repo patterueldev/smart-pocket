@@ -1,5 +1,5 @@
 # Production Dockerfile for Smart Pocket Backend
-# Multi-stage build for optimized image size
+# Multi-stage build with nginx reverse proxy for production
 
 FROM node:24-alpine AS builder
 
@@ -13,27 +13,80 @@ RUN npm install --legacy-peer-deps
 COPY . .
 RUN npm run build
 
-# Runtime stage
+# Runtime stage with nginx
 FROM node:24-alpine
 
 WORKDIR /app
 
-# Copy only necessary files from builder
+# Install nginx and supervisor to manage multiple processes
+RUN apk add --no-cache nginx supervisor wget
+
+# Copy compiled app and dependencies from builder
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/.env .env.example ./
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
-USER nodejs
+# Create nginx configuration directory
+RUN mkdir -p /etc/nginx/conf.d
 
-# Expose port
-EXPOSE 3000
+# Configure nginx as reverse proxy for Node.js
+RUN printf '%s\n' \
+  'server {' \
+  '    listen 80 default_server;' \
+  '    server_name _;' \
+  '    client_max_body_size 10M;' \
+  '    ' \
+  '    location / {' \
+  '        proxy_pass http://localhost:3001;' \
+  '        proxy_http_version 1.1;' \
+  '        proxy_set_header Upgrade $http_upgrade;' \
+  '        proxy_set_header Connection "upgrade";' \
+  '        proxy_set_header Host $host;' \
+  '        proxy_set_header X-Real-IP $remote_addr;' \
+  '        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' \
+  '        proxy_set_header X-Forwarded-Proto $scheme;' \
+  '        proxy_cache_bypass $http_upgrade;' \
+  '        proxy_connect_timeout 60s;' \
+  '        proxy_send_timeout 60s;' \
+  '        proxy_read_timeout 60s;' \
+  '    }' \
+  '}' > /etc/nginx/conf.d/default.conf
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+# Create supervisord configuration for managing Node.js and nginx
+RUN mkdir -p /etc/supervisor/conf.d
+RUN printf '%s\n' \
+  '[supervisord]' \
+  'nodaemon=true' \
+  'user=root' \
+  'logfile=/var/log/supervisord.log' \
+  'pidfile=/var/run/supervisord.pid' \
+  '' \
+  '[program:nodejs]' \
+  'command=node dist/index.js' \
+  'autostart=true' \
+  'autorestart=true' \
+  'stderr_logfile=/var/log/nodejs.err.log' \
+  'stdout_logfile=/var/log/nodejs.out.log' \
+  'environment=NODE_ENV=production' \
+  '' \
+  '[program:nginx]' \
+  'command=/usr/sbin/nginx -g "daemon off;"' \
+  'autostart=true' \
+  'autorestart=true' \
+  'stderr_logfile=/var/log/nginx/error.log' \
+  'stdout_logfile=/var/log/nginx/access.log' \
+  > /etc/supervisor/conf.d/supervisord.conf
 
-# Start application
-CMD ["npm", "start"]
+# Create necessary directories with proper permissions
+RUN mkdir -p /var/run/nginx /var/log/nginx && \
+    chown -R nginx:nginx /var/run/nginx /var/cache/nginx /var/log/nginx
+
+# Expose ports: 80 for nginx (public), 3001 for Node.js (internal)
+EXPOSE 80 3001
+
+# Health check via nginx
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost/health || exit 1
+
+# Start supervisor to manage nginx and Node.js
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

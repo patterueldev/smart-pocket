@@ -1,0 +1,87 @@
+name: Backend - Build & Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - backend # temporary trigger
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.VERSION }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from package.json
+        id: version
+        working-directory: apps/smart-pocket-backend
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Building backend version: $VERSION
+          
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: git.patteruel.dev
+          username: ${{ gitea.actor }}
+          password: ${{ secrets.GITEA_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: git.patteruel.dev/${{ github.repository }}/api
+          tags: |
+            type=raw,value=qa
+            type=sha,prefix=qa-
+            type=ref,event=branch
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Backend.prod.dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            NODE_ENV=production
+      
+      - name: Output image details
+        run: |
+          echo "✅ Image built and pushed successfully"
+          echo "Tags: ${{ steps.meta.outputs.tags }}"
+          echo "Digest: ${{ steps.build.outputs.digest }}"
+
+  summary:
+    name: QA Server - Summary
+    needs: [build-and-push]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## 🚀 QA Server Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.build-and-push.result }}" == "success" ]; then
+            echo "✅ **Build & Push**: Success" >> $GITHUB_STEP_SUMMARY
+            echo "- Image: \`git.patteruel.dev/${{ github.repository }}/api:qa\`" >> $GITHUB_STEP_SUMMARY
+            echo "- Digest: \`${{ needs.build-and-push.outputs.image_digest }}\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Build & Push**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Pull image manually on QA server: \`docker pull git.patteruel.dev/${{ github.repository }}/api:qa\`" >> $GITHUB_STEP_SUMMARY
+          echo "2. Restart services: \`pnpm run docker:quality -- restart\`" >> $GITHUB_STEP_SUMMARY
+          echo "3. Check health: \`curl http://localhost:3002/health\`" >> $GITHUB_STEP_SUMMARY
