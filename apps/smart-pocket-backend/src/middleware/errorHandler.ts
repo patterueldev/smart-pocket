@@ -1,7 +1,17 @@
-const logger = require('../utils/logger');
+import { Request, Response, NextFunction } from 'express';
+import logger from '../utils/logger';
+
+interface CustomError extends Error {
+  status?: number;
+}
 
 class ErrorHandler {
-  handle(err, req, res, next) {
+  handle(
+    err: CustomError,
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): void {
     logger.error('Request error', err);
 
     const status = err.status || 500;
@@ -16,4 +26,4 @@ class ErrorHandler {
   }
 }
 
-module.exports = new ErrorHandler();
+export default new ErrorHandler();
