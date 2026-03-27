@@ -1,0 +1,387 @@
+[debug] [2026-03-27T05:02:14.725Z] ----------------------------------------------------------------------
+[debug] [2026-03-27T05:02:14.731Z] Command:       /Users/pat/.nvm/versions/node/v24.14.0/bin/node /Users/pat/.nvm/versions/node/v24.14.0/bin/firebase deploy --only functions
+[debug] [2026-03-27T05:02:14.731Z] CLI Version:   15.11.0
+[debug] [2026-03-27T05:02:14.731Z] Platform:      darwin
+[debug] [2026-03-27T05:02:14.731Z] Node Version:  v24.14.0
+[debug] [2026-03-27T05:02:14.731Z] Time:          Fri Mar 27 2026 13:02:14 GMT+0800 (Philippine Standard Time)
+[debug] [2026-03-27T05:02:14.731Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-03-27T05:02:15.473Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-27T05:02:15.473Z] > authorizing via signed-in user (patterueldev@gmail.com)
+[debug] [2026-03-27T05:02:15.473Z] [iam] checking project smart-pocket-1e650 for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-03-27T05:02:15.474Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:15.474Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:15.474Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650:testIamPermissions [none]
+[debug] [2026-03-27T05:02:15.474Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650:testIamPermissions  x-goog-user-project=smart-pocket-1e650
+[debug] [2026-03-27T05:02:15.474Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-03-27T05:02:16.783Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650:testIamPermissions 200
+[debug] [2026-03-27T05:02:16.783Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-03-27T05:02:16.783Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:16.783Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:16.783Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/smart-pocket-1e650/serviceAccounts/smart-pocket-1e650@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-03-27T05:02:16.783Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/smart-pocket-1e650/serviceAccounts/smart-pocket-1e650@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-03-27T05:02:18.320Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/smart-pocket-1e650/serviceAccounts/smart-pocket-1e650@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2026-03-27T05:02:18.321Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/smart-pocket-1e650/serviceAccounts/smart-pocket-1e650@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'smart-pocket-1e650'...
+[info] 
+[info] i  deploying functions 
+[info] Running command: npm --prefix "$RESOURCE_DIR" run lint
+[info] Running command: npm --prefix "$RESOURCE_DIR" run build
+[info] ✔  functions: Finished running predeploy script. 
+[debug] [2026-03-27T05:02:23.483Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:23.483Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:23.483Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650 [none]
+[debug] [2026-03-27T05:02:24.879Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650 200
+[debug] [2026-03-27T05:02:24.880Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650 {"projectNumber":"57773646098","projectId":"smart-pocket-1e650","lifecycleState":"ACTIVE","name":"smart-pocket","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-03-27T04:41:18.673Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[debug] [2026-03-27T05:02:24.883Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:24.883Z] Checked if tokens are valid: true, expires at: 1774590336495
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-03-27T05:02:24.884Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:24.884Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:24.884Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/cloudbuild.googleapis.com [none]
+[debug] [2026-03-27T05:02:24.884Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/cloudbuild.googleapis.com  x-goog-user-project=smart-pocket-1e650
+[debug] [2026-03-27T05:02:24.886Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/artifactregistry.googleapis.com [none]
+[debug] [2026-03-27T05:02:24.886Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/artifactregistry.googleapis.com  x-goog-user-project=smart-pocket-1e650
+[debug] [2026-03-27T05:02:26.342Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/cloudbuild.googleapis.com 200
+[debug] [2026-03-27T05:02:26.342Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/cloudbuild.googleapis.com [omitted]
+[warn] ⚠  functions: missing required API cloudbuild.googleapis.com. Enabling now... 
+[debug] [2026-03-27T05:02:26.343Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:26.343Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:26.343Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/cloudbuild.googleapis.com:enable [none]
+[debug] [2026-03-27T05:02:26.343Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/cloudbuild.googleapis.com:enable  x-goog-user-project=smart-pocket-1e650
+[debug] [2026-03-27T05:02:26.355Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/artifactregistry.googleapis.com 200
+[debug] [2026-03-27T05:02:26.355Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/artifactregistry.googleapis.com [omitted]
+[warn] ⚠  artifactregistry: missing required API artifactregistry.googleapis.com. Enabling now... 
+[debug] [2026-03-27T05:02:26.356Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:26.356Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:26.356Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/artifactregistry.googleapis.com:enable [none]
+[debug] [2026-03-27T05:02:26.356Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/artifactregistry.googleapis.com:enable  x-goog-user-project=smart-pocket-1e650
+[debug] [2026-03-27T05:02:27.708Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/cloudbuild.googleapis.com:enable 200
+[debug] [2026-03-27T05:02:27.708Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/cloudbuild.googleapis.com:enable [omitted]
+[debug] [2026-03-27T05:02:27.718Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/artifactregistry.googleapis.com:enable 200
+[debug] [2026-03-27T05:02:27.718Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/artifactregistry.googleapis.com:enable [omitted]
+[debug] [2026-03-27T05:02:37.729Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:37.729Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:37.729Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/smart-pocket-1e650/adminSdkConfig [none]
+[debug] [2026-03-27T05:02:38.406Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/smart-pocket-1e650/adminSdkConfig 200
+[debug] [2026-03-27T05:02:38.407Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/smart-pocket-1e650/adminSdkConfig {"projectId":"smart-pocket-1e650","storageBucket":"smart-pocket-1e650.firebasestorage.app"}
+[debug] [2026-03-27T05:02:38.409Z] Validating nodejs source
+[debug] [2026-03-27T05:02:39.611Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-03-27T05:02:39.611Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2026-03-27T05:02:39.611Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-03-27T05:02:39.615Z] Found firebase-functions binary at '/Users/pat/Projects/PAT/smart-pocket/apps/smart-pocket-functions/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8804
+
+[debug] [2026-03-27T05:02:40.284Z] Got response from /__/functions.yaml {"endpoints":{"helloWorld":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":10,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"helloWorld"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] i  extensions: ensuring required API firebaseextensions.googleapis.com is enabled... 
+[debug] [2026-03-27T05:02:44.308Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:44.308Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:44.308Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/firebaseextensions.googleapis.com [none]
+[debug] [2026-03-27T05:02:44.308Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/firebaseextensions.googleapis.com  x-goog-user-project=smart-pocket-1e650
+[debug] [2026-03-27T05:02:45.658Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/firebaseextensions.googleapis.com 200
+[debug] [2026-03-27T05:02:45.658Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/firebaseextensions.googleapis.com [omitted]
+[warn] ⚠  extensions: missing required API firebaseextensions.googleapis.com. Enabling now... 
+[debug] [2026-03-27T05:02:45.659Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:45.659Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:45.659Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/firebaseextensions.googleapis.com:enable [none]
+[debug] [2026-03-27T05:02:45.659Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/firebaseextensions.googleapis.com:enable  x-goog-user-project=smart-pocket-1e650
+[debug] [2026-03-27T05:02:46.117Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/firebaseextensions.googleapis.com:enable 200
+[debug] [2026-03-27T05:02:46.117Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/smart-pocket-1e650/services/firebaseextensions.googleapis.com:enable [omitted]
+[debug] [2026-03-27T05:02:56.133Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-27T05:02:56.133Z] > authorizing via signed-in user (patterueldev@gmail.com)
+[debug] [2026-03-27T05:02:56.133Z] [iam] checking project smart-pocket-1e650 for permissions ["firebase.projects.get","firebaseextensions.instances.list"]
+[debug] [2026-03-27T05:02:56.134Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:56.134Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:56.134Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650:testIamPermissions [none]
+[debug] [2026-03-27T05:02:56.134Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650:testIamPermissions  x-goog-user-project=smart-pocket-1e650
+[debug] [2026-03-27T05:02:56.134Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2026-03-27T05:02:57.186Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650:testIamPermissions 200
+[debug] [2026-03-27T05:02:57.187Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2026-03-27T05:02:57.188Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:57.188Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:57.188Z] >>> [apiv2][query] GET https://firebaseextensions.googleapis.com/v1beta/projects/smart-pocket-1e650/instances pageSize=100&pageToken=
+[debug] [2026-03-27T05:02:59.794Z] <<< [apiv2][status] GET https://firebaseextensions.googleapis.com/v1beta/projects/smart-pocket-1e650/instances 200
+[debug] [2026-03-27T05:02:59.794Z] <<< [apiv2][body] GET https://firebaseextensions.googleapis.com/v1beta/projects/smart-pocket-1e650/instances {}
+[info] i  functions: preparing functions directory for uploading... 
+[info] i  functions: packaged /Users/pat/Projects/PAT/smart-pocket/apps/smart-pocket-functions/functions (98.45 KB) for uploading 
+[debug] [2026-03-27T05:02:59.828Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:59.828Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:02:59.828Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/projects/smart-pocket-1e650/locations/-/functions [none]
+[debug] [2026-03-27T05:03:00.856Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/projects/smart-pocket-1e650/locations/-/functions 200
+[debug] [2026-03-27T05:03:00.856Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/projects/smart-pocket-1e650/locations/-/functions {}
+[debug] [2026-03-27T05:03:00.856Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:00.856Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:00.856Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/-/functions filter=environment%3D%22GEN_2%22
+[debug] [2026-03-27T05:03:02.253Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/-/functions 200
+[debug] [2026-03-27T05:03:02.253Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/-/functions {}
+[info] i  functions: ensuring required API run.googleapis.com is enabled... 
+[debug] [2026-03-27T05:03:02.257Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:02.257Z] Checked if tokens are valid: true, expires at: 1774590336495
+[info] i  functions: ensuring required API eventarc.googleapis.com is enabled... 
+[debug] [2026-03-27T05:03:02.257Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:02.257Z] Checked if tokens are valid: true, expires at: 1774590336495
+[info] i  functions: ensuring required API pubsub.googleapis.com is enabled... 
+[debug] [2026-03-27T05:03:02.257Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:02.258Z] Checked if tokens are valid: true, expires at: 1774590336495
+[info] i  functions: ensuring required API storage.googleapis.com is enabled... 
+[debug] [2026-03-27T05:03:02.258Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:02.258Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:02.258Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/run.googleapis.com [none]
+[debug] [2026-03-27T05:03:02.258Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/run.googleapis.com  x-goog-user-project=57773646098
+[debug] [2026-03-27T05:03:02.260Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/eventarc.googleapis.com [none]
+[debug] [2026-03-27T05:03:02.260Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/eventarc.googleapis.com  x-goog-user-project=57773646098
+[debug] [2026-03-27T05:03:02.261Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/pubsub.googleapis.com [none]
+[debug] [2026-03-27T05:03:02.261Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/pubsub.googleapis.com  x-goog-user-project=57773646098
+[debug] [2026-03-27T05:03:02.262Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/storage.googleapis.com [none]
+[debug] [2026-03-27T05:03:02.262Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/storage.googleapis.com  x-goog-user-project=57773646098
+[debug] [2026-03-27T05:03:03.586Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/eventarc.googleapis.com 200
+[debug] [2026-03-27T05:03:03.586Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/eventarc.googleapis.com [omitted]
+[warn] ⚠  functions: missing required API eventarc.googleapis.com. Enabling now... 
+[debug] [2026-03-27T05:03:03.588Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:03.588Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:03.589Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/57773646098/services/eventarc.googleapis.com:enable [none]
+[debug] [2026-03-27T05:03:03.589Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/57773646098/services/eventarc.googleapis.com:enable  x-goog-user-project=57773646098
+[debug] [2026-03-27T05:03:03.592Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/pubsub.googleapis.com 200
+[debug] [2026-03-27T05:03:03.593Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/pubsub.googleapis.com [omitted]
+[info] ✔  functions: required API pubsub.googleapis.com is enabled 
+[debug] [2026-03-27T05:03:03.601Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/storage.googleapis.com 200
+[debug] [2026-03-27T05:03:03.601Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/storage.googleapis.com [omitted]
+[info] ✔  functions: required API storage.googleapis.com is enabled 
+[debug] [2026-03-27T05:03:03.625Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/run.googleapis.com 200
+[debug] [2026-03-27T05:03:03.625Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/57773646098/services/run.googleapis.com [omitted]
+[warn] ⚠  functions: missing required API run.googleapis.com. Enabling now... 
+[debug] [2026-03-27T05:03:03.626Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:03.626Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:03.626Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/57773646098/services/run.googleapis.com:enable [none]
+[debug] [2026-03-27T05:03:03.626Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/57773646098/services/run.googleapis.com:enable  x-goog-user-project=57773646098
+[debug] [2026-03-27T05:03:04.141Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/57773646098/services/run.googleapis.com:enable 200
+[debug] [2026-03-27T05:03:04.142Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/57773646098/services/run.googleapis.com:enable [omitted]
+[debug] [2026-03-27T05:03:04.854Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/57773646098/services/eventarc.googleapis.com:enable 200
+[debug] [2026-03-27T05:03:04.855Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/57773646098/services/eventarc.googleapis.com:enable [omitted]
+[info] i  functions: generating the service identity for pubsub.googleapis.com... 
+[debug] [2026-03-27T05:03:14.870Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:14.870Z] Checked if tokens are valid: true, expires at: 1774590336495
+[info] i  functions: generating the service identity for eventarc.googleapis.com... 
+[debug] [2026-03-27T05:03:14.871Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:14.871Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:14.871Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1beta1/projects/57773646098/services/pubsub.googleapis.com:generateServiceIdentity [none]
+[debug] [2026-03-27T05:03:14.871Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1beta1/projects/57773646098/services/pubsub.googleapis.com:generateServiceIdentity  x-goog-user-project=57773646098
+[debug] [2026-03-27T05:03:14.871Z] >>> [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/57773646098/services/pubsub.googleapis.com:generateServiceIdentity {}
+[debug] [2026-03-27T05:03:14.873Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1beta1/projects/57773646098/services/eventarc.googleapis.com:generateServiceIdentity [none]
+[debug] [2026-03-27T05:03:14.873Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1beta1/projects/57773646098/services/eventarc.googleapis.com:generateServiceIdentity  x-goog-user-project=57773646098
+[debug] [2026-03-27T05:03:14.873Z] >>> [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/57773646098/services/eventarc.googleapis.com:generateServiceIdentity {}
+[debug] [2026-03-27T05:03:16.734Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1beta1/projects/57773646098/services/pubsub.googleapis.com:generateServiceIdentity 200
+[debug] [2026-03-27T05:03:16.734Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/57773646098/services/pubsub.googleapis.com:generateServiceIdentity {"name":"operations/finished.DONE_OPERATION","done":true,"response":{"@type":"type.googleapis.com/google.api.serviceusage.v1beta1.ServiceIdentity","email":"service-57773646098@gcp-sa-pubsub.iam.gserviceaccount.com","uniqueId":"102047323674781730497"}}
+[debug] [2026-03-27T05:03:16.846Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1beta1/projects/57773646098/services/eventarc.googleapis.com:generateServiceIdentity 200
+[debug] [2026-03-27T05:03:16.846Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/57773646098/services/eventarc.googleapis.com:generateServiceIdentity {"name":"operations/finished.DONE_OPERATION","done":true,"response":{"@type":"type.googleapis.com/google.api.serviceusage.v1beta1.ServiceIdentity","email":"service-57773646098@gcp-sa-eventarc.iam.gserviceaccount.com","uniqueId":"101613616226626527351"}}
+[debug] [2026-03-27T05:03:16.850Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:16.850Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:16.850Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650 [none]
+[debug] [2026-03-27T05:03:17.925Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650 200
+[debug] [2026-03-27T05:03:17.925Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650 {"projectNumber":"57773646098","projectId":"smart-pocket-1e650","lifecycleState":"ACTIVE","name":"smart-pocket","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-03-27T04:41:18.673Z"}
+[debug] [2026-03-27T05:03:17.926Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:17.927Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:17.927Z] >>> [apiv2][query] GET https://compute.googleapis.com/compute/v1/projects/57773646098 [none]
+[debug] [2026-03-27T05:03:18.378Z] <<< [apiv2][status] GET https://compute.googleapis.com/compute/v1/projects/57773646098 403
+[debug] [2026-03-27T05:03:18.379Z] <<< [apiv2][body] GET https://compute.googleapis.com/compute/v1/projects/57773646098 {"error":{"code":403,"message":"Compute Engine API has not been used in project 57773646098 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=57773646098 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","errors":[{"message":"Compute Engine API has not been used in project 57773646098 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=57773646098 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","domain":"usageLimits","reason":"accessNotConfigured","extendedHelp":"https://console.developers.google.com"}],"status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"serviceTitle":"Compute Engine API","consumer":"projects/57773646098","service":"compute.googleapis.com","activationUrl":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=57773646098","containerInfo":"57773646098"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Compute Engine API has not been used in project 57773646098 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=57773646098 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=57773646098"}]}]}}
+[debug] [2026-03-27T05:03:18.380Z] unable to look up default compute service account. Falling back to 57773646098-compute@developer.gserviceaccount.com. Error: {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":403,"message":"Compute Engine API has not been used in project 57773646098 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=57773646098 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","errors":[{"message":"Compute Engine API has not been used in project 57773646098 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=57773646098 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","domain":"usageLimits","reason":"accessNotConfigured","extendedHelp":"https://console.developers.google.com"}],"status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"serviceTitle":"Compute Engine API","consumer":"projects/57773646098","service":"compute.googleapis.com","activationUrl":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=57773646098","containerInfo":"57773646098"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Compute Engine API has not been used in project 57773646098 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=57773646098 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=57773646098"}]}]}},"response":{"statusCode":403}},"exit":1,"message":"Request to https://compute.googleapis.com/compute/v1/projects/57773646098 had HTTP Error: 403, Compute Engine API has not been used in project 57773646098 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=57773646098 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","status":403}
+[debug] [2026-03-27T05:03:18.382Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:18.383Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:18.383Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/smart-pocket-1e650/billingInfo [none]
+[debug] [2026-03-27T05:03:19.753Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/smart-pocket-1e650/billingInfo 200
+[debug] [2026-03-27T05:03:19.754Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/smart-pocket-1e650/billingInfo {"name":"projects/smart-pocket-1e650/billingInfo","projectId":"smart-pocket-1e650","billingAccountName":"billingAccounts/013682-B311BF-E45B75","billingEnabled":true}
+[debug] [2026-03-27T05:03:19.756Z] [functions] found 1 new HTTP functions, testing setIamPolicy permission...
+[debug] [2026-03-27T05:03:19.756Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:19.757Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:19.757Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650:testIamPermissions [none]
+[debug] [2026-03-27T05:03:19.757Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650:testIamPermissions  x-goog-user-project=smart-pocket-1e650
+[debug] [2026-03-27T05:03:19.757Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650:testIamPermissions {"permissions":["cloudfunctions.functions.setIamPolicy"]}
+[debug] [2026-03-27T05:03:19.989Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650:testIamPermissions 200
+[debug] [2026-03-27T05:03:19.989Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/smart-pocket-1e650:testIamPermissions {"permissions":["cloudfunctions.functions.setIamPolicy"]}
+[debug] [2026-03-27T05:03:19.990Z] [functions] found setIamPolicy permission, proceeding with deploy
+[debug] [2026-03-27T05:03:19.992Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:19.992Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:19.992Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/functions:generateUploadUrl [none]
+[debug] [2026-03-27T05:03:22.330Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/functions:generateUploadUrl 200
+[debug] [2026-03-27T05:03:22.330Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/functions:generateUploadUrl {"uploadUrl":"https://storage.googleapis.com/gcf-v2-uploads-57773646098.us-central1.cloudfunctions.appspot.com/7e64a986-9b57-4c8e-89d6-313388a5a813.zip?GoogleAccessId=service-57773646098@gcf-admin-robot.iam.gserviceaccount.com&Expires=1774589602&Signature=YiIuG6fzLKJpoy9D1LhB%2B8GowCCC6i7xa4efwEnXQ%2ByM10E%2Bxb8JF%2Fb6gg8RqhPIWyYeWqLtYvJtAy8lZFztCBaSS0jkx%2BI3Vpa8jjL7U3mKxQ4C2ZIE3QujrKICV%2B4Rc59yWej06goKlLOwBoHNrT%2BAm%2Box5rMfD%2Fn3RIgkPmhxASe26mXwvds3rWytUJ6gBxb7d2mobZa%2FWEz64XbKJWnPbqnqVqHnzgby7Aj5uafxdZAGdHW%2Fb4Lm1cAZkYw7PfWnLwCiaBhBdH1U7ixs8tVtfGklwEbVJrvy9MDtKBMjF%2BtMC4GajH65sLePCcjNKhPixEsjPNd%2B5%2B7JHbP6gw%3D%3D","storageSource":{"bucket":"gcf-v2-uploads-57773646098.us-central1.cloudfunctions.appspot.com","object":"7e64a986-9b57-4c8e-89d6-313388a5a813.zip"}}
+[debug] [2026-03-27T05:03:22.331Z] >>> [apiv2][query] PUT https://storage.googleapis.com/gcf-v2-uploads-57773646098.us-central1.cloudfunctions.appspot.com/7e64a986-9b57-4c8e-89d6-313388a5a813.zip GoogleAccessId=service-57773646098%40gcf-admin-robot.iam.gserviceaccount.com&Expires=1774589602&Signature=YiIuG6fzLKJpoy9D1LhB%2B8GowCCC6i7xa4efwEnXQ%2ByM10E%2Bxb8JF%2Fb6gg8RqhPIWyYeWqLtYvJtAy8lZFztCBaSS0jkx%2BI3Vpa8jjL7U3mKxQ4C2ZIE3QujrKICV%2B4Rc59yWej06goKlLOwBoHNrT%2BAm%2Box5rMfD%2Fn3RIgkPmhxASe26mXwvds3rWytUJ6gBxb7d2mobZa%2FWEz64XbKJWnPbqnqVqHnzgby7Aj5uafxdZAGdHW%2Fb4Lm1cAZkYw7PfWnLwCiaBhBdH1U7ixs8tVtfGklwEbVJrvy9MDtKBMjF%2BtMC4GajH65sLePCcjNKhPixEsjPNd%2B5%2B7JHbP6gw%3D%3D
+[debug] [2026-03-27T05:03:22.331Z] >>> [apiv2][body] PUT https://storage.googleapis.com/gcf-v2-uploads-57773646098.us-central1.cloudfunctions.appspot.com/7e64a986-9b57-4c8e-89d6-313388a5a813.zip [stream]
+[debug] [2026-03-27T05:03:23.402Z] <<< [apiv2][status] PUT https://storage.googleapis.com/gcf-v2-uploads-57773646098.us-central1.cloudfunctions.appspot.com/7e64a986-9b57-4c8e-89d6-313388a5a813.zip 200
+[debug] [2026-03-27T05:03:23.402Z] <<< [apiv2][body] PUT https://storage.googleapis.com/gcf-v2-uploads-57773646098.us-central1.cloudfunctions.appspot.com/7e64a986-9b57-4c8e-89d6-313388a5a813.zip [omitted]
+[info] ✔  functions: functions source uploaded successfully 
+[info] i  functions: creating Node.js 24 (2nd Gen) function helloWorld(us-central1)... 
+[debug] [2026-03-27T05:03:23.409Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:23.409Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:23.410Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/functions functionId=helloWorld
+[debug] [2026-03-27T05:03:23.410Z] >>> [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/functions {"name":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","buildConfig":{"runtime":"nodejs24","entryPoint":"helloWorld","source":{"storageSource":{"bucket":"gcf-v2-uploads-57773646098.us-central1.cloudfunctions.appspot.com","object":"7e64a986-9b57-4c8e-89d6-313388a5a813.zip"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""}},"serviceConfig":{"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"smart-pocket-1e650\",\"storageBucket\":\"smart-pocket-1e650.firebasestorage.app\"}","GCLOUD_PROJECT":"smart-pocket-1e650","EVENTARC_CLOUD_EVENT_SOURCE":"projects/smart-pocket-1e650/locations/us-central1/services/helloWorld","FUNCTION_TARGET":"helloWorld","LOG_EXECUTION_ID":"true"},"ingressSettings":null,"timeoutSeconds":null,"serviceAccountEmail":null,"availableMemory":"256Mi","minInstanceCount":null,"maxInstanceCount":10,"maxInstanceRequestConcurrency":80,"availableCpu":"1","vpcConnector":null,"vpcConnectorEgressSettings":null,"directVpcNetworkInterface":null,"directVpcEgress":null},"labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"e0cb801c72ac3e90ec5651bc8f39bd7ccbcdf0dd"}}
+[debug] [2026-03-27T05:03:25.737Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/functions 200
+[debug] [2026-03-27T05:03:25.737Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/functions {"name":"projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2026-03-27T05:03:25.636206130Z","target":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","verb":"create","cancelRequested":false,"apiVersion":"v2"},"done":false}
+[debug] [2026-03-27T05:03:25.739Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:25.739Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:25.739Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 [none]
+[debug] [2026-03-27T05:03:26.326Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 200
+[debug] [2026-03-27T05:03:26.326Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 {"name":"projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2026-03-27T05:03:25.636206130Z","target":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","buildConfig":{"runtime":"nodejs24","entryPoint":"helloWorld","source":{"storageSource":{"bucket":"gcf-v2-sources-57773646098-us-central1","object":"helloWorld/function-source.zip","generation":"1774587805338356"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/smart-pocket-1e650/serviceAccounts/57773646098-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/smart-pocket-1e650/locations/us-central1/services/helloworld","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"smart-pocket-1e650\",\"storageBucket\":\"smart-pocket-1e650.firebasestorage.app\"}","GCLOUD_PROJECT":"smart-pocket-1e650","EVENTARC_CLOUD_EVENT_SOURCE":"projects/smart-pocket-1e650/locations/us-central1/services/helloWorld","FUNCTION_TARGET":"helloWorld","LOG_EXECUTION_ID":"true"},"maxInstanceCount":10,"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"57773646098-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"e0cb801c72ac3e90ec5651bc8f39bd7ccbcdf0dd"},"environment":"GEN_2"},"stages":[{"name":"BUILD","state":"NOT_STARTED"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"CREATE_FUNCTION"},"done":false}
+[debug] [2026-03-27T05:03:26.829Z] [create-default-us-central1-helloWorld] Retrying task index 0
+[debug] [2026-03-27T05:03:26.829Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:26.830Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:26.830Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 [none]
+[debug] [2026-03-27T05:03:27.942Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 200
+[debug] [2026-03-27T05:03:27.942Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 {"name":"projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2026-03-27T05:03:25.636206130Z","target":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","buildConfig":{"runtime":"nodejs24","entryPoint":"helloWorld","source":{"storageSource":{"bucket":"gcf-v2-sources-57773646098-us-central1","object":"helloWorld/function-source.zip","generation":"1774587805338356"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/smart-pocket-1e650/serviceAccounts/57773646098-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/smart-pocket-1e650/locations/us-central1/services/helloworld","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"smart-pocket-1e650\",\"storageBucket\":\"smart-pocket-1e650.firebasestorage.app\"}","GCLOUD_PROJECT":"smart-pocket-1e650","EVENTARC_CLOUD_EVENT_SOURCE":"projects/smart-pocket-1e650/locations/us-central1/services/helloWorld","FUNCTION_TARGET":"helloWorld","LOG_EXECUTION_ID":"true"},"maxInstanceCount":10,"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"57773646098-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"e0cb801c72ac3e90ec5651bc8f39bd7ccbcdf0dd"},"environment":"GEN_2"},"stages":[{"name":"BUILD","state":"NOT_STARTED"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"CREATE_FUNCTION"},"done":false}
+[debug] [2026-03-27T05:03:28.944Z] [create-default-us-central1-helloWorld] Retrying task index 0
+[debug] [2026-03-27T05:03:28.945Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:28.945Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:28.945Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 [none]
+[debug] [2026-03-27T05:03:30.089Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 200
+[debug] [2026-03-27T05:03:30.090Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 {"name":"projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2026-03-27T05:03:25.636206130Z","target":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","buildConfig":{"runtime":"nodejs24","entryPoint":"helloWorld","source":{"storageSource":{"bucket":"gcf-v2-sources-57773646098-us-central1","object":"helloWorld/function-source.zip","generation":"1774587805338356"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/smart-pocket-1e650/serviceAccounts/57773646098-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/smart-pocket-1e650/locations/us-central1/services/helloworld","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"smart-pocket-1e650\",\"storageBucket\":\"smart-pocket-1e650.firebasestorage.app\"}","GCLOUD_PROJECT":"smart-pocket-1e650","EVENTARC_CLOUD_EVENT_SOURCE":"projects/smart-pocket-1e650/locations/us-central1/services/helloWorld","FUNCTION_TARGET":"helloWorld","LOG_EXECUTION_ID":"true"},"maxInstanceCount":10,"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"57773646098-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"e0cb801c72ac3e90ec5651bc8f39bd7ccbcdf0dd"},"environment":"GEN_2"},"stages":[{"name":"BUILD","state":"NOT_STARTED"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"CREATE_FUNCTION"},"done":false}
+[debug] [2026-03-27T05:03:32.091Z] [create-default-us-central1-helloWorld] Retrying task index 0
+[debug] [2026-03-27T05:03:32.092Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:32.092Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:32.092Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 [none]
+[debug] [2026-03-27T05:03:32.390Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 200
+[debug] [2026-03-27T05:03:32.390Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 {"name":"projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2026-03-27T05:03:25.636206130Z","target":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","buildConfig":{"runtime":"nodejs24","entryPoint":"helloWorld","source":{"storageSource":{"bucket":"gcf-v2-sources-57773646098-us-central1","object":"helloWorld/function-source.zip","generation":"1774587805338356"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/smart-pocket-1e650/serviceAccounts/57773646098-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/smart-pocket-1e650/locations/us-central1/services/helloworld","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"smart-pocket-1e650\",\"storageBucket\":\"smart-pocket-1e650.firebasestorage.app\"}","GCLOUD_PROJECT":"smart-pocket-1e650","EVENTARC_CLOUD_EVENT_SOURCE":"projects/smart-pocket-1e650/locations/us-central1/services/helloWorld","FUNCTION_TARGET":"helloWorld","LOG_EXECUTION_ID":"true"},"maxInstanceCount":10,"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"57773646098-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"e0cb801c72ac3e90ec5651bc8f39bd7ccbcdf0dd"},"environment":"GEN_2"},"stages":[{"name":"BUILD","state":"NOT_STARTED"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"CREATE_FUNCTION"},"done":false}
+[debug] [2026-03-27T05:03:36.392Z] [create-default-us-central1-helloWorld] Retrying task index 0
+[debug] [2026-03-27T05:03:36.393Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:36.393Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:36.393Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 [none]
+[debug] [2026-03-27T05:03:37.541Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 200
+[debug] [2026-03-27T05:03:37.542Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 {"name":"projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2026-03-27T05:03:25.636206130Z","target":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","buildConfig":{"runtime":"nodejs24","entryPoint":"helloWorld","source":{"storageSource":{"bucket":"gcf-v2-sources-57773646098-us-central1","object":"helloWorld/function-source.zip","generation":"1774587805338356"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/smart-pocket-1e650/serviceAccounts/57773646098-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/smart-pocket-1e650/locations/us-central1/services/helloworld","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"smart-pocket-1e650\",\"storageBucket\":\"smart-pocket-1e650.firebasestorage.app\"}","GCLOUD_PROJECT":"smart-pocket-1e650","EVENTARC_CLOUD_EVENT_SOURCE":"projects/smart-pocket-1e650/locations/us-central1/services/helloWorld","FUNCTION_TARGET":"helloWorld","LOG_EXECUTION_ID":"true"},"maxInstanceCount":10,"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"57773646098-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"e0cb801c72ac3e90ec5651bc8f39bd7ccbcdf0dd"},"environment":"GEN_2"},"stages":[{"name":"BUILD","state":"NOT_STARTED"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"CREATE_FUNCTION"},"done":false}
+[debug] [2026-03-27T05:03:45.543Z] [create-default-us-central1-helloWorld] Retrying task index 0
+[debug] [2026-03-27T05:03:45.544Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:45.544Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:45.545Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 [none]
+[debug] [2026-03-27T05:03:46.897Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 200
+[debug] [2026-03-27T05:03:46.897Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 {"name":"projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2026-03-27T05:03:25.636206130Z","target":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","buildConfig":{"runtime":"nodejs24","entryPoint":"helloWorld","source":{"storageSource":{"bucket":"gcf-v2-sources-57773646098-us-central1","object":"helloWorld/function-source.zip","generation":"1774587805338356"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/smart-pocket-1e650/serviceAccounts/57773646098-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/smart-pocket-1e650/locations/us-central1/services/helloworld","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"smart-pocket-1e650\",\"storageBucket\":\"smart-pocket-1e650.firebasestorage.app\"}","GCLOUD_PROJECT":"smart-pocket-1e650","EVENTARC_CLOUD_EVENT_SOURCE":"projects/smart-pocket-1e650/locations/us-central1/services/helloWorld","FUNCTION_TARGET":"helloWorld","LOG_EXECUTION_ID":"true"},"maxInstanceCount":10,"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"57773646098-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"e0cb801c72ac3e90ec5651bc8f39bd7ccbcdf0dd"},"environment":"GEN_2"},"stages":[{"name":"BUILD","message":"Build in progress","state":"IN_PROGRESS","resource":"projects/57773646098/locations/us-central1/builds/d822fd2e-e72b-46f2-a547-1434521edd90","resourceUri":"https://console.cloud.google.com/cloud-build/builds;region=us-central1/d822fd2e-e72b-46f2-a547-1434521edd90?project=57773646098"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"CREATE_FUNCTION","buildName":"projects/57773646098/locations/us-central1/builds/d822fd2e-e72b-46f2-a547-1434521edd90"},"done":false}
+[debug] [2026-03-27T05:03:56.899Z] [create-default-us-central1-helloWorld] Retrying task index 0
+[debug] [2026-03-27T05:03:56.900Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:56.900Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:03:56.900Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 [none]
+[debug] [2026-03-27T05:03:57.515Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 200
+[debug] [2026-03-27T05:03:57.515Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 {"name":"projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2026-03-27T05:03:25.636206130Z","target":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","buildConfig":{"runtime":"nodejs24","entryPoint":"helloWorld","source":{"storageSource":{"bucket":"gcf-v2-sources-57773646098-us-central1","object":"helloWorld/function-source.zip","generation":"1774587805338356"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/smart-pocket-1e650/serviceAccounts/57773646098-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/smart-pocket-1e650/locations/us-central1/services/helloworld","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"smart-pocket-1e650\",\"storageBucket\":\"smart-pocket-1e650.firebasestorage.app\"}","GCLOUD_PROJECT":"smart-pocket-1e650","EVENTARC_CLOUD_EVENT_SOURCE":"projects/smart-pocket-1e650/locations/us-central1/services/helloWorld","FUNCTION_TARGET":"helloWorld","LOG_EXECUTION_ID":"true"},"maxInstanceCount":10,"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"57773646098-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"e0cb801c72ac3e90ec5651bc8f39bd7ccbcdf0dd"},"environment":"GEN_2"},"stages":[{"name":"BUILD","message":"Build in progress","state":"IN_PROGRESS","resource":"projects/57773646098/locations/us-central1/builds/d822fd2e-e72b-46f2-a547-1434521edd90","resourceUri":"https://console.cloud.google.com/cloud-build/builds;region=us-central1/d822fd2e-e72b-46f2-a547-1434521edd90?project=57773646098"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"CREATE_FUNCTION","buildName":"projects/57773646098/locations/us-central1/builds/d822fd2e-e72b-46f2-a547-1434521edd90"},"done":false}
+[debug] [2026-03-27T05:04:07.515Z] [create-default-us-central1-helloWorld] Retrying task index 0
+[debug] [2026-03-27T05:04:07.516Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:04:07.516Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:04:07.516Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 [none]
+[debug] [2026-03-27T05:04:08.805Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 200
+[debug] [2026-03-27T05:04:08.806Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 {"name":"projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2026-03-27T05:03:25.636206130Z","target":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","buildConfig":{"runtime":"nodejs24","entryPoint":"helloWorld","source":{"storageSource":{"bucket":"gcf-v2-sources-57773646098-us-central1","object":"helloWorld/function-source.zip","generation":"1774587805338356"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/smart-pocket-1e650/serviceAccounts/57773646098-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/smart-pocket-1e650/locations/us-central1/services/helloworld","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"smart-pocket-1e650\",\"storageBucket\":\"smart-pocket-1e650.firebasestorage.app\"}","GCLOUD_PROJECT":"smart-pocket-1e650","EVENTARC_CLOUD_EVENT_SOURCE":"projects/smart-pocket-1e650/locations/us-central1/services/helloWorld","FUNCTION_TARGET":"helloWorld","LOG_EXECUTION_ID":"true"},"maxInstanceCount":10,"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"57773646098-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"e0cb801c72ac3e90ec5651bc8f39bd7ccbcdf0dd"},"environment":"GEN_2"},"stages":[{"name":"BUILD","message":"Build in progress","state":"IN_PROGRESS","resource":"projects/57773646098/locations/us-central1/builds/d822fd2e-e72b-46f2-a547-1434521edd90","resourceUri":"https://console.cloud.google.com/cloud-build/builds;region=us-central1/d822fd2e-e72b-46f2-a547-1434521edd90?project=57773646098"},{"name":"SERVICE","state":"NOT_STARTED"}],"operationType":"CREATE_FUNCTION","buildName":"projects/57773646098/locations/us-central1/builds/d822fd2e-e72b-46f2-a547-1434521edd90"},"done":false}
+[debug] [2026-03-27T05:04:18.807Z] [create-default-us-central1-helloWorld] Retrying task index 0
+[debug] [2026-03-27T05:04:18.808Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:04:18.808Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:04:18.808Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 [none]
+[debug] [2026-03-27T05:04:20.054Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 200
+[debug] [2026-03-27T05:04:20.054Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781 {"name":"projects/smart-pocket-1e650/locations/us-central1/operations/operation-1774587804442-64dfa6bb4dda3-e61cfe0e-17124781","metadata":{"@type":"type.googleapis.com/google.cloud.functions.v2.OperationMetadata","createTime":"2026-03-27T05:03:25.636206130Z","endTime":"2026-03-27T05:04:14.137592289Z","target":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","verb":"create","cancelRequested":false,"apiVersion":"v2","requestResource":{"@type":"type.googleapis.com/google.cloud.functions.v2.Function","name":"projects/smart-pocket-1e650/locations/us-central1/functions/helloWorld","buildConfig":{"runtime":"nodejs24","entryPoint":"helloWorld","source":{"storageSource":{"bucket":"gcf-v2-sources-57773646098-us-central1","object":"helloWorld/function-source.zip","generation":"1774587805338356"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"serviceAccount":"projects/smart-pocket-1e650/serviceAccounts/57773646098-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/smart-pocket-1e650/locations/us-central1/services/helloworld","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"smart-pocket-1e650\",\"storageBucket\":\"smart-pocket-1e650.firebasestorage.app\"}","GCLOUD_PROJECT":"smart-pocket-1e650","EVENTARC_CLOUD_EVENT_SOURCE":"projects/smart-pocket-1e650/locations/us-central1/services/helloWorld","FUNCTION_TARGET":"helloWorld","LOG_EXECUTION_ID":"true"},"maxInstanceCount":10,"ingressSettings":"ALLOW_ALL","serviceAccountEmail":"57773646098-compute@developer.gserviceaccount.com","availableMemory":"256Mi","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"e0cb801c72ac3e90ec5651bc8f39bd7ccbcdf0dd"},"environment":"GEN_2"},"stages":[{"name":"ARTIFACT_REGISTRY","message":"Deleting function artifacts in Artifact Registry","state":"COMPLETE"},{"name":"SERVICE","message":"Deleting Cloud Run service","state":"COMPLETE","resource":"projects/smart-pocket-1e650/locations/us-central1/services/helloworld"}],"operationType":"CREATE_FUNCTION"},"done":true,"error":{"code":3,"message":"Build failed with status: FAILURE. Could not build the function due to a missing permission on the build service account. If you didn't revoke that permission explicitly, this could be caused by a change in the organization policies. Please refer to the following documentation for more details and resolution: https://cloud.google.com/functions/docs/troubleshooting#build-service-account\n You can also view the logs at https://console.cloud.google.com/cloud-build/builds;region=us-central1/d822fd2e-e72b-46f2-a547-1434521edd90?project=57773646098.\n"}}
+[debug] [2026-03-27T05:04:20.054Z] Got source token undefined for region us-central1
+[error] Build failed with status: FAILURE. Could not build the function due to a missing permission on the build service account. If you didn't revoke that permission explicitly, this could be caused by a change in the organization policies. Please refer to the following documentation for more details and resolution: https://cloud.google.com/functions/docs/troubleshooting#build-service-account
+ You can also view the logs at https://console.cloud.google.com/cloud-build/builds;region=us-central1/d822fd2e-e72b-46f2-a547-1434521edd90?project=57773646098.
+
+[debug] [2026-03-27T05:04:20.061Z] Total Function Deployment time: 56649
+[debug] [2026-03-27T05:04:20.062Z] 1 Functions Deployed
+[debug] [2026-03-27T05:04:20.062Z] 1 Functions Errored
+[debug] [2026-03-27T05:04:20.062Z] 0 Function Deployments Aborted
+[debug] [2026-03-27T05:04:20.062Z] Average Function Deployment time: 56648
+[info] 
+[info] Functions deploy had errors with the following functions:
+	helloWorld(us-central1)
+[debug] [2026-03-27T05:04:20.157Z] Not printing URL for HTTPS function. Typically this means it didn't match a filter or we failed deployment
+[debug] [2026-03-27T05:04:20.158Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:04:20.158Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:04:20.158Z] >>> [apiv2][query] GET https://artifactregistry.googleapis.com/v1/projects/smart-pocket-1e650/locations/us-central1/repositories/gcf-artifacts [none]
+[debug] [2026-03-27T05:04:21.729Z] <<< [apiv2][status] GET https://artifactregistry.googleapis.com/v1/projects/smart-pocket-1e650/locations/us-central1/repositories/gcf-artifacts 200
+[debug] [2026-03-27T05:04:21.729Z] <<< [apiv2][body] GET https://artifactregistry.googleapis.com/v1/projects/smart-pocket-1e650/locations/us-central1/repositories/gcf-artifacts {"name":"projects/smart-pocket-1e650/locations/us-central1/repositories/gcf-artifacts","format":"DOCKER","description":"This repository is created and used by Cloud Functions for storing function docker images.","labels":{"goog-managed-by":"cloudfunctions"},"createTime":"2026-03-27T05:03:40.310656Z","updateTime":"2026-03-27T05:03:40.310656Z","mode":"STANDARD_REPOSITORY","vulnerabilityScanningConfig":{"lastEnableTime":"2026-03-27T05:03:25.843210790Z","enablementState":"SCANNING_DISABLED","enablementStateReason":"API containerscanning.googleapis.com is not enabled."},"satisfiesPzi":true,"registryUri":"us-central1-docker.pkg.dev/smart-pocket-1e650/gcf-artifacts"}
+[warn] ⚠  functions: No cleanup policy detected for repositories in us-central1. This may result in a small monthly bill as container images accumulate over time. 
+[info] i  functions: Configuring cleanup policy for repository in us-central1. Images older than 1 days will be automatically deleted. 
+[debug] [2026-03-27T05:07:09.538Z] Setting up artifact cleanup policy for region us-central1
+[debug] [2026-03-27T05:07:09.539Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:07:09.540Z] Checked if tokens are valid: true, expires at: 1774590336495
+[debug] [2026-03-27T05:07:09.540Z] >>> [apiv2][query] PATCH https://artifactregistry.googleapis.com/v1/projects/smart-pocket-1e650/locations/us-central1/repositories/gcf-artifacts updateMask=name%2CcleanupPolicies%2CcleanupPolicyDryRun%2Clabels
+[debug] [2026-03-27T05:07:09.540Z] >>> [apiv2][body] PATCH https://artifactregistry.googleapis.com/v1/projects/smart-pocket-1e650/locations/us-central1/repositories/gcf-artifacts {"name":"projects/smart-pocket-1e650/locations/us-central1/repositories/gcf-artifacts","cleanupPolicies":{"firebase-functions-cleanup":{"id":"firebase-functions-cleanup","condition":{"tagState":"ANY","olderThan":"86400s"},"action":"DELETE"}},"cleanupPolicyDryRun":false,"labels":{"goog-managed-by":"cloudfunctions"}}
+[debug] [2026-03-27T05:07:10.995Z] <<< [apiv2][status] PATCH https://artifactregistry.googleapis.com/v1/projects/smart-pocket-1e650/locations/us-central1/repositories/gcf-artifacts 200
+[debug] [2026-03-27T05:07:10.995Z] <<< [apiv2][body] PATCH https://artifactregistry.googleapis.com/v1/projects/smart-pocket-1e650/locations/us-central1/repositories/gcf-artifacts {"name":"projects/smart-pocket-1e650/locations/us-central1/repositories/gcf-artifacts","format":"DOCKER","description":"This repository is created and used by Cloud Functions for storing function docker images.","labels":{"goog-managed-by":"cloudfunctions"},"createTime":"2026-03-27T05:03:40.310656Z","updateTime":"2026-03-27T05:07:10.737076Z","mode":"STANDARD_REPOSITORY","cleanupPolicies":{"firebase-functions-cleanup":{"id":"firebase-functions-cleanup","action":"DELETE","condition":{"tagState":"ANY","olderThan":"86400s"}}},"vulnerabilityScanningConfig":{"lastEnableTime":"2026-03-27T05:03:25.843210790Z","enablementState":"SCANNING_DISABLED","enablementStateReason":"API containerscanning.googleapis.com is not enabled."},"satisfiesPzi":true}
+[info] i  functions: Configured cleanup policy for repository in us-central1. 
+[debug] [2026-03-27T05:07:10.996Z] Functions deploy failed.
+[debug] [2026-03-27T05:07:10.996Z] {
+  "endpoint": {
+    "id": "helloWorld",
+    "project": "smart-pocket-1e650",
+    "region": "us-central1",
+    "entryPoint": "helloWorld",
+    "platform": "gcfv2",
+    "runtime": "nodejs24",
+    "httpsTrigger": {},
+    "labels": {
+      "deployment-tool": "cli-firebase"
+    },
+    "serviceAccount": null,
+    "ingressSettings": null,
+    "availableMemoryMb": null,
+    "timeoutSeconds": null,
+    "maxInstances": 10,
+    "minInstances": null,
+    "concurrency": 80,
+    "vpc": null,
+    "environmentVariables": {
+      "FIREBASE_CONFIG": "{\"projectId\":\"smart-pocket-1e650\",\"storageBucket\":\"smart-pocket-1e650.firebasestorage.app\"}",
+      "GCLOUD_PROJECT": "smart-pocket-1e650",
+      "EVENTARC_CLOUD_EVENT_SOURCE": "projects/smart-pocket-1e650/locations/us-central1/services/helloWorld"
+    },
+    "codebase": "default",
+    "cpu": 1,
+    "targetedByOnly": false,
+    "hash": "e0cb801c72ac3e90ec5651bc8f39bd7ccbcdf0dd"
+  },
+  "op": "create",
+  "original": {
+    "name": "FirebaseError",
+    "children": [],
+    "exit": 1,
+    "message": "Build failed with status: FAILURE. Could not build the function due to a missing permission on the build service account. If you didn't revoke that permission explicitly, this could be caused by a change in the organization policies. Please refer to the following documentation for more details and resolution: https://cloud.google.com/functions/docs/troubleshooting#build-service-account\n You can also view the logs at https://console.cloud.google.com/cloud-build/builds;region=us-central1/d822fd2e-e72b-46f2-a547-1434521edd90?project=57773646098.\n",
+    "original": {
+      "code": 3,
+      "message": "Build failed with status: FAILURE. Could not build the function due to a missing permission on the build service account. If you didn't revoke that permission explicitly, this could be caused by a change in the organization policies. Please refer to the following documentation for more details and resolution: https://cloud.google.com/functions/docs/troubleshooting#build-service-account\n You can also view the logs at https://console.cloud.google.com/cloud-build/builds;region=us-central1/d822fd2e-e72b-46f2-a547-1434521edd90?project=57773646098.\n"
+    },
+    "status": 3,
+    "code": 3
+  }
+}
+[debug] [2026-03-27T05:07:11.010Z] Error: Failed to create function helloWorld in region us-central1
+    at /Users/pat/.nvm/versions/node/v24.14.0/lib/node_modules/firebase-tools/lib/deploy/functions/release/fabricator.js:318:27
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async Fabricator.createV2Function (/Users/pat/.nvm/versions/node/v24.14.0/lib/node_modules/firebase-tools/lib/deploy/functions/release/fabricator.js:297:30)
+    at async Fabricator.createEndpoint (/Users/pat/.nvm/versions/node/v24.14.0/lib/node_modules/firebase-tools/lib/deploy/functions/release/fabricator.js:139:13)
+    at async handle (/Users/pat/.nvm/versions/node/v24.14.0/lib/node_modules/firebase-tools/lib/deploy/functions/release/fabricator.js:91:17)
+[error] 
+[error] Error: There was an error deploying functions
