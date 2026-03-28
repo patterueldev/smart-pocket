@@ -3,10 +3,13 @@ name: iOS - Build & Deploy
 on:
   push:
     branches:
-      - main
+      - main # creates production release
+      - develop # creates QA release
+      - mobile # temporary trigger
 
 jobs:
   build-ios:
+    environment: QA # later will be dynamic based on branch
     runs-on: macos-latest
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
@@ -33,7 +36,7 @@ jobs:
 
       - name: Prebuild Expo
         working-directory: apps/smart-pocket-mobile
-        run: npx expo prebuild --clean
+        run: APP_ENV=qa npx expo prebuild --clean
 
       - name: Archive iOS
         working-directory: apps/smart-pocket-mobile/ios
