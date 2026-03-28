@@ -27,7 +27,7 @@ export default function HomeScreen() {
         <ThemedText type="title">Welcome!</ThemedText>
         <HelloWave />
 
-        <Button children="Logout" onPress={authProvider.logout} />
+        <Button onPress={authProvider.logout}>Logout</Button>
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>

@@ -10,9 +10,8 @@ export const unstable_settings = {
 export default function ProtectedLayout() {
   const authState = useContext(AuthContext);
   if (!authState.isLoggedIn) {
-    // If not logged in, redirect to login screen
-    // Use absolute path from root
-    return <Redirect href="/login" />;
+    // If not logged in, redirect to setup screen
+    return <Redirect href="/setup" />;
   }
   return (
       <Stack>
