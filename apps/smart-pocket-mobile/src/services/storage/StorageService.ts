@@ -1,10 +1,11 @@
 /**
- * StorageService: Handles secure token and credential storage.
- * Uses Expo Secure Store for encrypted persistence.
+ * StorageService: Secure storage implementation using Expo Secure Store.
+ * Handles persistent encryption of tokens and credentials.
  */
 
 import * as SecureStore from 'expo-secure-store';
 import { AuthCredentials, AuthTokens } from '@/types/auth';
+import { IStorageService } from './IStorageService';
 
 const KEYS = {
   ACCESS_TOKEN: 'auth_accessToken',
@@ -14,11 +15,8 @@ const KEYS = {
   BASE_URL: 'auth_baseUrl',
 };
 
-export class StorageService {
-  /**
-   * Save tokens to secure storage.
-   */
-  static async saveTokens(tokens: AuthTokens): Promise<void> {
+export class StorageService implements IStorageService {
+  async saveTokens(tokens: AuthTokens): Promise<void> {
     try {
       await Promise.all([
         SecureStore.setItemAsync(KEYS.ACCESS_TOKEN, tokens.accessToken),
@@ -31,11 +29,7 @@ export class StorageService {
     }
   }
 
-  /**
-   * Retrieve tokens from secure storage.
-   * Returns null if tokens don't exist.
-   */
-  static async getTokens(): Promise<AuthTokens | null> {
+  async getTokens(): Promise<AuthTokens | null> {
     try {
       const accessToken = await SecureStore.getItemAsync(KEYS.ACCESS_TOKEN);
       const refreshToken = await SecureStore.getItemAsync(KEYS.REFRESH_TOKEN);
@@ -56,10 +50,7 @@ export class StorageService {
     }
   }
 
-  /**
-   * Save credentials to secure storage.
-   */
-  static async saveCredentials(credentials: AuthCredentials): Promise<void> {
+  async saveCredentials(credentials: AuthCredentials): Promise<void> {
     try {
       await Promise.all([
         SecureStore.setItemAsync(KEYS.API_KEY, credentials.apiKey),
@@ -71,11 +62,7 @@ export class StorageService {
     }
   }
 
-  /**
-   * Retrieve credentials from secure storage.
-   * Returns null if credentials don't exist.
-   */
-  static async getCredentials(): Promise<AuthCredentials | null> {
+  async getCredentials(): Promise<AuthCredentials | null> {
     try {
       const apiKey = await SecureStore.getItemAsync(KEYS.API_KEY);
       const baseUrl = await SecureStore.getItemAsync(KEYS.BASE_URL);
@@ -91,10 +78,7 @@ export class StorageService {
     }
   }
 
-  /**
-   * Get base URL from secure storage.
-   */
-  static async getBaseUrl(): Promise<string | null> {
+  async getBaseUrl(): Promise<string | null> {
     try {
       return await SecureStore.getItemAsync(KEYS.BASE_URL);
     } catch (error) {
@@ -103,10 +87,16 @@ export class StorageService {
     }
   }
 
-  /**
-   * Clear all authentication data from secure storage.
-   */
-  static async clearAll(): Promise<void> {
+  async updateAccessToken(token: string): Promise<void> {
+    try {
+      await SecureStore.setItemAsync(KEYS.ACCESS_TOKEN, token);
+    } catch (error) {
+      console.error('Failed to update access token:', error);
+      throw new Error('Failed to update access token');
+    }
+  }
+
+  async clearAll(): Promise<void> {
     try {
       await Promise.all([
         SecureStore.deleteItemAsync(KEYS.ACCESS_TOKEN),
@@ -118,18 +108,6 @@ export class StorageService {
     } catch (error) {
       console.error('Failed to clear storage:', error);
       throw new Error('Failed to clear authentication data');
-    }
-  }
-
-  /**
-   * Update access token only (for token refresh).
-   */
-  static async updateAccessToken(token: string): Promise<void> {
-    try {
-      await SecureStore.setItemAsync(KEYS.ACCESS_TOKEN, token);
-    } catch (error) {
-      console.error('Failed to update access token:', error);
-      throw new Error('Failed to update access token');
     }
   }
 }

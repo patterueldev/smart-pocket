@@ -4,18 +4,20 @@
  */
 
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { AuthService } from './AuthService';
-import { StorageService } from './StorageService';
+import { IApiClient } from './IApiClient';
+import { IAuthService } from '../auth/IAuthService';
+import { IStorageService } from '../storage/IStorageService';
 
-export class ApiClient {
-  private static instance: AxiosInstance | null = null;
-  private static baseUrl: string = '';
+export class ApiClient implements IApiClient {
+  private instance: AxiosInstance | null = null;
+  private baseUrl: string = '';
 
-  /**
-   * Initialize API client with base URL.
-   * Must be called before making any API requests.
-   */
-  static async initialize(baseUrl: string, accessToken?: string): Promise<void> {
+  constructor(
+    private authService: IAuthService,
+    private storageService: IStorageService
+  ) {}
+
+  async initialize(baseUrl: string, accessToken?: string): Promise<void> {
     this.baseUrl = baseUrl;
 
     this.instance = axios.create({
@@ -31,7 +33,6 @@ export class ApiClient {
     // Add request interceptor to attach token
     this.instance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        // Token is already set in header if it was initialized
         return config;
       },
       (error) => Promise.reject(error)
@@ -50,15 +51,15 @@ export class ApiClient {
           originalRequest._retry = true;
 
           try {
-            const refreshToken = await StorageService.getTokens().then((t) => t?.refreshToken);
-            if (!refreshToken) {
+            const tokens = await this.storageService.getTokens();
+            if (!tokens?.refreshToken) {
               throw new Error('No refresh token available');
             }
 
             // Refresh the access token
-            const newAccessToken = await AuthService.refreshAccessToken(
+            const newAccessToken = await this.authService.refreshAccessToken(
               this.baseUrl,
-              refreshToken
+              tokens.refreshToken
             );
 
             // Update authorization header
@@ -73,7 +74,7 @@ export class ApiClient {
           } catch (refreshError) {
             // Refresh failed - logout user
             console.error('Token refresh failed, logging out:', refreshError);
-            await AuthService.logout();
+            await this.authService.logout();
 
             // Reject with a clear error
             return Promise.reject(
@@ -87,68 +88,44 @@ export class ApiClient {
     );
   }
 
-  /**
-   * Set the Authorization header with the given token.
-   */
-  private static setAuthHeader(token: string): void {
+  private setAuthHeader(token: string): void {
     if (this.instance) {
       this.instance.defaults.headers.common.Authorization = `Bearer ${token}`;
     }
   }
 
-  /**
-   * Update the access token (called after refresh).
-   */
-  static updateAccessToken(token: string): void {
+  updateAccessToken(token: string): void {
     this.setAuthHeader(token);
   }
 
-  /**
-   * Get the axios instance for making requests.
-   */
-  static getInstance(): AxiosInstance {
+  private getInstance(): AxiosInstance {
     if (!this.instance) {
       throw new Error('ApiClient not initialized. Call initialize() first.');
     }
     return this.instance;
   }
 
-  /**
-   * Make a GET request.
-   */
-  static async get<T>(url: string, config?: any): Promise<T> {
+  async get<T>(url: string, config?: any): Promise<T> {
     const response = await this.getInstance().get<T>(url, config);
     return response.data;
   }
 
-  /**
-   * Make a POST request.
-   */
-  static async post<T>(url: string, data?: any, config?: any): Promise<T> {
+  async post<T>(url: string, data?: any, config?: any): Promise<T> {
     const response = await this.getInstance().post<T>(url, data, config);
     return response.data;
   }
 
-  /**
-   * Make a PUT request.
-   */
-  static async put<T>(url: string, data?: any, config?: any): Promise<T> {
+  async put<T>(url: string, data?: any, config?: any): Promise<T> {
     const response = await this.getInstance().put<T>(url, data, config);
     return response.data;
   }
 
-  /**
-   * Make a DELETE request.
-   */
-  static async delete<T>(url: string, config?: any): Promise<T> {
+  async delete<T>(url: string, config?: any): Promise<T> {
     const response = await this.getInstance().delete<T>(url, config);
     return response.data;
   }
 
-  /**
-   * Clear client state (used on logout).
-   */
-  static reset(): void {
+  reset(): void {
     if (this.instance) {
       this.instance.defaults.headers.common.Authorization = '';
     }

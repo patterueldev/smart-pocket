@@ -1,18 +1,17 @@
 /**
  * AuthService: Core authentication business logic.
- * Handles setup, login, token refresh, and logout.
+ * Handles setup, login, token refresh, and logout with real backend.
  */
 
 import axios, { AxiosError } from 'axios';
-import { StorageService } from './StorageService';
+import { IAuthService } from './IAuthService';
+import { IStorageService } from '../storage/IStorageService';
 import { AuthCredentials, AuthTokens, SetupRequest, SetupResponse } from '@/types/auth';
 
-export class AuthService {
-  /**
-   * Setup authentication with API key and base URL.
-   * Sends API key to backend and receives tokens in return.
-   */
-  static async setup(credentials: AuthCredentials): Promise<AuthTokens> {
+export class AuthService implements IAuthService {
+  constructor(private storageService: IStorageService) {}
+
+  async setup(credentials: AuthCredentials): Promise<AuthTokens> {
     try {
       const payload: SetupRequest = {
         apiKey: credentials.apiKey,
@@ -34,8 +33,8 @@ export class AuthService {
 
       // Save tokens and credentials to secure storage
       await Promise.all([
-        StorageService.saveTokens(tokens),
-        StorageService.saveCredentials(credentials),
+        this.storageService.saveTokens(tokens),
+        this.storageService.saveCredentials(credentials),
       ]);
 
       return tokens;
@@ -53,11 +52,7 @@ export class AuthService {
     }
   }
 
-  /**
-   * Refresh access token using refresh token.
-   * Called when access token expires.
-   */
-  static async refreshAccessToken(baseUrl: string, refreshToken: string): Promise<string> {
+  async refreshAccessToken(baseUrl: string, refreshToken: string): Promise<string> {
     try {
       const response = await axios.post<{ accessToken: string }>(
         `${baseUrl}/auth/refresh`,
@@ -70,7 +65,7 @@ export class AuthService {
       const newAccessToken = response.data.accessToken;
 
       // Update stored access token
-      await StorageService.updateAccessToken(newAccessToken);
+      await this.storageService.updateAccessToken(newAccessToken);
 
       return newAccessToken;
     } catch {
@@ -79,30 +74,23 @@ export class AuthService {
     }
   }
 
-  /**
-   * Logout: Clear all stored authentication data.
-   */
-  static async logout(): Promise<void> {
+  async logout(): Promise<void> {
     try {
-      await StorageService.clearAll();
+      await this.storageService.clearAll();
     } catch (error) {
       console.error('Error during logout:', error);
       // Even if clear fails, we consider logout successful
     }
   }
 
-  /**
-   * Load stored authentication state from secure storage.
-   * Used on app startup to restore user session.
-   */
-  static async loadStoredAuth(): Promise<{
+  async loadStoredAuth(): Promise<{
     tokens: AuthTokens | null;
     credentials: AuthCredentials | null;
   }> {
     try {
       const [tokens, credentials] = await Promise.all([
-        StorageService.getTokens(),
-        StorageService.getCredentials(),
+        this.storageService.getTokens(),
+        this.storageService.getCredentials(),
       ]);
 
       return { tokens, credentials };

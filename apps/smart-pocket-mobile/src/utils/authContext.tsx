@@ -1,8 +1,13 @@
 import { useRouter } from 'expo-router';
 import React, { createContext, useState, useCallback } from 'react';
-import { AuthService } from '@/services/AuthService';
-import { ApiClient } from '@/services/ApiClient';
+import { ServiceFactory, type IServices } from '@/services';
 import { AuthTokens, AuthCredentials } from '@/types/auth';
+
+// Use mock services for development (backend not ready yet)
+// Change to 'real' when backend is available
+const USE_MOCK_SERVICES = true;
+const services: IServices = ServiceFactory.createServices(USE_MOCK_SERVICES ? 'mock' : 'real');
+const { authService, apiClient } = services;
 
 type AuthContextType = {
   isLoggedIn: boolean;
@@ -45,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const initializeFromStorage = useCallback(async () => {
     try {
       setIsLoading(true);
-      const { tokens, credentials } = await AuthService.loadStoredAuth();
+      const { tokens, credentials } = await authService.loadStoredAuth();
 
       if (tokens && credentials) {
         // Restore tokens
@@ -54,7 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setBaseUrl(credentials.baseUrl);
 
         // Initialize API client with stored token
-        await ApiClient.initialize(credentials.baseUrl, tokens.accessToken);
+        await apiClient.initialize(credentials.baseUrl, tokens.accessToken);
 
         setIsLoggedIn(true);
         setError(null);
@@ -75,7 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       setError(null);
 
-      const tokens: AuthTokens = await AuthService.setup(credentials);
+      const tokens: AuthTokens = await authService.setup(credentials);
 
       // Update state
       setAccessToken(tokens.accessToken);
@@ -83,12 +88,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setBaseUrl(credentials.baseUrl);
 
       // Initialize API client with new credentials
-      await ApiClient.initialize(credentials.baseUrl, tokens.accessToken);
+      await apiClient.initialize(credentials.baseUrl, tokens.accessToken);
 
       setIsLoggedIn(true);
 
       // Navigate to dashboard
-      router.replace('/(protected)');
+      router.replace('/(protected)/(tabs)');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Setup failed';
       setError(errorMessage);
@@ -105,7 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = useCallback(async () => {
     try {
       setIsLoading(true);
-      await AuthService.logout();
+      await authService.logout();
 
       // Reset state
       setIsLoggedIn(false);
@@ -115,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setError(null);
 
       // Reset API client
-      ApiClient.reset();
+      apiClient.reset();
 
       // Navigate to setup
       router.replace('/setup');
