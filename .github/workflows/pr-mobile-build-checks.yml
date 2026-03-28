@@ -17,10 +17,10 @@ jobs:
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
-        working-directory: apps/smart-pocket-mobile
         with:
           node-version: '24'
           cache: 'npm'
+          cache-dependency-path: apps/smart-pocket-mobile/package-lock.json
 
       - name: Install dependencies
         working-directory: apps/smart-pocket-mobile
