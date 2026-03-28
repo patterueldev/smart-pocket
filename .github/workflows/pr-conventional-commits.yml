@@ -8,8 +8,8 @@ jobs:
     name: Validate PR title and body
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v6
 
       - name: Validate PR title and body
         env:

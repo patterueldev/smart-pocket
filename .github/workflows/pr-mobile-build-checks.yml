@@ -6,21 +6,19 @@ on:
 jobs:
   expo-check:
     name: Expo project checks
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     env:
       CI: true
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'npm'
-          cache-dependency-path: '**/package-lock.json'
+          cache-dependency-path: apps/smart-pocket-mobile/package-lock.json
 
       - name: Install dependencies
         working-directory: apps/smart-pocket-mobile
