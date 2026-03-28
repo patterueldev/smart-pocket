@@ -66,6 +66,38 @@ jobs:
     needs: [detect-changes, base-checks, conventional-commits, backend-checks, mobile-checks]
     if: always()
     steps:
+      - name: Check for failures
+        run: |
+          # Fail summary if any required check failed
+          FAILED=false
+          
+          # base-checks and conventional-commits always run
+          if [ "${{ needs.base-checks.result }}" = "failure" ]; then
+            echo "❌ Base checks failed"
+            FAILED=true
+          fi
+          
+          if [ "${{ needs.conventional-commits.result }}" = "failure" ]; then
+            echo "❌ Conventional commits validation failed"
+            FAILED=true
+          fi
+          
+          # backend-checks: only fails if it ran and failed (not if skipped)
+          if [ "${{ needs.backend-checks.result }}" = "failure" ]; then
+            echo "❌ Backend checks failed"
+            FAILED=true
+          fi
+          
+          # mobile-checks: only fails if it ran and failed (not if skipped)
+          if [ "${{ needs.mobile-checks.result }}" = "failure" ]; then
+            echo "❌ Mobile checks failed"
+            FAILED=true
+          fi
+          
+          if [ "$FAILED" = "true" ]; then
+            exit 1
+          fi
+
       - name: Generate Summary
         run: |
           echo "## ✅ PR Checks Summary" >> $GITHUB_STEP_SUMMARY
