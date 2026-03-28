@@ -6,8 +6,12 @@ import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useRouter } from 'expo-router';
+import { AuthContext } from '@/utils/authContext';
+import { useContext } from 'react';
+import { Button } from '@react-navigation/elements';
 
 export default function HomeScreen() {
+  const authProvider = useContext(AuthContext);
   const router = useRouter();
 
   return (
@@ -22,6 +26,8 @@ export default function HomeScreen() {
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Welcome!</ThemedText>
         <HelloWave />
+
+        <Button children="Logout" onPress={authProvider.logout} />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>
