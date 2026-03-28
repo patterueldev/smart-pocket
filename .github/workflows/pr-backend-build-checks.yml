@@ -15,6 +15,7 @@ jobs:
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
+        working-directory: apps/smart-pocket-backend
         with:
           node-version: '24'
           cache: 'npm'
