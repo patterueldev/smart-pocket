@@ -6,6 +6,9 @@ on:
       - main # creates production release
       - develop # creates QA release
       - mobile # temporary trigger
+    paths:
+      - 'apps/smart-pocket-mobile/**'
+      - '.github/workflows/deploy-ios.yml'
 
 jobs:
   build-ios:

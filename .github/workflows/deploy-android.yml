@@ -4,10 +4,13 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'apps/smart-pocket-mobile/**'
+      - '.github/workflows/deploy-android.yml'
 
 jobs:
   build-android:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
     steps:
