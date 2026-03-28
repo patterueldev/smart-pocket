@@ -63,7 +63,7 @@ jobs:
         working-directory: apps/smart-pocket-mobile/ios
         run: |
           mkdir -p build/Payload
-          cp -r build/SmartPocket.xcarchive/Products/Applications/SmartPocket.app build/Payload/
+          cp -r build/SmartPocket.xcarchive/Products/Applications/SmartPocketQA.app build/Payload/
           cd build
           zip -r SmartPocket.ipa Payload/
           rm -rf Payload
