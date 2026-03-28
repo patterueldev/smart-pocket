@@ -9,7 +9,8 @@ const isLoggedIn = false; // Replace with actual auth logic
 
 export default function ProtectedLayout() {
   if (!isLoggedIn) {
-    // If not logged in, show the sign-in screen
+    // If not logged in, redirect to login screen
+    // Use absolute path from root
     return <Redirect href="/login" />;
   }
   return (
