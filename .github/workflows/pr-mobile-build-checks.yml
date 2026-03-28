@@ -30,11 +30,6 @@ jobs:
         working-directory: apps/smart-pocket-mobile
         run: npm ci
 
-      - name: Show environment
-        run: |
-          node --version
-          npm --version
-
       - name: Expo doctor (checks)
         working-directory: apps/smart-pocket-mobile
         run: npx expo doctor --non-interactive || true
@@ -50,12 +45,3 @@ jobs:
       - name: Attempt Expo prebuild (native project generate)
         working-directory: apps/smart-pocket-mobile
         run: npx expo prebuild --no-install --non-interactive || true
-
-      - name: Upload logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: expo-mobile-ci-logs
-          path: |
-            apps/smart-pocket-mobile/.expo || true
-            apps/smart-pocket-mobile/.expo-logs || true

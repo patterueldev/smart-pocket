@@ -1,0 +1,45 @@
+name: PR / Backend Build Checks
+
+on:
+  pull_request:
+    paths:
+      - 'apps/smart-pocket-backend/**'
+
+jobs:
+  express-check:
+    name: Express backend checks
+    runs-on: ubuntu-latest
+    env:
+      CI: true    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: 'apps/smart-pocket-backend/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: apps/smart-pocket-backend
+        run: npm ci
+      
+      - name: Run linter
+        working-directory: apps/smart-pocket-backend
+        run: npm run lint
+      
+      - name: Build backend
+        working-directory: apps/smart-pocket-backend
+        run: npm run build
+      
+      - name: Verify build output
+        working-directory: apps/smart-pocket-backend
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "❌ Build failed: dist directory not created"
+            exit 1
+          fi
+          echo "✅ Build successful: dist directory created"
+          ls -la dist/ | head -20
