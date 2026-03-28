@@ -8,6 +8,38 @@ on:
       - main
 
 jobs:
+  # Detect changed files for conditional jobs
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.changes.outputs.backend }}
+      mobile: ${{ steps.changes.outputs.mobile }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed files
+        id: changes
+        run: |
+          # Get the merge base for comparing branches
+          MERGE_BASE=$(git merge-base origin/${{ github.base_ref }} HEAD)
+          
+          # Check if backend files changed
+          if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-backend/"; then
+            echo "backend=true" >> $GITHUB_OUTPUT
+          else
+            echo "backend=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # Check if mobile files changed
+          if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-mobile/"; then
+            echo "mobile=true" >> $GITHUB_OUTPUT
+          else
+            echo "mobile=false" >> $GITHUB_OUTPUT
+          fi
+
   # Base checks: enforce RC branch rules
   base-checks:
     uses: ./.github/workflows/pr-base-checks.yml
@@ -18,12 +50,48 @@ jobs:
 
   # Backend build: only run if backend files changed
   backend-checks:
+    needs: detect-changes
     uses: ./.github/workflows/pr-backend-build-checks.yml
-    if: |
-      contains(github.event.pull_request.changed_files, 'apps/smart-pocket-backend/')
+    if: needs.detect-changes.outputs.backend == 'true'
 
   # Mobile build: only run if mobile files changed
   mobile-checks:
+    needs: detect-changes
     uses: ./.github/workflows/pr-mobile-build-checks.yml
-    if: |
-      contains(github.event.pull_request.changed_files, 'apps/smart-pocket-mobile/')
+    if: needs.detect-changes.outputs.mobile == 'true'
+
+  # Summary: display overall check results
+  summary:
+    runs-on: ubuntu-latest
+    needs: [detect-changes, base-checks, conventional-commits, backend-checks, mobile-checks]
+    if: always()
+    steps:
+      - name: Generate Summary
+        run: |
+          echo "## ✅ PR Checks Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Files Changed" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend: ${{ needs.detect-changes.outputs.backend }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Mobile: ${{ needs.detect-changes.outputs.mobile }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Checks Executed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Base Checks (RC branch rules)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Conventional Commits (PR format)" >> $GITHUB_STEP_SUMMARY
+          
+          # Conditionally show backend checks
+          if [ "${{ needs.detect-changes.outputs.backend }}" = "true" ]; then
+            BACKEND_STATUS="${{ needs.backend-checks.result }}"
+            BACKEND_ICON=$([ "$BACKEND_STATUS" = "success" ] && echo "✅" || echo "❌")
+            echo "- $BACKEND_ICON Backend Checks ($BACKEND_STATUS)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ⊘ Backend Checks (skipped - no changes)" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Conditionally show mobile checks
+          if [ "${{ needs.detect-changes.outputs.mobile }}" = "true" ]; then
+            MOBILE_STATUS="${{ needs.mobile-checks.result }}"
+            MOBILE_ICON=$([ "$MOBILE_STATUS" = "success" ] && echo "✅" || echo "❌")
+            echo "- $MOBILE_ICON Mobile Checks ($MOBILE_STATUS)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ⊘ Mobile Checks (skipped - no changes)" >> $GITHUB_STEP_SUMMARY
+          fi
