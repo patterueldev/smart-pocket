@@ -43,11 +43,12 @@ jobs:
         working-directory: apps/smart-pocket-mobile
         run: APP_ENV=qa npx expo prebuild --clean
 
+      # TODO: when building, depending on the branch, we will need to specify the workspace e.g. SmartPocketQA.xcworkspace vs SmartPocket.xcworkspace
       - name: Archive iOS
         working-directory: apps/smart-pocket-mobile/ios
         run: |
-          xcodebuild -workspace SmartPocket.xcworkspace \
-                     -scheme SmartPocket \
+          xcodebuild -workspace SmartPocketQA.xcworkspace \
+                     -scheme SmartPocketQA \
                      -configuration Release \
                      -sdk iphoneos \
                      -destination generic/platform=iOS \
