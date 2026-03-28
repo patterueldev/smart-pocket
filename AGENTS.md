@@ -12,7 +12,9 @@ This is the **master guide** for developers and AI agents working on the Smart P
 - **Location**: `@apps/smart-pocket-mobile/`
 - **Purpose**: React Native mobile application
 - **Framework**: Expo + React Native + TypeScript
-- **Guide**: See `@apps/smart-pocket-mobile/AGENTS.md` (if available) or `@apps/smart-pocket-mobile/README.md`
+- **Guide**: **`@apps/smart-pocket-mobile/AGENTS.md`** ← Start here! (AI-optimized for quick navigation)
+- **Architecture**: Follows SOLID principles with DIP/LSP via ServiceFactory pattern
+- **Services**: Auth, Storage, API with real + mock implementations
 - **Common Tasks**:
   - Adding new screens
   - Building components
