@@ -3,16 +3,15 @@ name: iOS - Build & Deploy
 on:
   push:
     branches:
-      - main # creates production release
-      - develop # creates QA release
-      - mobile # temporary trigger
+      - main
+      - develop
     paths:
       - 'apps/smart-pocket-mobile/**'
       - '.github/workflows/deploy-ios.yml'
 
 jobs:
   build-ios:
-    environment: QA # later will be dynamic based on branch
+    environment: ${{ github.ref == 'refs/heads/develop' && 'QA' || 'PROD' }}
     runs-on: macos-latest
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
@@ -44,14 +43,15 @@ jobs:
 
       - name: Prebuild Expo
         working-directory: apps/smart-pocket-mobile
-        run: APP_ENV=qa npx expo prebuild --clean
+        run: APP_ENV=${{ github.ref == 'refs/heads/develop' && 'qa' || 'production' }} npx expo prebuild --clean
 
-      # TODO: when building, depending on the branch, we will need to specify the workspace e.g. SmartPocketQA.xcworkspace vs SmartPocket.xcworkspace
       - name: Archive iOS
         working-directory: apps/smart-pocket-mobile/ios
         run: |
-          xcodebuild -workspace SmartPocketQA.xcworkspace \
-                     -scheme SmartPocketQA \
+          WORKSPACE=${{ github.ref == 'refs/heads/develop' && 'SmartPocketQA.xcworkspace' || 'SmartPocket.xcworkspace' }}
+          SCHEME=${{ github.ref == 'refs/heads/develop' && 'SmartPocketQA' || 'SmartPocket' }}
+          xcodebuild -workspace "$WORKSPACE" \
+                     -scheme "$SCHEME" \
                      -configuration Release \
                      -sdk iphoneos \
                      -destination generic/platform=iOS \
@@ -65,8 +65,9 @@ jobs:
       - name: Export IPA
         working-directory: apps/smart-pocket-mobile/ios
         run: |
+          APP_NAME=${{ github.ref == 'refs/heads/develop' && 'SmartPocketQA' || 'SmartPocket' }}
           mkdir -p build/Payload
-          cp -r build/SmartPocket.xcarchive/Products/Applications/SmartPocketQA.app build/Payload/
+          cp -r build/SmartPocket.xcarchive/Products/Applications/${APP_NAME}.app build/Payload/
           cd build
           zip -r SmartPocket.ipa Payload/
           rm -rf Payload
