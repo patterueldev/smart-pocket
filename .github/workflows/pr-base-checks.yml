@@ -1,8 +1,7 @@
 name: PR / Base Checks
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, edited]
+  workflow_call:
 
 jobs:
   enforce-rc-branch:

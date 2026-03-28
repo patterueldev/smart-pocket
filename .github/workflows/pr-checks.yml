@@ -1,0 +1,29 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+    branches:
+      - develop
+      - main
+
+jobs:
+  # Base checks: enforce RC branch rules
+  base-checks:
+    uses: ./.github/workflows/pr-base-checks.yml
+
+  # Conventional commits: validate PR title and body
+  conventional-commits:
+    uses: ./.github/workflows/pr-conventional-commits.yml
+
+  # Backend build: only run if backend files changed
+  backend-checks:
+    uses: ./.github/workflows/pr-backend-build-checks.yml
+    if: |
+      contains(github.event.pull_request.changed_files, 'apps/smart-pocket-backend/')
+
+  # Mobile build: only run if mobile files changed
+  mobile-checks:
+    uses: ./.github/workflows/pr-mobile-build-checks.yml
+    if: |
+      contains(github.event.pull_request.changed_files, 'apps/smart-pocket-mobile/')

@@ -1,9 +1,7 @@
 name: PR / Backend Build Checks
 
 on:
-  pull_request:
-    paths:
-      - 'apps/smart-pocket-backend/**'
+  workflow_call:
 
 jobs:
   express-check:
