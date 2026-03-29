@@ -1,9 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import logger from '../utils/logger';
+import container from '../container';
+import { Logger } from '../utils/logger';
 
 interface CustomError extends Error {
   status?: number;
 }
+
+const logger = container.get<Logger>('logger');
 
 class ErrorHandler {
   handle(err: CustomError, _req: Request, res: Response, _next: NextFunction): void {
