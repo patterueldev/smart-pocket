@@ -49,6 +49,25 @@ This is the **master guide** for developers and AI agents working on the Smart P
   - `@docker/DOCKER_GUIDE.md` - Docker documentation
   - `@README.md` - Docker Compose setup
 
+### 🚀 CI/CD & Release Workflows
+- **Location**: `@cicd/`
+- **Purpose**: GitHub Actions workflows, branch strategy, release automation
+- **Strategy**: RC (Release Candidate) branches with test deployments
+- **Common Tasks**:
+  - Understanding the branching strategy
+  - Creating release candidates
+  - Deploying to production
+  - Troubleshooting workflow failures
+  - Checking Actions credit usage
+- **Guides**:
+  - `@cicd/AGENTS.md` - Quick reference guide (start here!)
+  - `@cicd/README.md` - Comprehensive workflow documentation
+- **Key Workflows** (in `@.github/workflows/`):
+  - `pr-base-checks.yml` - Enforce rc/* only merges to main
+  - `pr-develop-checks.yml` - Lint, build, test on feature PRs
+  - `pr-main-build.yml` - Full builds on RC PRs to main
+  - `deploy-orchestrator.yml` - Production deployment automation
+
 ---
 
 ## 📊 Project Structure
@@ -69,10 +88,20 @@ smart-pocket/
 │       ├── screens/
 │       └── tsconfig.json
 │
+├── cicd/                          ← 🚀 CI/CD Workflows & Documentation
+│   ├── AGENTS.md                  ← Quick reference guide
+│   └── README.md                  ← Comprehensive workflow docs
+│
 ├── docker/                        ← 🐳 Container definitions
 │   ├── Backend.dev.dockerfile     ← Development container
 │   ├── Backend.prod.dockerfile    ← Production container
 │   └── DOCKER_GUIDE.md            ← Docker documentation
+│
+├── .github/workflows/             ← 🚀 GitHub Actions workflows
+│   ├── pr-base-checks.yml         ← Enforce rc/* only to main
+│   ├── pr-develop-checks.yml      ← Feature branch checks
+│   ├── pr-main-build.yml          ← Full builds on RC PRs
+│   └── deploy-orchestrator.yml    ← Production deployment
 │
 ├── docker-compose.yml             ← 🐳 Service orchestration
 ├── README.md                       ← 📖 Project setup guide
@@ -324,6 +353,9 @@ docker-compose up
 |------|---------|----------|
 | `@AGENTS.md` (this file) | Project-wide guide | Developers & AI agents |
 | `@apps/smart-pocket-backend/AGENTS.md` | Backend development | Backend developers |
+| `@apps/smart-pocket-mobile/AGENTS.md` | Mobile development | Mobile developers |
+| `@cicd/AGENTS.md` | **CI/CD quick reference** | **All developers** |
+| `@cicd/README.md` | **Complete CI/CD workflows** | **DevOps & release managers** |
 | `@README.md` | Project setup & Docker Compose | Everyone |
 | `@docker/DOCKER_GUIDE.md` | Docker technical details | DevOps & Docker users |
 | `@apps/smart-pocket-backend/README.md` | Backend API documentation | API consumers |
@@ -334,6 +366,10 @@ docker-compose up
 **I want to...** → **Read this**
 
 - Start a fresh development environment → `@README.md`
+- Understand the branching & release strategy → `@cicd/AGENTS.md` (quick) or `@cicd/README.md` (detailed)
+- Create a release candidate → `@cicd/AGENTS.md`
+- Deploy to production → `@cicd/README.md`
+- Troubleshoot CI/CD failures → `@cicd/README.md`
 - Add a new backend endpoint → `@apps/smart-pocket-backend/AGENTS.md`
 - Debug Docker issues → `@docker/DOCKER_GUIDE.md`
 - Understand backend architecture → `@apps/smart-pocket-backend/AGENTS.md`
@@ -341,6 +377,56 @@ docker-compose up
 - Set up Cloudflare Tunnel → `@README.md`
 - Fix failing container → `@docker/DOCKER_GUIDE.md`
 - Enable hot reload → `@docker/DOCKER_GUIDE.md`
+
+---
+
+## 🚀 CI/CD & Release Guide
+
+**Start Here**: `@cicd/AGENTS.md` (5-minute quick reference)  
+**Deep Dive**: `@cicd/README.md` (comprehensive workflow guide)
+
+### The Workflow
+
+```
+Feature → Develop → RC (test) → Main (production)
+```
+
+**RC (Release Candidate) Strategy**:
+- Create `rc/vX.X.X` branches for testing
+- Test in beta/staging environments
+- Merge to `main` only from `rc/*` branches
+- Production deployment is automatic
+
+### Quick Release Process
+
+```bash
+# 1. Feature development (normal)
+git checkout -b feature/my-feature develop
+# ... make changes ...
+git push origin feature/my-feature
+# Create PR to develop
+
+# 2. Create Release Candidate when ready
+npm --prefix apps/smart-pocket-backend version patch
+npm --prefix apps/smart-pocket-mobile version patch
+git checkout -b rc/v1.0.5
+git push origin rc/v1.0.5
+# → Builds + test deployment (~60 min)
+# → Test in TestFlight/beta
+
+# 3. Release to Production
+gh pr create --base main --head rc/v1.0.5
+# → Merge PR
+# → Production deployment triggers (~80 min)
+```
+
+### Key Points
+
+- ✅ Test deployments on RC branches (Docker 'qa', TestFlight/beta)
+- ✅ Only `rc/*` branches can merge to main (enforced)
+- ✅ Backend & mobile always same version
+- ✅ ~82% reduction in Actions minutes
+- ✅ Automatic RC branch cleanup after merge
 
 ---
 
@@ -377,6 +463,20 @@ docker-compose up
 2. **Edit**: `@.env` (add actual value)
 3. **Reference**: In code via `process.env.YOUR_VAR`
 4. **Test**: Start container: `docker-compose up`
+
+### Task: Create a Release Candidate & Deploy
+
+1. **Read**: `@cicd/AGENTS.md` (quick reference) or `@cicd/README.md` (detailed)
+2. **Bump Versions**:
+   ```bash
+   npm --prefix apps/smart-pocket-backend version patch
+   npm --prefix apps/smart-pocket-mobile version patch
+   ```
+3. **Create RC Branch**: `git checkout -b rc/v1.0.5 && git push origin rc/v1.0.5`
+4. **Monitor Builds**: Check GitHub Actions for test deployment (~60 min)
+5. **Test in Beta**: Test in TestFlight/beta environments
+6. **Create PR to Main**: `gh pr create --base main --head rc/v1.0.5`
+7. **Merge PR**: Triggers production deployment (~80 min)
 
 ---
 

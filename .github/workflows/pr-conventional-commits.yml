@@ -1,17 +1,13 @@
 name: PR / Conventional commits and PR body
 
 on:
-  pull_request:
-    types: [opened, edited, synchronize, reopened]
+  workflow_call:
 
 jobs:
   validate-pr:
     name: Validate PR title and body
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Validate PR title and body
         env:
           PR_TITLE: "${{ github.event.pull_request.title }}"

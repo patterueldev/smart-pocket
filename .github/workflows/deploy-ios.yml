@@ -1,22 +1,22 @@
 name: iOS - Build & Deploy
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'apps/smart-pocket-mobile/**'
-      - '.github/workflows/deploy-ios.yml'
+  workflow_call:
+    inputs:
+      env:
+        required: true
+        type: string
+        description: 'Deployment environment: qa or prod'
 
 jobs:
   build-ios:
-    environment: ${{ github.ref == 'refs/heads/develop' && 'QA' || 'PROD' }}
+    environment: ${{ inputs.env == 'prod' && 'PROD' || 'QA' }}
     runs-on: macos-latest
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Extract version from package.json
         id: version
@@ -42,13 +42,13 @@ jobs:
 
       - name: Prebuild Expo
         working-directory: apps/smart-pocket-mobile
-        run: APP_ENV=${{ github.ref == 'refs/heads/develop' && 'qa' || 'production' }} npx expo prebuild --clean
+        run: APP_ENV=${{ inputs.env == 'prod' && 'prod' || 'qa' }} npx expo prebuild --clean
 
       - name: Archive iOS
         working-directory: apps/smart-pocket-mobile/ios
         run: |
-          WORKSPACE=${{ github.ref == 'refs/heads/develop' && 'SmartPocketQA.xcworkspace' || 'SmartPocket.xcworkspace' }}
-          SCHEME=${{ github.ref == 'refs/heads/develop' && 'SmartPocketQA' || 'SmartPocket' }}
+          WORKSPACE=${{ inputs.env == 'prod' && 'SmartPocket.xcworkspace' || 'SmartPocketQA.xcworkspace' }}
+          SCHEME=${{ inputs.env == 'prod' && 'SmartPocket' || 'SmartPocketQA' }}
           xcodebuild -workspace "$WORKSPACE" \
                      -scheme "$SCHEME" \
                      -configuration Release \
@@ -64,7 +64,7 @@ jobs:
       - name: Export IPA
         working-directory: apps/smart-pocket-mobile/ios
         run: |
-          APP_NAME=${{ github.ref == 'refs/heads/develop' && 'SmartPocketQA' || 'SmartPocket' }}
+          APP_NAME=${{ inputs.env == 'prod' && 'SmartPocket' || 'SmartPocketQA' }}
           mkdir -p build/Payload
           cp -r build/SmartPocket.xcarchive/Products/Applications/${APP_NAME}.app build/Payload/
           cd build

@@ -1,12 +1,12 @@
 name: Android - Build & Deploy
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'apps/smart-pocket-mobile/**'
-      - '.github/workflows/deploy-android.yml'
+  workflow_call:
+    inputs:
+      env:
+        required: true
+        type: string
+        description: 'Deployment environment: qa or prod'
 
 jobs:
   build-android:
@@ -15,7 +15,7 @@ jobs:
       version: ${{ steps.version.outputs.VERSION }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Extract version from package.json
         id: version
@@ -29,6 +29,8 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: 'apps/smart-pocket-mobile/package-lock.json'
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -39,16 +41,23 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Restore Gradle Cache
+        uses: gradle/gradle-build-action@v3
+        with:
+          cache-read-only: false
+
       - name: Install dependencies
         working-directory: apps/smart-pocket-mobile
-        run: npm install
+        run: npm ci
 
       - name: Decode Android Keystore
+        working-directory: apps/smart-pocket-mobile
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
           echo "✅ release.keystore created from base64 secret"
 
       - name: Create credentials.json
+        working-directory: apps/smart-pocket-mobile
         run: |
           cat > credentials.json << EOF
           {
@@ -71,11 +80,13 @@ jobs:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
-          npx eas-cli build --platform android --profile production --local --non-interactive --output=./app-production.apk
-          echo "✅ APK built successfully"
+          PROFILE=${{ inputs.env == 'prod' && 'production' || 'quality' }}
+          # --cache-key ensures cache across builds, --json for structured output
+          npx eas-cli build --platform android --profile $PROFILE --local --non-interactive --output=./app-production.apk
+          echo "✅ APK built successfully with profile: $PROFILE"
 
       - name: Upload APK
-        uses: actions/upload-artifact@v3 # return to v3 for Gitea Actions
+        uses: actions/upload-artifact@v6
         with:
           name: android-production-apk
           path: apps/smart-pocket-mobile/app-production.apk

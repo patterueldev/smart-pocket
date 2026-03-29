@@ -21,7 +21,6 @@ const getConfig = () => {
   const configs = {
     dev: {
       name: 'Smart Pocket Dev',
-      slug: 'smart-pocket-dev',
       scheme: 'smartpocketmobiledev',
       ios: {
         bundleIdentifier: 'dev.patteruel.smartpocket.dev',
@@ -33,7 +32,6 @@ const getConfig = () => {
     },
     qa: {
       name: 'Smart Pocket QA',
-      slug: 'smart-pocket-qa',
       scheme: 'smartpocketmobileqa',
       ios: {
         bundleIdentifier: 'dev.patteruel.smartpocket.qa',
@@ -45,7 +43,6 @@ const getConfig = () => {
     },
     prod: {
       name: 'Smart Pocket',
-      slug: 'smart-pocket',
       scheme: 'smartpocketmobile',
       ios: {
         bundleIdentifier: 'dev.patteruel.smartpocket',
@@ -74,7 +71,7 @@ const envConfig = getConfig();
 module.exports = {
   expo: {
     name: envConfig.name,
-    slug: envConfig.slug,
+    slug: 'smart-pocket',
     version: '1.0.1',
     orientation: 'portrait',
     icon: './assets/images/icon.png',

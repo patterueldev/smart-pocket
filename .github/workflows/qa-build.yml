@@ -1,0 +1,41 @@
+#
+# QA Build & Deploy Entry Point
+#
+# Purpose:
+#   Triggers build and deployment pipeline for RC (release candidate) branches.
+#   Calls the deploy-orchestrator with env=qa.
+#
+# Trigger:
+#   - Push to rc/vX.Y.Z branch
+#
+# What it does:
+#   1. Passes control to deploy-orchestrator.yml with env=qa
+#   2. Orchestrator detects changes vs main branch
+#   3. Conditionally deploys backend/mobile to QA environment
+#   4. Displays summary of results
+#
+# Related Workflows:
+#   • .github/workflows/deploy-orchestrator.yml (core orchestration logic)
+#   • .github/workflows/prod-build.yml (production entry point)
+#
+name: QA Build & Deploy
+
+on:
+  push:
+    branches:
+      - 'rc/v*.*.*'
+
+concurrency:
+  group: qa-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Orchestrate QA Build & Deploy
+    uses: ./.github/workflows/deploy-orchestrator.yml
+    with:
+      env: qa
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
