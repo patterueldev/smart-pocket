@@ -76,7 +76,7 @@ jobs:
           echo "✅ APK built successfully with profile: $PROFILE"
 
       - name: Upload APK
-        uses: actions/upload-artifact@v3 # return to v3 for Gitea Actions
+        uses: actions/upload-artifact@v6
         with:
           name: android-production-apk
           path: apps/smart-pocket-mobile/app-production.apk

@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-ios:
-    environment: ${{ github.ref == 'refs/heads/develop' && 'QA' || 'PROD' }}
+    environment: ${{ inputs.env == 'prod' && 'PROD' || 'QA' }}
     runs-on: macos-latest
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
@@ -42,7 +42,7 @@ jobs:
 
       - name: Prebuild Expo
         working-directory: apps/smart-pocket-mobile
-        run: APP_ENV=${{ inputs.env == 'prod' && 'production' || 'qa' }} npx expo prebuild --clean
+        run: APP_ENV=${{ inputs.env == 'prod' && 'prod' || 'qa' }} npx expo prebuild --clean
 
       - name: Archive iOS
         working-directory: apps/smart-pocket-mobile/ios
