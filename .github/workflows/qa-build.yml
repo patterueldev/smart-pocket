@@ -104,6 +104,7 @@ jobs:
           fi
 
           release_type=qa # manual override for testing
+          echo "Detected changes - Backend: ${{ steps.changes.outputs.backend }}, Mobile: ${{ steps.changes.outputs.mobile }}, Release Type: $release_type"
 
   # Backend Docker build & push
   deploy-backend:
