@@ -1,10 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
-import jwtService from '../services/JwtService';
-import logger from '../utils/logger';
+import container from '../container';
+import { IJwtService } from '../interfaces';
+import { Logger } from '../utils/logger';
 
 interface AuthRequest extends Request {
   apiKey?: string;
 }
+
+const jwtService = container.get<IJwtService>('jwtService');
+const logger = container.get<Logger>('logger');
 
 const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;

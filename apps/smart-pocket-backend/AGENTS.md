@@ -28,36 +28,39 @@ See [README.md - Adding Routes](./README.md#adding-routes) for detailed examples
 
 ## Controller Pattern
 
-```typescript
-// ✅ Implement interface for DIP (Dependency Inversion)
-export interface IYourController {
-  methodName(req: Request, res: Response<ResponseType>): void;
-}
+All controllers:
+- Implement a typed interface (`IYourController`) for dependency inversion
+- Receive dependencies via constructor (not direct imports)
+- Handle HTTP requests and delegate to services
+- Return typed responses (no untyped data)
 
-// ✅ All methods typed, error handling via middleware
-export class YourController implements IYourController {
-  methodName(req: Request, res: Response<ResponseType>): void {
-    res.json({ success: true, data: {...} });
-  }
-}
-```
+See [README.md - Adding Routes](./README.md#adding-routes) for complete code examples.
 
 ## Input Validation
 
-Use Joi schemas. See [README.md - Validation](./README.md#input-validation) for patterns.
+Validation is extracted to dedicated middleware for clean separation of concerns:
+- Create middleware in `src/middleware/validate*.ts` 
+- Use Joi schemas to validate `req.body`
+- Attach validated data to `req.validatedBody`
+- Controllers receive pre-validated data
+
+See [README.md - Validation Middleware Pattern](./README.md#validation-middleware-pattern) for complete working examples.
 
 ## Important Files
 
 | File | Purpose |
 |------|---------|
+| `src/container.ts` | **Service Container/IoC** - Manages dependency injection and service registration |
 | `src/app.ts` | App setup, middleware, route registration |
 | `src/config/env.ts` | Environment configuration |
 | `src/interfaces/` | Service & controller contracts (DIP) |
-| `src/controllers/` | HTTP request handlers |
+| `src/controllers/` | HTTP request handlers (constructor-injected dependencies) |
 | `src/services/` | Business logic, shared across controllers |
 | `src/models/` | Request/Response DTOs |
-| `src/middleware/` | Cross-cutting concerns (auth, validation) |
-| `src/routes/` | Endpoint routing |
+| `src/middleware/` | Cross-cutting concerns (auth, validation, logging) |
+| `src/routes/` | Endpoint routing with middleware |
+| `src/errors/` | **ApplicationError class** and error codes (structured error handling) |
+| `src/repositories/` | **Repository interfaces** for future database integration (preparation layer) |
 
 ## Key Commands
 
@@ -73,43 +76,34 @@ npm start            # Run compiled app (production)
 
 Every layer implements SOLID principles:
 
-- **S**ingle Responsibility: Controllers handle HTTP, Services handle logic
+- **S**ingle Responsibility: Controllers handle HTTP, Services handle logic, Middleware handles validation/cross-cutting concerns
 - **O**pen/Closed: Extend via new files, don't modify existing
 - **L**iskov Substitution: Services/Controllers implement interfaces
 - **I**nterface Segregation: Focused interfaces (`IJwtService`, `IAuthController`)
-- **D**ependency Inversion: Depend on interfaces, not concrete classes
+- **D**ependency Inversion: All services injectable via constructor; managed by Service Container
 
-Example:
-```typescript
-// Routes depend on interface (DIP)
-const controller: IAuthController = new AuthController();
+The codebase uses a **Service Container** (`src/container.ts`) to manage dependencies, enabling easy testing with mock services.
 
-// Easy to swap implementations for testing
-const mockController: IAuthController = new MockAuthController();
-```
+See [README.md - Dependency Injection & Service Container](./README.md#dependency-injection--service-container) for implementation examples and unit testing patterns.
 
 ## Error Handling
 
-Centralized error middleware catches all errors. Return appropriate responses:
+The codebase uses a centralized error handler middleware that catches all errors:
+- Return explicit responses for known errors (e.g., `res.status(404).json(...)`)
+- Throw errors for unexpected conditions; middleware handles the response
+- Custom `ApplicationError` class available for structured error handling
 
-```typescript
-// Explicit response
-if (!found) {
-  res.status(404).json({ success: false, message: 'Not found' });
-  return;
-}
+See [README.md - Error Handling](./README.md#error-handling) for error patterns and response formats.
 
-// Let middleware handle unexpected errors
-throw new Error('Something failed');
-```
+## Implemented Features
 
-## Authentication Endpoints (Implemented)
-
+The backend currently provides:
 - **POST /auth/setup** - Exchange API key for JWT tokens
 - **POST /auth/refresh** - Issue new access token via refresh token
 - **GET /auth/test** - Protected endpoint (requires Bearer token)
+- **GET /health** - Health check endpoint
 
-See [TESTING_NOTES.md](./TESTING_NOTES.md) for curl examples.
+See [README.md - Authentication Endpoints](./README.md#authentication-endpoints) for curl examples and testing instructions.
 
 ## TypeScript Rules
 

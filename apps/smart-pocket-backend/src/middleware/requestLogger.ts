@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import logger from '../utils/logger';
+import container from '../container';
+import { Logger } from '../utils/logger';
+
+const logger = container.get<Logger>('logger');
 
 const requestLogger = (req: Request, res: Response, next: NextFunction): void => {
   const start = Date.now();

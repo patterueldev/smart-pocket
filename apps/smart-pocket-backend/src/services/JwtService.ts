@@ -75,3 +75,4 @@ class JwtService implements IJwtService {
 }
 
 export default new JwtService();
+export { JwtService };

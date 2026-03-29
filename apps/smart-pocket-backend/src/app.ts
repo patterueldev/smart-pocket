@@ -3,7 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 
 import config from './config/env';
-import logger from './utils/logger';
+import container from './container';
+import { Logger } from './utils/logger';
 import requestLogger from './middleware/requestLogger';
 import errorHandler from './middleware/errorHandler';
 import healthRoutes from './routes/health';
@@ -17,8 +18,10 @@ interface NotFoundResponse {
 
 class App {
   private app: Express;
+  private logger: Logger;
 
   constructor() {
+    this.logger = container.get<Logger>('logger');
     this.app = express();
     this.setupMiddleware();
     this.setupRoutes();
@@ -57,7 +60,7 @@ class App {
   start(): void {
     const PORT = config.port;
     this.app.listen(PORT, () => {
-      logger.info(`Server running on port ${PORT}`, {
+      this.logger.info(`Server running on port ${PORT}`, {
         environment: config.nodeEnv,
       });
     });

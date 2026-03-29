@@ -1,38 +1,32 @@
 import { Request, Response } from 'express';
 import config from '../config/env';
-import jwtService from '../services/JwtService';
-import logger from '../utils/logger';
-import Joi from 'joi';
 import { SetupRequest, RefreshRequest, TokenResponse, AuthTestResponse } from '../models';
 import { IAuthController, AuthRequest } from '../interfaces/IAuthController';
+import { IJwtService } from '../interfaces';
+import { Logger } from '../utils/logger';
+
+interface ValidatedRequest extends Request {
+  validatedBody?: SetupRequest | RefreshRequest;
+}
 
 class AuthController implements IAuthController {
   name: string = 'AuthController';
 
+  constructor(
+    private jwtService: IJwtService,
+    private logger: Logger
+  ) {}
+
   /**
    * POST /auth/setup
    * Exchange API key for JWT tokens
+   * (Validation handled by validateSetupRequest middleware)
    */
-  setup(req: Request, res: Response<TokenResponse>): void {
-    const schema = Joi.object({
-      apiKey: Joi.string().required(),
-    });
-
-    const { error, value } = schema.validate(req.body);
-
-    if (error) {
-      logger.warn('Invalid setup request', { error: error.message });
-      res.status(400).json({
-        success: false,
-        message: `Invalid request: ${error.details[0].message}`,
-      });
-      return;
-    }
-
-    const { apiKey } = value as SetupRequest;
+  setup(req: ValidatedRequest, res: Response<TokenResponse>): void {
+    const { apiKey } = req.validatedBody as SetupRequest;
 
     if (!config.apiKeys.includes(apiKey)) {
-      logger.warn('Invalid API key in setup', {
+      this.logger.warn('Invalid API key in setup', {
         keyLength: apiKey.length,
       });
       res.status(401).json({
@@ -42,9 +36,9 @@ class AuthController implements IAuthController {
       return;
     }
 
-    const tokens = jwtService.generateTokens(apiKey);
+    const tokens = this.jwtService.generateTokens(apiKey);
 
-    logger.info('Tokens issued', {
+    this.logger.info('Tokens issued', {
       apiKeyPrefix: apiKey.substring(0, 5) + '***',
     });
 
@@ -59,28 +53,14 @@ class AuthController implements IAuthController {
   /**
    * POST /auth/refresh
    * Refresh access token using refresh token
+   * (Validation handled by validateRefreshRequest middleware)
    */
-  refresh(req: Request, res: Response<TokenResponse>): void {
-    const schema = Joi.object({
-      refreshToken: Joi.string().required(),
-    });
-
-    const { error, value } = schema.validate(req.body);
-
-    if (error) {
-      logger.warn('Invalid refresh request', { error: error.message });
-      res.status(400).json({
-        success: false,
-        message: `Invalid request: ${error.details[0].message}`,
-      });
-      return;
-    }
-
-    const { refreshToken } = value as RefreshRequest;
-    const result = jwtService.refreshAccessToken(refreshToken);
+  refresh(req: ValidatedRequest, res: Response<TokenResponse>): void {
+    const { refreshToken } = req.validatedBody as RefreshRequest;
+    const result = this.jwtService.refreshAccessToken(refreshToken);
 
     if (!result) {
-      logger.warn('Invalid or expired refresh token');
+      this.logger.warn('Invalid or expired refresh token');
       res.status(401).json({
         success: false,
         message: 'Unauthorized: Invalid or expired refresh token',
@@ -88,7 +68,7 @@ class AuthController implements IAuthController {
       return;
     }
 
-    logger.info('Access token refreshed');
+    this.logger.info('Access token refreshed');
 
     res.status(200).json({
       success: true,
