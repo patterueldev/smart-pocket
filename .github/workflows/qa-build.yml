@@ -24,6 +24,7 @@ on:
   push:
     branches:
       - 'rc/v*.*.*'
+      - cicd # temporary trigger; TODO: DELETE AFTER CONFIRMING
 
 concurrency:
   group: qa-build-${{ github.ref }}
