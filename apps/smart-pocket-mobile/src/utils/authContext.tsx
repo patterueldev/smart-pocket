@@ -5,7 +5,7 @@ import { AuthTokens, AuthCredentials } from '@/types/auth';
 
 // Use mock services for development (backend not ready yet)
 // Change to 'real' when backend is available
-const USE_MOCK_SERVICES = true;
+const USE_MOCK_SERVICES = false;
 const services: IServices = ServiceFactory.createServices(USE_MOCK_SERVICES ? 'mock' : 'real');
 const { authService, apiClient } = services;
 

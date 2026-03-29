@@ -4,6 +4,7 @@ import { AuthContext } from '@/utils/authContext';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { getDefaultBaseUrl } from '@/constants/config';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const DEFAULT_BASE_URL = getDefaultBaseUrl();
 
@@ -12,6 +13,7 @@ export default function SetupScreen() {
   const [apiKey, setApiKey] = useState('');
   const [baseUrl, setBaseUrl] = useState(DEFAULT_BASE_URL);
   const [localError, setLocalError] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
 
   const handleSetup = async () => {
     setLocalError(null);
@@ -22,10 +24,7 @@ export default function SetupScreen() {
       return;
     }
 
-    if (apiKey.trim().length < 10) {
-      setLocalError('API key must be at least 10 characters');
-      return;
-    }
+
 
     if (!baseUrl.trim()) {
       setLocalError('Please enter a server URL');
@@ -48,10 +47,10 @@ export default function SetupScreen() {
     }
   };
 
-  const isValid = apiKey.trim().length >= 10 && baseUrl.trim().length > 0;
+  const isValid = apiKey.trim().length > 0 && baseUrl.trim().length > 0;
 
   return (
-    <ThemedView style={{ flex: 1, paddingTop: 20 }}>
+    <ThemedView style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}>
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
@@ -81,7 +80,7 @@ export default function SetupScreen() {
               color: '#000',
               backgroundColor: '#fff',
             }}
-            placeholder="Enter your API key (min 10 characters)"
+            placeholder="Enter your API key"
             placeholderTextColor="#999"
             value={apiKey}
             onChangeText={setApiKey}
@@ -90,9 +89,9 @@ export default function SetupScreen() {
             autoCapitalize="none"
             autoCorrect={false}
           />
-          {apiKey.length > 0 && apiKey.length < 10 && (
+          {apiKey.length > 0 && apiKey.trim().length === 0 && (
             <ThemedText style={{ color: '#ff6b6b', fontSize: 12, marginTop: 4 }}>
-              Must be at least 10 characters ({apiKey.length}/10)
+              API key cannot be empty
             </ThemedText>
           )}
         </View>

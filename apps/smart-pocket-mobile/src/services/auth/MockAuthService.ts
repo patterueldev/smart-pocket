@@ -16,8 +16,8 @@ export class MockAuthService implements IAuthService {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Validate inputs
-    if (!credentials.apiKey || credentials.apiKey.length < 10) {
-      throw new Error('Invalid API key (must be at least 10 characters)');
+    if (!credentials.apiKey || credentials.apiKey.trim().length === 0) {
+      throw new Error('API key cannot be empty');
     }
 
     if (!credentials.baseUrl) {

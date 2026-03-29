@@ -13,6 +13,7 @@ export class AuthService implements IAuthService {
 
   async setup(credentials: AuthCredentials): Promise<AuthTokens> {
     try {
+      console.log('Attempting setup with credentials:', credentials);
       const payload: SetupRequest = {
         apiKey: credentials.apiKey,
       };
