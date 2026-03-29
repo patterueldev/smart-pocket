@@ -33,6 +33,10 @@ jobs:
       - name: Run lint (if configured)
         working-directory: apps/smart-pocket-mobile
         run: npm run lint --if-present || true
+      
+      - name: Run unit tests
+        working-directory: apps/smart-pocket-mobile
+        run: npm test -- --coverage
 
       - name: Type check
         working-directory: apps/smart-pocket-mobile
