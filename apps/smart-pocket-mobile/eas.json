@@ -1,43 +1,57 @@
 {
   "cli": {
-    "version": ">= 7.0.0"
+    "version": ">= 7.0.0",
+    "promptToConfigurePushNotifications": false
   },
   "build": {
     "development": {
+      "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "development"
+        "APP_ENV": "dev"
       },
       "android": {
         "buildType": "apk",
-        "gradleCommand": ":app:assembleRelease",
+        "gradleCommand": ":app:assembleDebug",
         "credentialsSource": "local"
+      },
+      "ios": {
+        "buildConfiguration": "Debug"
       }
     },
     "quality": {
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "quality"
+        "APP_ENV": "qa"
       },
       "android": {
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease",
         "credentialsSource": "local"
+      },
+      "ios": {
+        "buildConfiguration": "Release"
       }
     },
     "production": {
       "distribution": "internal",
       "env": {
-        "APP_VARIANT": "production"
+        "APP_ENV": "prod"
       },
       "android": {
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease",
         "credentialsSource": "local"
+      },
+      "ios": {
+        "buildConfiguration": "Release"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": true,
+      "android": true
+    }
   }
 }
