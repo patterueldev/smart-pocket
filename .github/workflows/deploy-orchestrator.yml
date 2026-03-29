@@ -99,12 +99,6 @@ jobs:
             echo "⊘ No changes detected in mobile files."
           fi
 
-          # OVERRIDE; TODO: remove after confirming detection logic works correctly
-          # only builds android
-          echo "android=true" >> $GITHUB_OUTPUT
-          echo "ios=false" >> $GITHUB_OUTPUT
-          echo "backend=false" >> $GITHUB_OUTPUT
-
 
       - name: Output detection results
         run: |

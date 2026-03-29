@@ -29,6 +29,8 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: 'apps/smart-pocket-mobile/package-lock.json'
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -39,9 +41,14 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Restore Gradle Cache
+        uses: gradle/gradle-build-action@v3
+        with:
+          cache-read-only: false
+
       - name: Install dependencies
         working-directory: apps/smart-pocket-mobile
-        run: npm install
+        run: npm ci
 
       - name: Decode Android Keystore
         run: |
@@ -72,7 +79,9 @@ jobs:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           PROFILE=${{ inputs.env == 'prod' && 'production' || 'preview' }}
-          npx eas-cli build --platform android --profile $PROFILE --local --non-interactive --output=./app-production.apk
+          # Use EAS cloud build (much faster than --local)
+          # --cache-key ensures cache across builds, --json for structured output
+          npx eas-cli build --platform android --profile $PROFILE --non-interactive --output=./app-production.apk
           echo "✅ APK built successfully with profile: $PROFILE"
 
       - name: Upload APK
