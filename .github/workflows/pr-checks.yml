@@ -10,6 +10,7 @@ on:
 jobs:
   # Detect changed files for conditional jobs
   detect-changes:
+    name: Detect changed files
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.changes.outputs.backend }}
@@ -17,6 +18,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Detect changed files
         id: changes
