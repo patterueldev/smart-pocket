@@ -9,6 +9,8 @@ import requestLogger from './middleware/requestLogger';
 import errorHandler from './middleware/errorHandler';
 import healthRoutes from './routes/health';
 import authRoutes from './routes/auth';
+import createSheetsSyncRoutes from './routes/sheets-sync';
+import { ISheetsSyncController } from './interfaces/ISheetsSyncController';
 
 interface NotFoundResponse {
   success: boolean;
@@ -38,6 +40,10 @@ class App {
   private setupRoutes(): void {
     this.app.use('/health', healthRoutes);
     this.app.use('/auth', authRoutes);
+
+    // Mount sheets-sync routes
+    const sheetsSyncController = container.get<ISheetsSyncController>('sheetsSyncController');
+    this.app.use('/sheets-sync', createSheetsSyncRoutes(sheetsSyncController as any));
 
     this.app.use((req: Request, res: Response<NotFoundResponse>) => {
       res.status(404).json({
