@@ -25,7 +25,6 @@ on:
   push:
     branches:
       - main
-      - cicd # temporary trigger; TODO: DELETE AFTER CONFIRMING
 
 concurrency:
   group: prod-build-${{ github.ref }}
