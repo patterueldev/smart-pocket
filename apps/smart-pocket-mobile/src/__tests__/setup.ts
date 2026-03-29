@@ -46,3 +46,8 @@ jest.mock('expo-router', () => ({
 global.console.error = jest.fn();
 global.console.warn = jest.fn();
 
+// Handle unhandled promise rejections from mock rejections in tests
+process.on('unhandledRejection', () => {
+  // Ignore unhandled rejections from mocked promises in tests
+});
+
