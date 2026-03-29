@@ -69,6 +69,7 @@ jobs:
         env:
           NODE_ENV: production
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           PROFILE=${{ inputs.env == 'prod' && 'production' || 'preview' }}
           npx eas-cli build --platform android --profile $PROFILE --local --non-interactive --output=./app-production.apk
