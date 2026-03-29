@@ -37,3 +37,6 @@ jobs:
     with:
       env: qa
     secrets: inherit
+    permissions:
+      contents: read
+      packages: write

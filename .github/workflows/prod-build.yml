@@ -37,3 +37,6 @@ jobs:
     with:
       env: prod
     secrets: inherit
+    permissions:
+      contents: read
+      packages: write
