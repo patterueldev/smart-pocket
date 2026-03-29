@@ -72,6 +72,7 @@ jobs:
     outputs:
       backend: ${{ steps.changes.outputs.backend }}
       mobile: ${{ steps.changes.outputs.mobile }}
+      release_type: ${{ steps.changes.outputs.release_type }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -81,29 +82,28 @@ jobs:
       - name: Detect changed files
         id: changes
         run: |
-          # Get commit range for RC branch
-          # Compare HEAD with previous commit (since this is initial push or update)
-          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
-            # New branch: compare with develop
-            MERGE_BASE=$(git merge-base origin/develop HEAD)
-          else
-            # Updated branch: compare with previous commit
-            MERGE_BASE="${{ github.event.before }}"
-          fi
-          
           # Check if backend files changed
-          if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-backend/"; then
+          if grep -q "^apps/smart-pocket-backend/"; then
             echo "backend=true" >> $GITHUB_OUTPUT
           else
             echo "backend=false" >> $GITHUB_OUTPUT
           fi
           
           # Check if mobile files changed
-          if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-mobile/"; then
+          if grep -q "^apps/smart-pocket-mobile/"; then
             echo "mobile=true" >> $GITHUB_OUTPUT
           else
             echo "mobile=false" >> $GITHUB_OUTPUT
           fi
+
+          # Determine release type
+          if [[ "$GITHUB_REF_NAME" == rc/v*.*.* ]]; then
+            echo "release_type=qa" >> $GITHUB_OUTPUT
+          else
+            echo "release_type=prod" >> $GITHUB_OUTPUT
+          fi
+
+          release_type=qa # manual override for testing
 
   # Backend Docker build & push
   deploy-backend:
@@ -111,7 +111,7 @@ jobs:
     needs: detect-changes
     uses: ./.github/workflows/deploy-backend.yml
     with:
-      env: qa
+      env: ${{ needs.detect-changes.outputs.release_type }}
     if: needs.detect-changes.outputs.backend == 'true'
     secrets: inherit
     permissions:
@@ -124,7 +124,7 @@ jobs:
     needs: detect-changes
     uses: ./.github/workflows/deploy-android.yml
     with:
-      env: qa
+      env: ${{ needs.detect-changes.outputs.release_type }}
     if: needs.detect-changes.outputs.mobile == 'true'
     secrets: inherit
 
@@ -134,7 +134,7 @@ jobs:
     needs: detect-changes
     uses: ./.github/workflows/deploy-ios.yml
     with:
-      env: qa
+      env: ${{ needs.detect-changes.outputs.release_type }}
     if: needs.detect-changes.outputs.mobile == 'true'
     secrets: inherit
 
