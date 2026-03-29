@@ -2,6 +2,11 @@ name: Android - Build & Deploy
 
 on:
   workflow_call:
+    inputs:
+      env:
+        required: true
+        type: string
+        description: 'Deployment environment: qa or prod'
 
 jobs:
   build-android:
@@ -66,8 +71,9 @@ jobs:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
-          npx eas-cli build --platform android --profile production --local --non-interactive --output=./app-production.apk
-          echo "✅ APK built successfully"
+          PROFILE=${{ inputs.env == 'prod' && 'production' || 'preview' }}
+          npx eas-cli build --platform android --profile $PROFILE --local --non-interactive --output=./app-production.apk
+          echo "✅ APK built successfully with profile: $PROFILE"
 
       - name: Upload APK
         uses: actions/upload-artifact@v3 # return to v3 for Gitea Actions

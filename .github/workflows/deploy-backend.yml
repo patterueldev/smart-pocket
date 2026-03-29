@@ -2,6 +2,11 @@ name: Backend - Build & Deploy
 
 on:
   workflow_call:
+    inputs:
+      env:
+        required: true
+        type: string
+        description: 'Deployment environment: qa or prod'
 
 jobs:
   build-backend:
@@ -34,8 +39,8 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/backend
           tags: |
-            type=raw,value=${{ github.ref == 'refs/heads/main' && 'latest' || 'qa' }}
-            type=sha,prefix=${{ github.ref == 'refs/heads/main' && 'latest-' || 'qa-' }}
+            type=raw,value=${{ inputs.env == 'prod' && 'latest' || 'qa' }}
+            type=sha,prefix=${{ inputs.env == 'prod' && 'latest-' || 'qa-' }}
             type=ref,event=branch
 
       - name: Build and push Docker image
