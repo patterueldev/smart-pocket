@@ -23,7 +23,7 @@ function parseSheetDate(dateString) {
  * @returns {Promise<Object>} Google Sheets API client
  */
 async function initAuth() {
-  const defaultPath = '/data/keys/smart-pocket-server.json';
+  const defaultPath = '/data/keys/sheets-credential.json';
   const credentialsPath = process.env.GOOGLE_CREDENTIALS_JSON_PATH || defaultPath;
   
   if (!fs.existsSync(credentialsPath)) {

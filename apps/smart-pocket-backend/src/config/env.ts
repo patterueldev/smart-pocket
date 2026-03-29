@@ -12,6 +12,13 @@ interface EnvConfig {
   jwtRefreshSecret: string;
   jwtAccessExpiry: string;
   jwtRefreshExpiry: string;
+  actualBudgetServerUrl: string | undefined;
+  actualBudgetPassword: string | undefined;
+  actualBudgetId: string | undefined;
+  googleCredentialsPath: string | undefined;
+  googleSheetId: string | undefined;
+  googleSheetName: string;
+  defaultCurrency: string;
 }
 
 function parseApiKeys(apiKeysEnv: string | undefined): string[] {
@@ -48,6 +55,14 @@ const config: EnvConfig = {
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret-change-in-production',
   jwtAccessExpiry: process.env.JWT_ACCESS_EXPIRY || '1h',
   jwtRefreshExpiry: process.env.JWT_REFRESH_EXPIRY || '7d',
+  actualBudgetServerUrl: process.env.ACTUAL_BUDGET_SERVER_URL,
+  actualBudgetPassword: process.env.ACTUAL_BUDGET_PASSWORD,
+  actualBudgetId: process.env.ACTUAL_BUDGET_ID,
+  googleCredentialsPath:
+    process.env.GOOGLE_CREDENTIALS_JSON_PATH || '/data/keys/sheets-credential.json',
+  googleSheetId: process.env.GOOGLE_SHEET_ID || '',
+  googleSheetName: process.env.GOOGLE_SHEET_NAME || '',
+  defaultCurrency: process.env.DEFAULT_CURRENCY || 'PHP',
 };
 
 export default config;

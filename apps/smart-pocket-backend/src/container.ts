@@ -1,6 +1,14 @@
 import { IJwtService } from './interfaces';
 import { JwtService } from './services/JwtService';
 import { Logger } from './utils/logger';
+import ActualBudgetService from './services/ActualBudgetService';
+import GoogleSheetsService from './services/GoogleSheetsService';
+import SheetsSyncService from './services/SheetsSync/SheetsSyncService';
+import SheetsSyncController from './controllers/SheetsSyncController';
+import { IActualBudgetService } from './interfaces/IActualBudgetService';
+import { IGoogleSheetsService } from './interfaces/IGoogleSheetsService';
+import { ISheetsSync } from './interfaces/ISheetsSync';
+import { ISheetsSyncController } from './interfaces/ISheetsSyncController';
 
 /**
  * Service Container / IoC Container
@@ -93,6 +101,32 @@ function initializeServices(): void {
 
   // Register Logger as singleton (uses class constructor)
   container.registerSingleton('logger', () => new Logger());
+
+  // Register Actual Budget Service as singleton
+  container.registerSingleton<IActualBudgetService>(
+    'actualBudgetService',
+    () => new ActualBudgetService()
+  );
+
+  // Register Google Sheets Service as singleton
+  container.registerSingleton<IGoogleSheetsService>(
+    'googleSheetsService',
+    () => new GoogleSheetsService()
+  );
+
+  // Register Sheets Sync Service as singleton
+  container.registerSingleton<ISheetsSync>('sheetsSyncService', () => new SheetsSyncService());
+
+  // Register Sheets Sync Controller as singleton (depends on services)
+  container.registerSingleton<ISheetsSyncController>(
+    'sheetsSyncController',
+    () =>
+      new SheetsSyncController(
+        container.get<ActualBudgetService>('actualBudgetService'),
+        container.get<GoogleSheetsService>('googleSheetsService'),
+        container.get<SheetsSyncService>('sheetsSyncService')
+      )
+  );
 }
 
 // Initialize on module load
