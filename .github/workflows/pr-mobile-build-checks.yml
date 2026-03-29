@@ -36,7 +36,7 @@ jobs:
       
       - name: Run unit tests
         working-directory: apps/smart-pocket-mobile
-        run: npm test -- --coverage
+        run: npm test
 
       - name: Type check
         working-directory: apps/smart-pocket-mobile
