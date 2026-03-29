@@ -7,11 +7,13 @@
  * Account change in a sync draft
  */
 export interface AccountChange {
+  accountId?: string;
   accountName: string;
-  previousBalance: number;
-  newBalance: number;
+  currentBalance: number; // Current balance in Actual Budget
+  sheetBalance: number; // Balance currently in Google Sheets
+  currency: string; // Currency code (e.g., 'USD', 'PHP')
   isNew: boolean; // true if account is new in Google Sheets
-  lastSyncedAt: string | null;
+  lastSyncTime: string | null; // ISO timestamp of last sync
 }
 
 /**

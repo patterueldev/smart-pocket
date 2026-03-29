@@ -8,35 +8,44 @@ import { ISheetsSync, SheetsSyncDraft, SheetsSyncResult, AccountChange } from '.
 
 /**
  * Sample account changes for testing
+ * Uses Philippine Peso (PHP) as currency
  */
 const SAMPLE_CHANGES: AccountChange[] = [
   {
-    accountName: 'Checking Account',
-    previousBalance: 5250.75,
-    newBalance: 5845.32,
+    accountId: 'acc-001',
+    accountName: 'Cash in Wallet',
+    currentBalance: 15500.00,
+    sheetBalance: 12350.75,
+    currency: 'PHP',
     isNew: false,
-    lastSyncedAt: '2026-03-28T14:30:00Z',
+    lastSyncTime: '2026-03-28T14:30:00Z',
   },
   {
+    accountId: 'acc-002',
+    accountName: 'BDO Checking',
+    currentBalance: 125000.50,
+    sheetBalance: 118500.00,
+    currency: 'PHP',
+    isNew: false,
+    lastSyncTime: '2026-03-28T14:30:00Z',
+  },
+  {
+    accountId: 'acc-003',
     accountName: 'Savings Account',
-    previousBalance: 15000.00,
-    newBalance: 15450.25,
+    currentBalance: 450000.00,
+    sheetBalance: 445000.00,
+    currency: 'PHP',
     isNew: false,
-    lastSyncedAt: '2026-03-28T14:30:00Z',
+    lastSyncTime: '2026-03-28T14:30:00Z',
   },
   {
+    accountId: 'acc-004',
     accountName: 'Business Account',
-    previousBalance: 8920.50,
-    newBalance: 9340.75,
-    isNew: false,
-    lastSyncedAt: '2026-03-28T14:30:00Z',
-  },
-  {
-    accountName: 'Emergency Fund',
-    previousBalance: 0.00,
-    newBalance: 3500.00,
+    currentBalance: 85000.00,
+    sheetBalance: 0.00,
+    currency: 'PHP',
     isNew: true,
-    lastSyncedAt: null,
+    lastSyncTime: null,
   },
 ];
 
