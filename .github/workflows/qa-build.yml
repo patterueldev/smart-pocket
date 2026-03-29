@@ -114,6 +114,9 @@ jobs:
       env: qa
     if: needs.detect-changes.outputs.backend == 'true'
     secrets: inherit
+    permissions:
+      contents: read
+      packages: write
 
   # Android APK build
   deploy-android:
