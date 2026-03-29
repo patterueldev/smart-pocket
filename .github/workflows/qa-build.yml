@@ -58,8 +58,11 @@ on:
       - cicd # temporary trigger TODO: MUST BE REMOVED ONCE CONFIRMED
       - 'rc/v*.*.*'
 
-env:
-  DEPLOYMENT_ENV: qa
+# Configuration: Set to 'qa' or 'prod'
+# To use as production build, change to 'prod' (or copy to prod-build.yml and update)
+concurrency:
+  group: qa-build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   # Detect changed files for conditional deployments
@@ -108,7 +111,7 @@ jobs:
     needs: detect-changes
     uses: ./.github/workflows/deploy-backend.yml
     with:
-      env: ${{ env.DEPLOYMENT_ENV }}
+      env: qa
     if: needs.detect-changes.outputs.backend == 'true'
     secrets: inherit
 
@@ -118,7 +121,7 @@ jobs:
     needs: detect-changes
     uses: ./.github/workflows/deploy-android.yml
     with:
-      env: ${{ env.DEPLOYMENT_ENV }}
+      env: qa
     if: needs.detect-changes.outputs.mobile == 'true'
     secrets: inherit
 
@@ -128,7 +131,7 @@ jobs:
     needs: detect-changes
     uses: ./.github/workflows/deploy-ios.yml
     with:
-      env: ${{ env.DEPLOYMENT_ENV }}
+      env: qa
     if: needs.detect-changes.outputs.mobile == 'true'
     secrets: inherit
 
