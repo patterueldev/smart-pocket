@@ -4,6 +4,64 @@ This is the **master guide** for developers and AI agents working on the Smart P
 
 ---
 
+## 📚 Documentation Pattern: AGENTS.md + README.md
+
+**Smart Pocket now follows a standardized documentation pattern** across all directories:
+
+### AGENTS.md (This File & Paired Guides)
+- **Purpose**: Quick reference for AI agents and developers
+- **Size**: ~300-400 lines (lightweight, fits in AI token budget)
+- **Content**: 
+  - Quick navigation & links
+  - Key conventions & critical files
+  - Common tasks with links to detailed docs
+  - Delegates to README.md for details
+- **When to read**: "I need to make a quick change"
+- **Example**: `@apps/smart-pocket-mobile/AGENTS.md` (8.4 KB, 200 lines)
+
+### README.md (Paired with AGENTS.md)
+- **Purpose**: Comprehensive documentation with deep dives
+- **Size**: 2000+ lines (complete reference)
+- **Content**:
+  - Getting started guides
+  - Architecture deep dives
+  - Full code examples
+  - Troubleshooting with solutions
+  - Appendices with detailed patterns
+- **When to read**: "I need to understand how something works"
+- **Example**: `@apps/smart-pocket-mobile/README.md` (27 KB, 900 lines)
+
+### Pattern in Action
+
+```
+Developer/AI Agent needs info:
+  ↓
+Read lightweight AGENTS.md (quick reference)
+  ↓
+Find relevant section with link to README.md
+  ↓
+Jump to README.md for comprehensive details
+  ↓
+Return to AGENTS.md for quick commands/conventions
+```
+
+**Benefits**:
+- ✅ AI agents stay within token budget (~1000 tokens for AGENTS.md)
+- ✅ Developers get both quick reference AND comprehensive docs
+- ✅ Easy to maintain: AGENTS.md links, README.md is the source of truth
+- ✅ Clear pattern: same structure across all directories
+
+### Current Implementation
+
+| Directory | AGENTS.md | README.md | Status |
+|-----------|-----------|-----------|--------|
+| Root | `AGENTS.md` | `README.md` | ✅ Pattern established |
+| `@apps/smart-pocket-mobile/` | `AGENTS.md` (8.4 KB) | `README.md` (27 KB) | ✅ Refactored |
+| `@apps/smart-pocket-backend/` | `AGENTS.md` | `README.md` | ⏳ To follow pattern |
+| `@cicd/` | `AGENTS.md` | `README.md` | ⏳ To follow pattern |
+
+---
+
 ## 🎯 Quick Navigation
 
 **Where are you making changes?** Jump to the right guide:
