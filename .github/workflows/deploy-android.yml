@@ -78,10 +78,9 @@ jobs:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
-          PROFILE=${{ inputs.env == 'prod' && 'production' || 'preview' }}
-          # Use EAS cloud build (much faster than --local)
+          PROFILE=${{ inputs.env == 'prod' && 'production' || 'quality' }}
           # --cache-key ensures cache across builds, --json for structured output
-          npx eas-cli build --platform android --profile $PROFILE --non-interactive --output=./app-production.apk
+          npx eas-cli build --platform android --profile $PROFILE --local --non-interactive --output=./app-production.apk
           echo "✅ APK built successfully with profile: $PROFILE"
 
       - name: Upload APK
