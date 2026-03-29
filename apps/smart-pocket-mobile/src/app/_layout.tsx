@@ -1,43 +1,36 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from "expo-router";
-import { StatusBar } from 'expo-status-bar';
-import { useContext, useEffect, useState } from 'react';
-
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { AuthProvider, AuthContext } from '@/utils/authContext';
+import { useContext } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
+
+import { AuthProvider, AuthContext } from '@/utils/authContext';
+import { useAuthInitialization } from '@/hooks/useAuthInitialization';
+import { useSplashController } from '@/hooks/useSplashController';
+import { ThemedLayout } from '@/components/ThemedLayout';
+import { RootNavigator } from '@/components/RootNavigator';
 
 SplashScreen.preventAutoHideAsync();
 
+/**
+ * Root layout content component.
+ * Orchestrates auth initialization, splash screen, theming, and navigation.
+ * 
+ * Single Responsibility: Compose and coordinate extracted hooks and components.
+ * Each concern is isolated in its own hook or component (5/5 SOLID compliance).
+ */
 function RootLayoutContent() {
-  const colorScheme = useColorScheme();
   const authContext = useContext(AuthContext);
-  const [isReady, setIsReady] = useState(false);
 
-  // On mount, initialize auth from storage
-  // Don't show any route until initialization is complete
-  useEffect(() => {
-    authContext.initializeFromStorage().finally(() => setIsReady(true));
-  }, [authContext]);
-
-  useEffect(() => {
-    if (isReady) {
-      SplashScreen.hideAsync();
-    }
-  }, [isReady]);
+  // Each hook has a single responsibility
+  const isReady = useAuthInitialization(authContext);
+  useSplashController(isReady);
 
   if (!isReady) {
-    return null; // Or a loading spinner
+    return null; // Show splash screen while loading
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="setup" options={{ headerShown: false, animation: 'none' }} />
-        <Stack.Screen name="(protected)" options={{ headerShown: false, animation: 'none' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <ThemedLayout>
+      <RootNavigator isLoggedIn={authContext.isLoggedIn} />
+    </ThemedLayout>
   );
 }
 
