@@ -5,9 +5,9 @@ FROM node:24-alpine
 
 WORKDIR /app
 
-# Install dependencies with legacy peer deps to handle TypeScript version conflicts
+# Install dependencies
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm ci
 
 # Copy source code
 COPY . .

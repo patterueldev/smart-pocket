@@ -7,6 +7,7 @@ import logger from './utils/logger';
 import requestLogger from './middleware/requestLogger';
 import errorHandler from './middleware/errorHandler';
 import healthRoutes from './routes/health';
+import authRoutes from './routes/auth';
 
 interface NotFoundResponse {
   success: boolean;
@@ -33,6 +34,7 @@ class App {
 
   private setupRoutes(): void {
     this.app.use('/health', healthRoutes);
+    this.app.use('/auth', authRoutes);
 
     this.app.use((req: Request, res: Response<NotFoundResponse>) => {
       res.status(404).json({

@@ -10,6 +10,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - API_KEYS=${API_KEYS}
     restart: unless-stopped
     # If not using cloudflared, uncomment the following lines to expose the backend on port 3000
     # ports:
