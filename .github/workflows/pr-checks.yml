@@ -43,26 +43,31 @@ jobs:
 
   # Base checks: enforce RC branch rules
   base-checks:
+    name: Base checks (RC branch rules)
     uses: ./.github/workflows/pr-base-checks.yml
 
   # Conventional commits: validate PR title and body
   conventional-commits:
+    name: Conventional commits and PR body
     uses: ./.github/workflows/pr-conventional-commits.yml
 
   # Backend build: only run if backend files changed
   backend-checks:
+    name: Backend build checks
     needs: detect-changes
     uses: ./.github/workflows/pr-backend-build-checks.yml
     if: needs.detect-changes.outputs.backend == 'true'
 
   # Mobile build: only run if mobile files changed
   mobile-checks:
+    name: Mobile build checks
     needs: detect-changes
     uses: ./.github/workflows/pr-mobile-build-checks.yml
     if: needs.detect-changes.outputs.mobile == 'true'
 
   # Summary: display overall check results
   summary:
+    name: PR Checks Summary
     runs-on: ubuntu-latest
     needs: [detect-changes, base-checks, conventional-commits, backend-checks, mobile-checks]
     if: always()
