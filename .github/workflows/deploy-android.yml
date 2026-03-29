@@ -56,6 +56,7 @@ jobs:
           echo "✅ release.keystore created from base64 secret"
 
       - name: Create credentials.json
+        working-directory: apps/smart-pocket-mobile
         run: |
           cat > credentials.json << EOF
           {
