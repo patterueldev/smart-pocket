@@ -64,7 +64,7 @@ jobs:
           echo "Digest: ${{ steps.build.outputs.digest }}"
 
   summary:
-    name: QA Server - Summary
+    name: Backend Deployment Summary
     needs: [build-backend]
     runs-on: ubuntu-latest
     if: always()
@@ -72,12 +72,17 @@ jobs:
     steps:
       - name: Generate summary
         run: |
-          echo "## 🚀 QA Server Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          ENV_NAME="${{ inputs.env }}"
+          ENV_LABEL=$([ "$ENV_NAME" == "prod" ] && echo "Production" || echo "QA")
+          IMAGE_TAG=$([ "$ENV_NAME" == "prod" ] && echo "latest" || echo "qa")
+          
+          echo "## 🚀 $ENV_LABEL Server Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           if [ "${{ needs.build-backend.result }}" == "success" ]; then
             echo "✅ **Build & Push**: Success" >> $GITHUB_STEP_SUMMARY
-            echo "- Image: \`ghcr.io/${{ github.repository }}/backend:qa\`" >> $GITHUB_STEP_SUMMARY
+            echo "- Image: \`ghcr.io/${{ github.repository }}/backend:$IMAGE_TAG\`" >> $GITHUB_STEP_SUMMARY
+            echo "- Environment: \`$ENV_LABEL\`" >> $GITHUB_STEP_SUMMARY
             echo "- Digest: \`${{ needs.build-backend.outputs.image_digest }}\`" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ **Build & Push**: Failed" >> $GITHUB_STEP_SUMMARY
