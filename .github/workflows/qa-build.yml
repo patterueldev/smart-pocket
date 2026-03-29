@@ -87,36 +87,57 @@ jobs:
           if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
             # New branch: compare with develop
             MERGE_BASE=$(git merge-base origin/develop HEAD)
+
+            echo "New RC branch detected. Comparing with develop branch at: $MERGE_BASE"
           else
             # Updated branch: compare with previous commit
             MERGE_BASE="${{ github.event.before }}"
+
+            echo "Updated RC branch detected. Comparing with previous commit: $MERGE_BASE"
           fi
+          echo "Comparing changes against: $MERGE_BASE"
           
           # Check if backend files changed
           if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-backend/"; then
             echo "backend=true" >> $GITHUB_OUTPUT
+
+            echo "Changes detected in backend files."
           else
             echo "backend=false" >> $GITHUB_OUTPUT
+
+            echo "No changes detected in backend files."
           fi
           
           # Check if mobile files changed
           if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-mobile/"; then
             echo "mobile=true" >> $GITHUB_OUTPUT
+
+            echo "Changes detected in mobile files."
           else
             echo "mobile=false" >> $GITHUB_OUTPUT
+
+            echo "No changes detected in mobile files."
           fi
 
           # Determine release type
           if [[ "$GITHUB_REF_NAME" == rc/v*.*.* ]]; then
             echo "release_type=qa" >> $GITHUB_OUTPUT
+
+            echo "Release candidate branch detected. Setting release type to QA."
           else
             echo "release_type=prod" >> $GITHUB_OUTPUT
+
+            echo "Non-RC branch detected. Setting release type to PROD."
           fi
 
           release_type=qa # manual override for testing
-          echo "detected: backend=${{ steps.changes.outputs.backend }}"
-          echo "detected: mobile=${{ steps.changes.outputs.mobile }}"
-          echo "detected: release_type=${{ steps.changes.outputs.release_type }}"
+
+      - name: Output detection results
+        run: |
+          echo "✅ Detection complete:"
+          echo "- Backend changed: ${{ steps.changes.outputs.backend }}"
+          echo "- Mobile changed: ${{ steps.changes.outputs.mobile }}"
+          echo "- Release type: ${{ steps.changes.outputs.release_type }}"
 
   # Backend Docker build & push
   deploy-backend:
