@@ -1,0 +1,39 @@
+#
+# Prod Build & Deploy Entry Point
+#
+# Purpose:
+#   Triggers build and deployment pipeline for main branch (production).
+#   Calls the deploy-orchestrator with env=prod.
+#
+# Trigger:
+#   - Push to main branch
+#
+# What it does:
+#   1. Passes control to deploy-orchestrator.yml with env=prod
+#   2. Orchestrator detects changes vs main branch (always zero changes, but runs for consistency)
+#   3. Conditionally deploys backend/mobile to production environment
+#   4. Uses 'latest' Docker tag and production app schemes
+#   5. Displays summary of results
+#
+# Related Workflows:
+#   • .github/workflows/deploy-orchestrator.yml (core orchestration logic)
+#   • .github/workflows/qa-build.yml (QA entry point)
+#
+name: Prod Build & Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: prod-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Orchestrate Prod Build & Deploy
+    uses: ./.github/workflows/deploy-orchestrator.yml
+    with:
+      env: prod
+    secrets: inherit

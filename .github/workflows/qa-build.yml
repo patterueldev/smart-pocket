@@ -1,234 +1,38 @@
 #
-# QA Build & Deploy Orchestrator
+# QA Build & Deploy Entry Point
 #
 # Purpose:
-#   Coordinates QA builds and deployments when RC (release candidate) branches
-#   are created or updated. Detects which projects changed and deploys only what's needed.
+#   Triggers build and deployment pipeline for RC (release candidate) branches.
+#   Calls the deploy-orchestrator with env=qa.
 #
 # Trigger:
-#   - Push to rc/vX.Y.Z branch (when created or updated)
+#   - Push to rc/vX.Y.Z branch
 #
-# Execution Flow:
-#   1. detect-changes (always)
-#      └─ Analyzes changes to determine which apps need deployment
-#      └─ Outputs: backend=true/false, mobile=true/false
-#   
-#   2. deploy-backend (conditional: if backend files changed)
-#      └─ Builds and pushes Docker image with 'qa' tag
-#      └─ Skipped if only mobile/docs changed
-#   
-#   3. deploy-android (conditional: if mobile files changed)
-#      └─ Builds APK and uploads to artifact storage
-#      └─ Skipped if only backend/docs changed
-#   
-#   4. deploy-ios (conditional: if mobile files changed)
-#      └─ Builds IPA and uploads to AltStore Source Manager
-#      └─ Skipped if only backend/docs changed
-#
-#   5. summary (always)
-#      └─ Displays deployment results and any failures
-#      └─ Fails if any deployment failed
-#
-# Key Features:
-#   • Cost-optimized: only deploys changed projects
-#   • RC branch enforced: only rc/vX.Y.Z branches trigger this
-#   • Reusable workflows: deploy jobs callable independently
-#   • Clear reporting: summary shows what was deployed
+# What it does:
+#   1. Passes control to deploy-orchestrator.yml with env=qa
+#   2. Orchestrator detects changes vs main branch
+#   3. Conditionally deploys backend/mobile to QA environment
+#   4. Displays summary of results
 #
 # Related Workflows:
-#   • .github/workflows/deploy-backend.yml (backend Docker deployment)
-#   • .github/workflows/deploy-android.yml (Android APK build)
-#   • .github/workflows/deploy-ios.yml (iOS IPA build)
-#
-# Requirements:
-#   Secrets (GitHub Settings > Secrets):
-#   • DOCKER related: GITHUB_TOKEN (auto-provided)
-#   • Android: ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD, EXPO_TOKEN
-#   • iOS: ALTSTORE_SOURCE_MANAGER_HOST, ALTSTORE_ACCESS_KEY, ALTSTORE_SECRET, ALTSTORE_APP_ID, EXPO_TOKEN
-#
-# Configuration:
-#   DEPLOYMENT_ENV: Set to 'qa' or 'prod'
-#   To use as production build, change this to 'prod' (or copy to prod-build.yml and update)
+#   • .github/workflows/deploy-orchestrator.yml (core orchestration logic)
+#   • .github/workflows/prod-build.yml (production entry point)
 #
 name: QA Build & Deploy
 
 on:
   push:
     branches:
-      - cicd # temporary trigger TODO: MUST BE REMOVED ONCE CONFIRMED
       - 'rc/v*.*.*'
 
-# Configuration: Set to 'qa' or 'prod'
-# To use as production build, change to 'prod' (or copy to prod-build.yml and update)
 concurrency:
   group: qa-build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # Detect changed files for conditional deployments
-  detect-changes:
-    name: Detect changed files
-    runs-on: ubuntu-latest
-    outputs:
-      backend: ${{ steps.changes.outputs.backend }}
-      mobile: ${{ steps.changes.outputs.mobile }}
-      release_type: ${{ steps.changes.outputs.release_type }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Detect changed files
-        id: changes
-        run: |
-          # RC branches are compared against main (production branch)
-          # This shows what's new/changed compared to what's currently live
-          MERGE_BASE=$(git merge-base origin/main HEAD)
-          
-          echo "RC branch detected. Comparing against main branch (production):"
-          echo "Merge base: $MERGE_BASE"
-          echo ""
-          
-          # Check if backend files changed
-          if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-backend/"; then
-            echo "backend=true" >> $GITHUB_OUTPUT
-            echo "✅ Changes detected in backend files."
-          else
-            echo "backend=false" >> $GITHUB_OUTPUT
-            echo "⊘ No changes detected in backend files."
-          fi
-          
-          # Check if mobile files changed
-          if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-mobile/"; then
-            echo "mobile=true" >> $GITHUB_OUTPUT
-            echo "✅ Changes detected in mobile files."
-          else
-            echo "mobile=false" >> $GITHUB_OUTPUT
-            echo "⊘ No changes detected in mobile files."
-          fi
-
-          # Determine release type
-          if [[ "$GITHUB_REF_NAME" == rc/v*.*.* ]]; then
-            echo "release_type=qa" >> $GITHUB_OUTPUT
-
-            echo "Release candidate branch detected. Setting release type to QA."
-          else
-            echo "release_type=prod" >> $GITHUB_OUTPUT
-
-            echo "Non-RC branch detected. Setting release type to PROD."
-          fi
-
-          release_type=qa # manual override for testing
-
-      - name: Output detection results
-        run: |
-          echo "✅ Detection complete:"
-          echo "- Backend changed: ${{ steps.changes.outputs.backend }}"
-          echo "- Mobile changed: ${{ steps.changes.outputs.mobile }}"
-          echo "- Release type: ${{ steps.changes.outputs.release_type }}"
-
-  # Backend Docker build & push
-  deploy-backend:
-    name: Deploy Backend (Docker)
-    needs: detect-changes
-    uses: ./.github/workflows/deploy-backend.yml
+  deploy:
+    name: Orchestrate QA Build & Deploy
+    uses: ./.github/workflows/deploy-orchestrator.yml
     with:
-      env: ${{ needs.detect-changes.outputs.release_type }}
-    if: needs.detect-changes.outputs.backend == 'true'
+      env: qa
     secrets: inherit
-    permissions:
-      contents: read
-      packages: write
-
-  # Android APK build
-  deploy-android:
-    name: Deploy Android (APK)
-    needs: detect-changes
-    uses: ./.github/workflows/deploy-android.yml
-    with:
-      env: ${{ needs.detect-changes.outputs.release_type }}
-    if: needs.detect-changes.outputs.mobile == 'true'
-    secrets: inherit
-
-  # iOS IPA build
-  deploy-ios:
-    name: Deploy iOS (IPA)
-    needs: detect-changes
-    uses: ./.github/workflows/deploy-ios.yml
-    with:
-      env: ${{ needs.detect-changes.outputs.release_type }}
-    if: needs.detect-changes.outputs.mobile == 'true'
-    secrets: inherit
-
-  # Summary: display overall deployment results
-  summary:
-    name: QA Build & Deploy Summary
-    runs-on: ubuntu-latest
-    needs: [detect-changes, deploy-backend, deploy-android, deploy-ios]
-    if: always()
-    steps:
-      - name: Check for deployment failures
-        run: |
-          # Fail summary if any deployment failed
-          FAILED=false
-          
-          # backend-deploy: only fails if it ran and failed (not if skipped)
-          if [ "${{ needs.deploy-backend.result }}" = "failure" ]; then
-            echo "❌ Backend deployment failed"
-            FAILED=true
-          fi
-          
-          # android-deploy: only fails if it ran and failed (not if skipped)
-          if [ "${{ needs.deploy-android.result }}" = "failure" ]; then
-            echo "❌ Android deployment failed"
-            FAILED=true
-          fi
-          
-          # ios-deploy: only fails if it ran and failed (not if skipped)
-          if [ "${{ needs.deploy-ios.result }}" = "failure" ]; then
-            echo "❌ iOS deployment failed"
-            FAILED=true
-          fi
-          
-          if [ "$FAILED" = "true" ]; then
-            exit 1
-          fi
-
-      - name: Generate Summary
-        run: |
-          echo "## 🚀 QA Build & Deploy Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Branch**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Files Changed" >> $GITHUB_STEP_SUMMARY
-          echo "- Backend: ${{ needs.detect-changes.outputs.backend }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Mobile: ${{ needs.detect-changes.outputs.mobile }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Deployments" >> $GITHUB_STEP_SUMMARY
-          
-          # Conditionally show backend deployment
-          if [ "${{ needs.detect-changes.outputs.backend }}" = "true" ]; then
-            BACKEND_STATUS="${{ needs.deploy-backend.result }}"
-            BACKEND_ICON=$([ "$BACKEND_STATUS" = "success" ] && echo "✅" || echo "❌")
-            echo "- $BACKEND_ICON Backend (Docker): $BACKEND_STATUS" >> $GITHUB_STEP_SUMMARY
-            if [ "$BACKEND_STATUS" = "success" ]; then
-              echo "  - Image: \`ghcr.io/${{ github.repository }}/backend:qa\`" >> $GITHUB_STEP_SUMMARY
-            fi
-          else
-            echo "- ⊘ Backend: skipped (no changes)" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          # Conditionally show mobile deployments
-          if [ "${{ needs.detect-changes.outputs.mobile }}" = "true" ]; then
-            ANDROID_STATUS="${{ needs.deploy-android.result }}"
-            ANDROID_ICON=$([ "$ANDROID_STATUS" = "success" ] && echo "✅" || echo "❌")
-            echo "- $ANDROID_ICON Android (APK): $ANDROID_STATUS" >> $GITHUB_STEP_SUMMARY
-            
-            IOS_STATUS="${{ needs.deploy-ios.result }}"
-            IOS_ICON=$([ "$IOS_STATUS" = "success" ] && echo "✅" || echo "❌")
-            echo "- $IOS_ICON iOS (IPA): $IOS_STATUS" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- ⊘ Android (APK): skipped (no changes)" >> $GITHUB_STEP_SUMMARY
-            echo "- ⊘ iOS (IPA): skipped (no changes)" >> $GITHUB_STEP_SUMMARY
-          fi
