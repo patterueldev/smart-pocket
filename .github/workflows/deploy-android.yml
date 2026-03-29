@@ -1,12 +1,7 @@
 name: Android - Build & Deploy
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'apps/smart-pocket-mobile/**'
-      - '.github/workflows/deploy-android.yml'
+  workflow_call:
 
 jobs:
   build-android:
@@ -15,7 +10,7 @@ jobs:
       version: ${{ steps.version.outputs.VERSION }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Extract version from package.json
         id: version

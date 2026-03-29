@@ -71,7 +71,7 @@ jobs:
   validate-conventional-commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Validate conventional commit format
         uses: amannn/action-semantic-pull-request@v5
         env:
@@ -82,7 +82,7 @@ jobs:
     if: contains(github.event.pull_request.title, 'backend') || 
         contains(github.event.pull_request.files.*.path, 'apps/smart-pocket-backend')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -103,7 +103,7 @@ jobs:
     if: contains(github.event.pull_request.title, 'mobile') || 
         contains(github.event.pull_request.files.*.path, 'apps/smart-pocket-mobile')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -143,7 +143,7 @@ jobs:
       packages: write
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -191,7 +191,7 @@ jobs:
   mobile-full-build:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - uses: actions/setup-node@v4
         with:
@@ -261,7 +261,7 @@ jobs:
       packages: write
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -291,7 +291,7 @@ jobs:
     needs: extract-version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - uses: actions/setup-node@v4
         with:
@@ -317,7 +317,7 @@ jobs:
     needs: extract-version
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - uses: actions/setup-node@v4
         with:
@@ -345,7 +345,7 @@ jobs:
     if: always()
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0  # Full history for changelog generation
       
