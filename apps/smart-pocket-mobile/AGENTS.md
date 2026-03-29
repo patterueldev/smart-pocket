@@ -1001,7 +1001,7 @@ import { AuthContext } from '@/utils/authContext';
 
 **Problem**: API key validation failed  
 **Solution**:
-- API key must be at least 10 characters
+- API key must not be empty
 - Check backend `/auth/setup` endpoint
 - Verify API key is correct in setup form
 

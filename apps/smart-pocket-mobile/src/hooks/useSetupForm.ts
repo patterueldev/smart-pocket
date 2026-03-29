@@ -52,14 +52,9 @@ export function useSetupForm({
   };
 
   const validate = (): boolean => {
-    // Validate API key
+    // Validate API key (must not be empty)
     if (!apiKey.trim()) {
       setError('Please enter an API key');
-      return false;
-    }
-
-    if (apiKey.trim().length < 10) {
-      setError('API key must be at least 10 characters');
       return false;
     }
 
