@@ -82,15 +82,25 @@ jobs:
       - name: Detect changed files
         id: changes
         run: |
+          # Get commit range for RC branch
+          # Compare HEAD with previous commit (since this is initial push or update)
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            # New branch: compare with develop
+            MERGE_BASE=$(git merge-base origin/develop HEAD)
+          else
+            # Updated branch: compare with previous commit
+            MERGE_BASE="${{ github.event.before }}"
+          fi
+          
           # Check if backend files changed
-          if grep -q "^apps/smart-pocket-backend/"; then
+          if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-backend/"; then
             echo "backend=true" >> $GITHUB_OUTPUT
           else
             echo "backend=false" >> $GITHUB_OUTPUT
           fi
           
           # Check if mobile files changed
-          if grep -q "^apps/smart-pocket-mobile/"; then
+          if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-mobile/"; then
             echo "mobile=true" >> $GITHUB_OUTPUT
           else
             echo "mobile=false" >> $GITHUB_OUTPUT
@@ -104,7 +114,9 @@ jobs:
           fi
 
           release_type=qa # manual override for testing
-          echo "Detected changes - Backend: ${{ steps.changes.outputs.backend }}, Mobile: ${{ steps.changes.outputs.mobile }}, Release Type: $release_type"
+          echo "detected: backend=${{ steps.changes.outputs.backend }}"
+          echo "detected: mobile=${{ steps.changes.outputs.mobile }}"
+          echo "detected: release_type=${{ steps.changes.outputs.release_type }}"
 
   # Backend Docker build & push
   deploy-backend:
