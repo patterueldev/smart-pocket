@@ -99,8 +99,8 @@ jobs:
             echo "⊘ No changes detected in mobile files."
           fi
 
-          # OVERRIDE: COMMENT THE FOLLOWING IF FINISHED TESTING
-          # echo "android=true" >> $GITHUB_OUTPUT
+          # OVERRIDES
+          echo "android=true" >> $GITHUB_OUTPUT # disable android builds
           # echo "ios=false" >> $GITHUB_OUTPUT
           # echo "backend=false" >> $GITHUB_OUTPUT
 
