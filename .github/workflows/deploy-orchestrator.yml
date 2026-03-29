@@ -60,7 +60,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.changes.outputs.backend }}
-      mobile: ${{ steps.changes.outputs.mobile }}
+      ios: ${{ steps.changes.outputs.ios }}
+      android: ${{ steps.changes.outputs.android }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -89,18 +90,27 @@ jobs:
           
           # Check if mobile files changed
           if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-mobile/"; then
-            echo "mobile=true" >> $GITHUB_OUTPUT
+            echo "android=true" >> $GITHUB_OUTPUT
+            echo "ios=true" >> $GITHUB_OUTPUT
             echo "✅ Changes detected in mobile files."
           else
-            echo "mobile=false" >> $GITHUB_OUTPUT
+            echo "android=false" >> $GITHUB_OUTPUT
+            echo "ios=false" >> $GITHUB_OUTPUT
             echo "⊘ No changes detected in mobile files."
           fi
+
+          # OVERRIDE; TODO: remove after confirming detection logic works correctly
+          # only builds android
+          backend=false
+          ios=false
+
 
       - name: Output detection results
         run: |
           echo "✅ Detection complete:"
           echo "- Backend changed: ${{ steps.changes.outputs.backend }}"
-          echo "- Mobile changed: ${{ steps.changes.outputs.mobile }}"
+          echo "- Android changed: ${{ steps.changes.outputs.android }}"
+          echo "- iOS changed: ${{ steps.changes.outputs.ios }}"
           echo "- Deployment environment: ${{ inputs.env }}"
 
   # Backend Docker build & push
@@ -123,7 +133,7 @@ jobs:
     uses: ./.github/workflows/deploy-android.yml
     with:
       env: ${{ inputs.env }}
-    if: needs.detect-changes.outputs.mobile == 'true'
+    if: needs.detect-changes.outputs.android == 'true'
     secrets: inherit
 
   # iOS IPA build
@@ -133,7 +143,7 @@ jobs:
     uses: ./.github/workflows/deploy-ios.yml
     with:
       env: ${{ inputs.env }}
-    if: needs.detect-changes.outputs.mobile == 'true'
+    if: needs.detect-changes.outputs.ios == 'true'
     secrets: inherit
 
   # Summary: display overall deployment results
@@ -182,7 +192,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Files Changed" >> $GITHUB_STEP_SUMMARY
           echo "- Backend: ${{ needs.detect-changes.outputs.backend }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Mobile: ${{ needs.detect-changes.outputs.mobile }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Android: ${{ needs.detect-changes.outputs.android }}" >> $GITHUB_STEP_SUMMARY
+          echo "- iOS: ${{ needs.detect-changes.outputs.ios }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Deployments" >> $GITHUB_STEP_SUMMARY
           
@@ -200,7 +211,7 @@ jobs:
           fi
           
           # Conditionally show mobile deployments
-          if [ "${{ needs.detect-changes.outputs.mobile }}" = "true" ]; then
+          if [ "${{ needs.detect-changes.outputs.android }}" = "true" ]; then
             ANDROID_STATUS="${{ needs.deploy-android.result }}"
             ANDROID_ICON=$([ "$ANDROID_STATUS" = "success" ] && echo "✅" || echo "❌")
             echo "- $ANDROID_ICON Android (APK): $ANDROID_STATUS" >> $GITHUB_STEP_SUMMARY
