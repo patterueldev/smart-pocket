@@ -20,7 +20,10 @@ module.exports = {
     },
   },
   transform: {
-    '^.+\\.ts$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.json' }],
+    '^.+\\.ts$': ['ts-jest', { 
+      tsconfig: '<rootDir>/tsconfig.test.json',
+      isolatedModules: false,
+    }],
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
