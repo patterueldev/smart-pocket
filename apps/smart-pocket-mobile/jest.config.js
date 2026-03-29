@@ -1,16 +1,22 @@
 module.exports = {
   preset: 'jest-expo',
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   roots: ['<rootDir>/src'],
-  testMatch: ['**/__tests__/**/*.test.ts', '**/?(*.)+(spec|test).ts'],
+  testMatch: ['**/__tests__/**/*.test.ts', '**/__tests__/**/*.test.tsx', '**/?(*.)+(spec|test).ts', '**/?(*.)+(spec|test).tsx'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   transform: {
+    '^.+\\.test\\.tsx?$': ['ts-jest', {
+      tsconfig: '<rootDir>/tsconfig.json',
+      isolatedModules: true,
+      babelConfig: true,
+    }],
     '^.+\\.(ts|tsx)$': ['ts-jest', {
       tsconfig: '<rootDir>/tsconfig.json',
       isolatedModules: true,
+      babelConfig: true,
     }],
   },
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
