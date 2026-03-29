@@ -82,41 +82,30 @@ jobs:
       - name: Detect changed files
         id: changes
         run: |
-          # Get commit range for RC branch
-          # Compare HEAD with previous commit (since this is initial push or update)
-          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
-            # New branch: compare with develop
-            MERGE_BASE=$(git merge-base origin/develop HEAD)
-
-            echo "New RC branch detected. Comparing with develop branch at: $MERGE_BASE"
-          else
-            # Updated branch: compare with previous commit
-            MERGE_BASE="${{ github.event.before }}"
-
-            echo "Updated RC branch detected. Comparing with previous commit: $MERGE_BASE"
-          fi
-          echo "Comparing changes against: $MERGE_BASE"
+          # RC branches are compared against main (production branch)
+          # This shows what's new/changed compared to what's currently live
+          MERGE_BASE=$(git merge-base origin/main HEAD)
+          
+          echo "RC branch detected. Comparing against main branch (production):"
+          echo "Merge base: $MERGE_BASE"
+          echo ""
           
           # Check if backend files changed
           if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-backend/"; then
             echo "backend=true" >> $GITHUB_OUTPUT
-
-            echo "Changes detected in backend files."
+            echo "✅ Changes detected in backend files."
           else
             echo "backend=false" >> $GITHUB_OUTPUT
-
-            echo "No changes detected in backend files."
+            echo "⊘ No changes detected in backend files."
           fi
           
           # Check if mobile files changed
           if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-mobile/"; then
             echo "mobile=true" >> $GITHUB_OUTPUT
-
-            echo "Changes detected in mobile files."
+            echo "✅ Changes detected in mobile files."
           else
             echo "mobile=false" >> $GITHUB_OUTPUT
-
-            echo "No changes detected in mobile files."
+            echo "⊘ No changes detected in mobile files."
           fi
 
           # Determine release type
