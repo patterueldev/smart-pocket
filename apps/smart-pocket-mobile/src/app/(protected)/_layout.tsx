@@ -16,7 +16,13 @@ export default function ProtectedLayout() {
   return (
     <Stack>
       <Stack.Screen name="dashboard" options={{ headerShown: false }} />
-      <Stack.Screen name="sync" options={{ title: 'Google Sheets Sync' }} />
+      <Stack.Screen
+        name="sync"
+        options={{
+          title: 'Sheets Sync',
+          headerBackTitleVisible: false,
+        }}
+      />
       <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
     </Stack>
   );

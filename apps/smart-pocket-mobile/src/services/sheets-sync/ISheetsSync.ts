@@ -27,6 +27,7 @@ export interface SheetsSyncDraft {
   unchangedAccounts: number;
   changes: AccountChange[];
   createdAt: string;
+  lastSyncTime?: string | null; // Last time any account was synced
 }
 
 /**

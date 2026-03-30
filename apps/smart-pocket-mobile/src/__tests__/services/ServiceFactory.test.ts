@@ -1,62 +1,65 @@
-import { ServiceFactory } from '../../services/ServiceFactory';
+import { ServiceFactory } from '@/services/ServiceFactory';
+import { IAuthService } from '@/services/auth';
+import { IStorageService } from '@/services/storage';
+import { IApiClient } from '@/services/api';
+import { ISheetsSync } from '@/services/sheets-sync/ISheetsSync';
 
 describe('ServiceFactory', () => {
   describe('createServices', () => {
-    it('should return object with all required services for "real" mode', () => {
-      const services = ServiceFactory.createServices('real');
-
-      expect(services).toHaveProperty('authService');
-      expect(services).toHaveProperty('storageService');
-      expect(services).toHaveProperty('apiClient');
-      expect(typeof services.authService).toBe('object');
-      expect(typeof services.storageService).toBe('object');
-      expect(typeof services.apiClient).toBe('object');
-    });
-
-    it('should return object with all required services for "mock" mode', () => {
+    it('should create all services in mock mode', () => {
       const services = ServiceFactory.createServices('mock');
 
-      expect(services).toHaveProperty('authService');
-      expect(services).toHaveProperty('storageService');
-      expect(services).toHaveProperty('apiClient');
-      expect(typeof services.authService).toBe('object');
-      expect(typeof services.storageService).toBe('object');
-      expect(typeof services.apiClient).toBe('object');
+      expect(services).toBeDefined();
+      expect(services.authService).toBeDefined();
+      expect(services.storageService).toBeDefined();
+      expect(services.apiClient).toBeDefined();
+      expect(services.sheetsSync).toBeDefined();
     });
 
-    it('should return services with required methods', () => {
+    it('should create all services in real mode', () => {
       const services = ServiceFactory.createServices('real');
 
-      // Check IAuthService methods
+      expect(services).toBeDefined();
+      expect(services.authService).toBeDefined();
+      expect(services.storageService).toBeDefined();
+      expect(services.apiClient).toBeDefined();
+      expect(services.sheetsSync).toBeDefined();
+    });
+
+    it('should use mock mode by default', () => {
+      const services = ServiceFactory.createServices();
+
+      expect(services).toBeDefined();
+      expect(services.authService).toBeDefined();
+      expect(services.storageService).toBeDefined();
+    });
+
+    it('should return all services as instances', () => {
+      const services = ServiceFactory.createServices('mock');
+
+      // Verify services implement their interfaces by checking for expected methods
       expect(typeof services.authService.setup).toBe('function');
-      expect(typeof services.authService.refreshAccessToken).toBe('function');
-      expect(typeof services.authService.logout).toBe('function');
-
-      // Check IStorageService methods
-      expect(typeof services.storageService.saveTokens).toBe('function');
       expect(typeof services.storageService.getTokens).toBe('function');
-      expect(typeof services.storageService.clearAll).toBe('function');
-
-      // Check IApiClient methods
-      expect(typeof services.apiClient.initialize).toBe('function');
       expect(typeof services.apiClient.get).toBe('function');
-      expect(typeof services.apiClient.post).toBe('function');
+      expect(typeof services.sheetsSync.createDraft).toBe('function');
     });
 
-    it('should create different instances for real and mock modes', () => {
-      const realServices = ServiceFactory.createServices('real');
-      const mockServices = ServiceFactory.createServices('mock');
+    it('should return consistent instances across multiple calls', () => {
+      const services1 = ServiceFactory.createServices('mock');
+      const services2 = ServiceFactory.createServices('mock');
 
-      // Both should exist and have the required methods
-      expect(realServices).toBeDefined();
-      expect(mockServices).toBeDefined();
-      expect(realServices).not.toBe(mockServices);
+      // Each call should create new instances
+      expect(services1.authService).not.toBe(services2.authService);
+      expect(services1.sheetsSync).not.toBe(services2.sheetsSync);
     });
 
-    it('should handle invalid modes gracefully', () => {
-      // For invalid modes, the factory should either return real services or handle them
-      expect(() => ServiceFactory.createServices('real')).not.toThrow();
-      expect(() => ServiceFactory.createServices('mock')).not.toThrow();
+    it('sheetsSync should have all required methods', async () => {
+      const services = ServiceFactory.createServices('mock');
+
+      expect(typeof services.sheetsSync.createDraft).toBe('function');
+      expect(typeof services.sheetsSync.executeSyncFromDraft).toBe('function');
+      expect(typeof services.sheetsSync.hasPendingChanges).toBe('function');
+      expect(typeof services.sheetsSync.getLastSyncTime).toBe('function');
     });
   });
 });

@@ -10,11 +10,13 @@
 import { IAuthService, AuthService, MockAuthService } from './auth';
 import { IStorageService, StorageService, MockStorageService } from './storage';
 import { IApiClient, ApiClient, MockApiClient } from './api';
+import { ISheetsSync, MockSheetsSyncClient } from './sheets-sync';
 
 export interface IServices {
   authService: IAuthService;
   storageService: IStorageService;
   apiClient: IApiClient;
+  sheetsSync: ISheetsSync;
 }
 
 type ServiceMode = 'real' | 'mock';
@@ -34,10 +36,16 @@ export class ServiceFactory {
         ? new MockApiClient()
         : new ApiClient(authService, storageService);
 
+    const sheetsSync =
+      mode === 'mock'
+        ? new MockSheetsSyncClient()
+        : new MockSheetsSyncClient(); // TODO: Replace with real client when backend is ready
+
     return {
       authService,
       storageService,
       apiClient,
+      sheetsSync,
     };
   }
 }
