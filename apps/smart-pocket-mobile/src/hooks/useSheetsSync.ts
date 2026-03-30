@@ -17,7 +17,7 @@ import { ServiceFactory } from '@/services/ServiceFactory';
 import type { SheetsSyncDraft } from '@/services/sheets-sync/ISheetsSync';
 
 const REFRESH_DEBOUNCE_MS = 500;
-const USE_MOCK_SERVICES = true; // Switch to false when backend is ready
+const USE_MOCK_SERVICES = true; // Set to false when backend is ready for integration testing
 
 interface UseSheetsSync {
   draft: SheetsSyncDraft | null;

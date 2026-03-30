@@ -54,6 +54,18 @@ export class ServiceFactory {
         ? new MockApiClient()
         : new ApiClient(authService, storageService);
 
+    // Initialize real ApiClient with base URL from config
+    // This allows RealSheetsSyncClient to make requests
+    if (actualMode === 'real' && apiClient instanceof ApiClient) {
+      // Initialize with config baseUrl (will be overridden by auth credentials when user logs in)
+      const baseUrl = config.api.baseUrl;
+      (apiClient as any).initialize(baseUrl).catch((err) => {
+        if (config.debug) {
+          console.log('[ServiceFactory] ApiClient initialization warning', { error: err });
+        }
+      });
+    }
+
     const sheetsSync =
       actualMode === 'mock'
         ? new MockSheetsSyncClient()
@@ -63,6 +75,7 @@ export class ServiceFactory {
       console.log('[ServiceFactory] Created services', {
         mode: actualMode,
         sheetsSync: sheetsSync.constructor.name,
+        apiBaseUrl: actualMode === 'real' ? config.api.baseUrl : 'mock',
       });
     }
 
