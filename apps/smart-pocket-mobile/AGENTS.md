@@ -239,7 +239,61 @@ Test implementation with 4 sample accounts:
 - Savings (₱450,000)
 - Business Account (₱85,000, new)
 
-Replace with real client when backend is ready.
+Use for development/testing without backend dependency.
+
+#### Implementation: `RealSheetsSyncClient` ⭐
+**File**: `src/services/sheets-sync/RealSheetsSyncClient.ts`
+
+Production implementation that calls backend API endpoints:
+
+**Methods**:
+- `createDraft()` - Calls POST /sheets-sync/draft, returns draft with real account data
+- `executeSyncFromDraft(draftId)` - Calls POST /sheets-sync/sync, syncs changes to Google Sheets
+- `hasPendingChanges()` - Checks if changes pending
+- `getLastSyncTime()` - Returns last sync timestamp
+
+**Features**:
+- ✅ HTTP integration with backend
+- ✅ Comprehensive error handling (HTTP 400/401/404/500, network errors)
+- ✅ Response validation (ensures required fields)
+- ✅ Smart caching (draftId, lastSyncTime) to reduce API calls
+- ✅ Cache management (`clearCache()` for testing)
+- ✅ Console logging for debugging
+- ✅ Full JSDoc documentation
+
+**Error Handling**:
+```typescript
+// HTTP 400 - Bad Request
+"Bad request: Invalid parameters"
+
+// HTTP 401 - Unauthorized  
+"Unauthorized: Please check your API key"
+
+// HTTP 404 - Not Found
+"Not found: Draft not found"
+
+// HTTP 500 - Server Error
+"Server error: Database connection failed"
+
+// Network Timeout
+"Request timeout: Backend took too long to respond"
+
+// Connection Error
+"Network error: Could not reach backend server"
+```
+
+**Usage** (automatically selected based on configuration):
+```typescript
+// In ServiceFactory, when sheets_sync_mode = 'real':
+const sheetsSync = new RealSheetsSyncClient(apiClient);
+```
+
+**Testing**:
+```bash
+npm test -- RealSheetsSyncClient.test.ts  # 20 unit tests
+```
+
+All 20 tests cover draft creation, sync execution, error scenarios, and caching.
 
 ### Testing
 
@@ -435,6 +489,95 @@ src/
 ```
 
 **For full structure** → [README.md § Project Structure Details](./README.md#project-structure-details)
+
+---
+
+## ⚙️ Configuration: Mock vs Real Backend
+
+The Google Sheets Sync feature can run in two modes:
+
+### Mock Mode (Default - Safe for Development)
+
+Uses `MockSheetsSyncClient` with synthetic data. No backend required.
+
+**When to use**:
+- Local development
+- UI/UX testing
+- Testing without backend
+
+**Enable**: 
+```typescript
+// In src/hooks/useSheetsSync.ts
+const USE_MOCK_SERVICES = true;  // Default
+```
+
+**Sample Data**:
+- Cash: ₱15,500
+- BDO: ₱125,000.50
+- Savings: ₱450,000
+- Business: ₱85,000 (new account)
+
+### Real Mode (Production - Backend Integration)
+
+Uses `RealSheetsSyncClient` with actual backend API.
+
+**When to use**:
+- Integration testing
+- Staging environment
+- Production deployment
+
+**Prerequisites**:
+1. Backend running: `docker-compose up`
+2. User authenticated with valid credentials
+3. Backend base URL configured
+
+**Enable**:
+```typescript
+// In src/hooks/useSheetsSync.ts
+const USE_MOCK_SERVICES = false;
+```
+
+**Or via environment variable** (when fully implemented):
+```bash
+USE_REAL_SHEETS_SYNC=true npm start
+```
+
+**Configuration Files**:
+- `src/config/index.ts` - Feature flags and base URL
+- `app.config.js` - Environment-specific API endpoints
+- `src/constants/config.ts` - Runtime config loading
+
+**Base URL Priority**:
+1. User-provided URL (from setup screen)
+2. Environment variable `REACT_APP_API_URL`
+3. App environment config (app.config.js)
+4. Default: `http://localhost:3000`
+
+### Mode Switching Reference
+
+| Mode | File | Variable | Default | Status |
+|------|------|----------|---------|--------|
+| Mock | `useSheetsSync.ts` | `USE_MOCK_SERVICES` | `true` | ✅ Ready |
+| Real | `useSheetsSync.ts` | `USE_MOCK_SERVICES` | `false` | ✅ Ready |
+| Env | `src/config/index.ts` | `USE_REAL_SHEETS_SYNC` | (future) | 🔄 Planned |
+
+### Troubleshooting Configuration
+
+**Problem**: Seeing mock data when real backend enabled
+
+**Solution**:
+1. Verify `USE_MOCK_SERVICES = false` in `useSheetsSync.ts`
+2. Check backend is running: `docker-compose ps`
+3. Verify user is authenticated
+4. Check console for errors
+
+**Problem**: "Network error: Could not reach backend"
+
+**Solution**:
+1. Ensure backend is running: `docker-compose up`
+2. Check backend is listening: `docker logs smart-pocket-backend`
+3. Verify correct base URL in setup
+4. Check firewall/proxy settings
 
 ---
 
