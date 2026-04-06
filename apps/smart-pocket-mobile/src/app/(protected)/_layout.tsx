@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import 'react-native-reanimated';
 
 export const unstable_settings = {
-  anchor: 'dashboard',
+  anchor: 'index',
 };
 
 export default function ProtectedLayout() {
@@ -15,7 +15,7 @@ export default function ProtectedLayout() {
   }
   return (
     <Stack>
-      <Stack.Screen name="dashboard" options={{ headerShown: false }} />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen
         name="sync"
         options={{

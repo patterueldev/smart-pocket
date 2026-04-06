@@ -125,7 +125,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoggedIn(true);
 
       // Navigate to dashboard
-      router.replace('/(protected)/(tabs)');
+      router.replace('/(protected)');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Setup failed';
       setError(errorMessage);
