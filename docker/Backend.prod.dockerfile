@@ -26,8 +26,9 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 
-# Create nginx configuration directory
-RUN mkdir -p /etc/nginx/conf.d
+# Create and configure nginx directories with proper permissions
+RUN mkdir -p /etc/nginx/conf.d /var/run/nginx /var/log/nginx /var/cache/nginx && \
+    chown -R nginx:nginx /var/run/nginx /var/cache/nginx /var/log/nginx
 
 # Configure nginx as reverse proxy for Node.js
 RUN printf '%s\n' \
@@ -76,10 +77,6 @@ RUN printf '%s\n' \
   'stderr_logfile=/var/log/nginx/error.log' \
   'stdout_logfile=/var/log/nginx/access.log' \
   > /etc/supervisor/conf.d/supervisord.conf
-
-# Create necessary directories with proper permissions
-RUN mkdir -p /var/run/nginx /var/log/nginx /var/cache/nginx && \
-    chown -R nginx:nginx /var/run/nginx /var/cache/nginx /var/log/nginx
 
 # Expose ports: 80 for nginx (public), 3001 for Node.js (internal)
 EXPOSE 80 3001
