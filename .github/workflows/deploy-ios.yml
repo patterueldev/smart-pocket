@@ -48,6 +48,8 @@ jobs:
 
       - name: Archive iOS
         working-directory: apps/smart-pocket-mobile/ios
+        env:
+          APP_ENV: ${{ inputs.env == 'prod' && 'prod' || 'qa' }}
         run: |
           WORKSPACE=${{ inputs.env == 'prod' && 'SmartPocket.xcworkspace' || 'SmartPocketQA.xcworkspace' }}
           SCHEME=${{ inputs.env == 'prod' && 'SmartPocket' || 'SmartPocketQA' }}

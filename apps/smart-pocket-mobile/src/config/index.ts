@@ -3,26 +3,29 @@ import Constants from 'expo-constants';
 /**
  * Mobile App Configuration
  * Environment-specific settings for features and services
+ * 
+ * All configuration is driven by APP_ENV environment variable set at build time.
+ * APP_ENV determines which environment config from app.config.js is used.
  */
 
 /**
  * Get API base URL from app.config.js (set by APP_ENV at build time)
+ * 
+ * Throws error if configuration is missing - this indicates APP_ENV was not
+ * properly passed during the build or app.config.js is misconfigured.
  */
 const getApiBaseUrl = (): string => {
-  // First, try to get from Constants.expoConfig (set in app.config.js based on APP_ENV)
   const configuredUrl = Constants.expoConfig?.extra?.api?.baseUrl;
-  if (configuredUrl) {
-    return configuredUrl;
+  
+  if (!configuredUrl) {
+    throw new Error(
+      'Missing API configuration in app.config.js extras.api.baseUrl. ' +
+      'This value should be set by app.config.js based on the APP_ENV environment variable. ' +
+      'Ensure the build includes: APP_ENV=<dev|qa|prod> npx expo prebuild'
+    );
   }
 
-  // Fallback to environment variables (for testing/development)
-  const envUrl = process.env.REACT_APP_API_URL || process.env.API_URL;
-  if (envUrl) {
-    return envUrl;
-  }
-
-  // Final fallback
-  return 'http://localhost:3000';
+  return configuredUrl;
 };
 
 /**
