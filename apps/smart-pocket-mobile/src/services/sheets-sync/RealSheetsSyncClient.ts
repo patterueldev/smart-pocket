@@ -3,101 +3,9 @@
  * Makes actual HTTP calls to backend /sheets-sync endpoints
  */
 
-import { ISheetsSync, SheetsSyncDraft, SheetsSyncResult, AccountChange } from './ISheetsSync';
+import { ISheetsSync, SheetsSyncDraft, SheetsSyncResult } from './ISheetsSync';
+import { DraftResponse, SyncResponse, transformToDisplayModel } from './models';
 import { ApiClient } from '@/services/api/ApiClient';
-
-/**
- * Backend response for draft creation
- */
-interface DraftResponse {
-  draftId: string;
-  summary: DraftSummary;
-  changes: AccountChange[];
-  createdAt: string;
-  lastSyncTime?: string | null;
-}
-
-interface DraftSummary {
-  totalAccounts: number;
-  newAccounts: number;
-  updatedAccounts: number;
-  unchangedAccounts: number;
-}
-
-/*
-{
-  "success": true,
-  "draftId": "draft-yyv98tq2q1c-1774837125000",
-  "summary": {
-    "totalAccounts": 9,
-    "newAccounts": 0,
-    "updatedAccounts": 2,
-    "unchangedAccounts": 7
-  },
-  "pendingChanges": [
-    {
-      "accountName": "Cash",
-      "type": "UPDATE",
-      "cleared": {
-        "current": {
-          "amount": "125.00",
-          "currency": "PHP"
-        },
-        "synced": {
-          "amount": "125.00",
-          "currency": "PHP"
-        }
-      },
-      "uncleared": {
-        "current": {
-          "amount": "5000.00",
-          "currency": "PHP"
-        },
-        "synced": {
-          "amount": "0.00",
-          "currency": "PHP"
-        }
-      }
-    },
-    {
-      "accountName": "BPI Savings",
-      "type": "UPDATE",
-      "cleared": {
-        "current": {
-          "amount": "5297.01",
-          "currency": "PHP"
-        },
-        "synced": {
-          "amount": "5297.01",
-          "currency": "PHP"
-        }
-      },
-      "uncleared": {
-        "current": {
-          "amount": "-5000.00",
-          "currency": "PHP"
-        },
-        "synced": {
-          "amount": "0.00",
-          "currency": "PHP"
-        }
-      }
-    }
-  ],
-  "timestamp": "2026-03-30T02:18:45.000Z"
-}
-  */
-
-/**
- * Backend response for sync execution
- */
-interface SyncResponse {
-  success: boolean;
-  syncedAt: string;
-  accountsUpdated: number;
-  accountsAdded: number;
-  message: string;
-}
 
 /**
  * RealSheetsSyncClient: Integrates with backend API for sheets sync
@@ -141,20 +49,20 @@ export class RealSheetsSyncClient implements ISheetsSync {
 
       console.log('[RealSheetsSyncClient] Sheets sync draft created', {
         draftId: response.draftId,
-        totalAccounts: response.totalAccounts,
-        newAccounts: response.newAccounts,
-        updatedAccounts: response.updatedAccounts,
+        totalAccounts: response.summary.totalAccounts,
+        newAccounts: response.summary.newAccounts,
+        updatedAccounts: response.summary.updatedAccounts,
       });
 
       return {
         draftId: response.draftId,
-        totalAccounts: response.totalAccounts,
-        newAccounts: response.newAccounts,
-        updatedAccounts: response.updatedAccounts,
-        unchangedAccounts: response.unchangedAccounts,
-        changes: response.changes || [],
-        createdAt: response.createdAt,
-        lastSyncTime: response.lastSyncTime,
+        totalAccounts: response.summary.totalAccounts,
+        newAccounts: response.summary.newAccounts,
+        updatedAccounts: response.summary.updatedAccounts,
+        unchangedAccounts: response.summary.unchangedAccounts,
+        changes: response.pendingChanges.map((change) => transformToDisplayModel(change)),
+        createdAt: response.timestamp,
+        lastSyncTime: null,
       };
     } catch (error) {
       const errorMessage = this.formatError(error, 'Failed to create sheets sync draft');
@@ -247,9 +155,9 @@ export class RealSheetsSyncClient implements ISheetsSync {
   private formatError(error: any, defaultMessage: string): string {
     if (error instanceof Error) {
       // Axios error with response
-      if (error.response) {
-        const status = error.response.status;
-        const data = error.response.data as any;
+      if ('response' in error && error.response) {
+        const status = (error as any).response.status;
+        const data = (error as any).response.data as any;
 
         switch (status) {
           case 400:
@@ -266,11 +174,11 @@ export class RealSheetsSyncClient implements ISheetsSync {
       }
 
       // Network error
-      if (error.code === 'ECONNABORTED') {
+      if ('code' in error && error.code === 'ECONNABORTED') {
         return 'Request timeout: Backend took too long to respond';
       }
 
-      if (error.code === 'ENOTFOUND') {
+      if ('code' in error && error.code === 'ENOTFOUND') {
         return 'Network error: Could not reach backend server';
       }
 

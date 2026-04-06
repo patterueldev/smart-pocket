@@ -3,45 +3,14 @@
  * Defines contract for syncing Actual Budget accounts with Google Sheets
  */
 
+import { AccountChangeDisplay } from './models';
+
 /**
  * Account change in a sync draft
+ * Exported as the public API type for components to consume
+ * Contains both raw pending change data and computed display fields
  */
-export interface AccountChange {
-  accountId?: string;
-  accountName: string;
-  type: 'NEW' | 'UPDATE';
-  currentBalance: number; // Current balance in Actual Budget
-  sheetBalance: number; // Balance currently in Google Sheets
-  currency: string; // Currency code (e.g., 'USD', 'PHP')
-  isNew: boolean; // true if account is new in Google Sheets
-  lastSyncTime: string | null; // ISO timestamp of last sync
-}
-/*
-    {
-      "accountName": "Cash",
-      "type": "UPDATE",
-      "cleared": {
-        "current": {
-          "amount": "125.00",
-          "currency": "PHP"
-        },
-        "synced": {
-          "amount": "125.00",
-          "currency": "PHP"
-        }
-      },
-      "uncleared": {
-        "current": {
-          "amount": "5000.00",
-          "currency": "PHP"
-        },
-        "synced": {
-          "amount": "0.00",
-          "currency": "PHP"
-        }
-      }
-    },
-    */
+export type AccountChange = AccountChangeDisplay;
 
 /**
  * Sheets sync draft - created by /draft endpoint, approved via /sync endpoint

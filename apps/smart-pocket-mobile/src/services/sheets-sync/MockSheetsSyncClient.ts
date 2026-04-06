@@ -4,48 +4,61 @@
  * Used before backend is fully integrated
  */
 
-import { ISheetsSync, SheetsSyncDraft, SheetsSyncResult, AccountChange } from './ISheetsSync';
+import { ISheetsSync, SheetsSyncDraft, SheetsSyncResult } from './ISheetsSync';
+import { transformToDisplayModel } from './models';
 
 /**
- * Sample account changes for testing
+ * Sample pending account changes matching backend response structure
  * Uses Philippine Peso (PHP) as currency
  */
-const SAMPLE_CHANGES: AccountChange[] = [
+const SAMPLE_PENDING_CHANGES = [
   {
-    accountId: 'acc-001',
     accountName: 'Cash in Wallet',
-    currentBalance: 15500.00,
-    sheetBalance: 12350.75,
-    currency: 'PHP',
-    isNew: false,
-    lastSyncTime: '2026-03-28T14:30:00Z',
+    type: 'UPDATE' as const,
+    cleared: {
+      current: { amount: '10000.00', currency: 'PHP' },
+      synced: { amount: '8000.00', currency: 'PHP' },
+    },
+    uncleared: {
+      current: { amount: '5500.00', currency: 'PHP' },
+      synced: { amount: '4350.75', currency: 'PHP' },
+    },
   },
   {
-    accountId: 'acc-002',
     accountName: 'BDO Checking',
-    currentBalance: 125000.50,
-    sheetBalance: 118500.00,
-    currency: 'PHP',
-    isNew: false,
-    lastSyncTime: '2026-03-28T14:30:00Z',
+    type: 'UPDATE' as const,
+    cleared: {
+      current: { amount: '100000.50', currency: 'PHP' },
+      synced: { amount: '95000.00', currency: 'PHP' },
+    },
+    uncleared: {
+      current: { amount: '25000.00', currency: 'PHP' },
+      synced: { amount: '23500.00', currency: 'PHP' },
+    },
   },
   {
-    accountId: 'acc-003',
     accountName: 'Savings Account',
-    currentBalance: 450000.00,
-    sheetBalance: 445000.00,
-    currency: 'PHP',
-    isNew: false,
-    lastSyncTime: '2026-03-28T14:30:00Z',
+    type: 'UPDATE' as const,
+    cleared: {
+      current: { amount: '400000.00', currency: 'PHP' },
+      synced: { amount: '395000.00', currency: 'PHP' },
+    },
+    uncleared: {
+      current: { amount: '50000.00', currency: 'PHP' },
+      synced: { amount: '50000.00', currency: 'PHP' },
+    },
   },
   {
-    accountId: 'acc-004',
     accountName: 'Business Account',
-    currentBalance: 85000.00,
-    sheetBalance: 0.00,
-    currency: 'PHP',
-    isNew: true,
-    lastSyncTime: null,
+    type: 'NEW' as const,
+    cleared: {
+      current: { amount: '85000.00', currency: 'PHP' },
+      synced: { amount: '0.00', currency: 'PHP' },
+    },
+    uncleared: {
+      current: { amount: '0.00', currency: 'PHP' },
+      synced: { amount: '0.00', currency: 'PHP' },
+    },
   },
 ];
 
@@ -60,7 +73,7 @@ export class MockSheetsSyncClient implements ISheetsSync {
       newAccounts: 1,
       updatedAccounts: 3,
       unchangedAccounts: 5,
-      changes: SAMPLE_CHANGES,
+      changes: SAMPLE_PENDING_CHANGES.map((change) => transformToDisplayModel(change)),
       createdAt: new Date().toISOString(),
     };
 
