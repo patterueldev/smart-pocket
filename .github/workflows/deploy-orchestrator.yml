@@ -125,31 +125,31 @@ jobs:
       contents: read
       packages: write
 
-  # Android APK build
-  deploy-android:
-    name: Deploy Android (APK)
-    needs: detect-changes
-    uses: ./.github/workflows/deploy-android.yml
-    with:
-      env: ${{ inputs.env }}
-    if: needs.detect-changes.outputs.android == 'true'
-    secrets: inherit
+  # # Android APK build
+  # deploy-android:
+  #   name: Deploy Android (APK)
+  #   needs: detect-changes
+  #   uses: ./.github/workflows/deploy-android.yml
+  #   with:
+  #     env: ${{ inputs.env }}
+  #   if: needs.detect-changes.outputs.android == 'true'
+  #   secrets: inherit
 
-  # iOS IPA build
-  deploy-ios:
-    name: Deploy iOS (IPA)
-    needs: detect-changes
-    uses: ./.github/workflows/deploy-ios.yml
-    with:
-      env: ${{ inputs.env }}
-    if: needs.detect-changes.outputs.ios == 'true'
-    secrets: inherit
+  # # iOS IPA build
+  # deploy-ios:
+  #   name: Deploy iOS (IPA)
+  #   needs: detect-changes
+  #   uses: ./.github/workflows/deploy-ios.yml
+  #   with:
+  #     env: ${{ inputs.env }}
+  #   if: needs.detect-changes.outputs.ios == 'true'
+  #   secrets: inherit
 
   # Summary: display overall deployment results
   summary:
     name: Build & Deploy Summary
     runs-on: ubuntu-latest
-    needs: [detect-changes, deploy-backend, deploy-android, deploy-ios]
+    needs: [detect-changes, deploy-backend] # deploy-android, deploy-ios
     if: always()
     steps:
       - name: Check for deployment failures
