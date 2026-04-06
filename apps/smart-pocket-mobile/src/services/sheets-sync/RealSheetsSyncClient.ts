@@ -11,14 +11,82 @@ import { ApiClient } from '@/services/api/ApiClient';
  */
 interface DraftResponse {
   draftId: string;
-  totalAccounts: number;
-  newAccounts: number;
-  updatedAccounts: number;
-  unchangedAccounts: number;
+  summary: DraftSummary;
   changes: AccountChange[];
   createdAt: string;
   lastSyncTime?: string | null;
 }
+
+interface DraftSummary {
+  totalAccounts: number;
+  newAccounts: number;
+  updatedAccounts: number;
+  unchangedAccounts: number;
+}
+
+/*
+{
+  "success": true,
+  "draftId": "draft-yyv98tq2q1c-1774837125000",
+  "summary": {
+    "totalAccounts": 9,
+    "newAccounts": 0,
+    "updatedAccounts": 2,
+    "unchangedAccounts": 7
+  },
+  "pendingChanges": [
+    {
+      "accountName": "Cash",
+      "type": "UPDATE",
+      "cleared": {
+        "current": {
+          "amount": "125.00",
+          "currency": "PHP"
+        },
+        "synced": {
+          "amount": "125.00",
+          "currency": "PHP"
+        }
+      },
+      "uncleared": {
+        "current": {
+          "amount": "5000.00",
+          "currency": "PHP"
+        },
+        "synced": {
+          "amount": "0.00",
+          "currency": "PHP"
+        }
+      }
+    },
+    {
+      "accountName": "BPI Savings",
+      "type": "UPDATE",
+      "cleared": {
+        "current": {
+          "amount": "5297.01",
+          "currency": "PHP"
+        },
+        "synced": {
+          "amount": "5297.01",
+          "currency": "PHP"
+        }
+      },
+      "uncleared": {
+        "current": {
+          "amount": "-5000.00",
+          "currency": "PHP"
+        },
+        "synced": {
+          "amount": "0.00",
+          "currency": "PHP"
+        }
+      }
+    }
+  ],
+  "timestamp": "2026-03-30T02:18:45.000Z"
+}
+  */
 
 /**
  * Backend response for sync execution

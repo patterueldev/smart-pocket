@@ -16,7 +16,7 @@ export function useAuthInitialization(authContext: {
 
   useEffect(() => {
     authContext.initializeFromStorage().finally(() => setIsReady(true));
-  }, [authContext]);
+  }, [authContext.initializeFromStorage]);
 
   return isReady;
 }

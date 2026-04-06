@@ -33,6 +33,7 @@ export class ServiceFactory {
    * @returns IServices instance with all services
    */
   static createServices(mode: ServiceMode = 'auto'): IServices {
+    console.log('[ServiceFactory] createServices called with mode:', mode);
     // Determine actual mode
     let actualMode: 'real' | 'mock' = 'mock';
     if (mode === 'auto') {
@@ -59,6 +60,7 @@ export class ServiceFactory {
     if (actualMode === 'real' && apiClient instanceof ApiClient) {
       // Initialize with config baseUrl (will be overridden by auth credentials when user logs in)
       const baseUrl = config.api.baseUrl;
+      console.log('[ServiceFactory] Initializing ApiClient with base URL:', baseUrl);
       (apiClient as any).initialize(baseUrl).catch((err) => {
         if (config.debug) {
           console.log('[ServiceFactory] ApiClient initialization warning', { error: err });

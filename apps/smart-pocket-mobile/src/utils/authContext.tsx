@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
-import React, { createContext, useState, useCallback } from 'react';
+import React, { createContext, useState, useCallback, useRef, useEffect } from 'react';
 import { ServiceFactory, type IServices } from '@/services';
+import { RealSheetsSyncClient } from '@/services/sheets-sync';
 import { AuthTokens, AuthCredentials } from '@/types/auth';
 
 // Use mock services for development (backend not ready yet)
@@ -20,6 +21,8 @@ type AuthContextType = {
   logout: () => Promise<void>;
   clearError: () => void;
   initializeFromStorage: () => Promise<void>;
+  // Internal: Access to services (sheetsSync needs to be obtained from here)
+  services?: IServices;
 };
 
 export const AuthContext = createContext<AuthContextType>({
@@ -43,6 +46,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [baseUrl, setBaseUrl] = useState<string | null>(null);
   const router = useRouter();
+  
+  
+  // Store services in ref so we can update them without recreating context
+  const servicesRef = useRef<IServices>(services);
 
   /**
    * Initialize auth state from secure storage on app startup.
@@ -52,17 +59,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       const { tokens, credentials } = await authService.loadStoredAuth();
 
+      console.log('[AuthProvider] Loaded from storage:', { 
+        hasTokens: !!tokens, 
+        hasCredentials: !!credentials,
+        baseUrl: credentials?.baseUrl 
+      });
+
       if (tokens && credentials) {
         // Restore tokens
         setAccessToken(tokens.accessToken);
         setRefreshToken(tokens.refreshToken);
         setBaseUrl(credentials.baseUrl);
 
+        console.log('[AuthProvider] Initializing API client with baseUrl:', credentials.baseUrl);
         // Initialize API client with stored token
         await apiClient.initialize(credentials.baseUrl, tokens.accessToken);
+        
+        console.log('[AuthProvider] API client initialized, recreating sheetsSync client');
+        // Recreate sheetsSync client with initialized API client
+        if (servicesRef.current.apiClient && !USE_MOCK_SERVICES) {
+          console.log('[AuthProvider] Recreating RealSheetsSyncClient with initialized ApiClient');
+          servicesRef.current.sheetsSync = new RealSheetsSyncClient(servicesRef.current.apiClient);
+        }
 
         setIsLoggedIn(true);
         setError(null);
+      } else {
+        console.log('[AuthProvider] No stored credentials found');
       }
     } catch (err) {
       console.error('Failed to initialize auth from storage:', err);
@@ -80,6 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       setError(null);
 
+      console.log('[AuthProvider] Setting up with credentials:', { apiKey: '***', baseUrl: credentials.baseUrl });
       const tokens: AuthTokens = await authService.setup(credentials);
 
       // Update state
@@ -87,8 +111,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setRefreshToken(tokens.refreshToken);
       setBaseUrl(credentials.baseUrl);
 
+      console.log('[AuthProvider] Setup successful, initializing API client with:', credentials.baseUrl);
       // Initialize API client with new credentials
       await apiClient.initialize(credentials.baseUrl, tokens.accessToken);
+      
+      console.log('[AuthProvider] API client initialized, recreating sheetsSync client');
+      // Recreate sheetsSync client with initialized API client
+      if (servicesRef.current.apiClient && !USE_MOCK_SERVICES) {
+        console.log('[AuthProvider] Recreating RealSheetsSyncClient with initialized ApiClient');
+        servicesRef.current.sheetsSync = new RealSheetsSyncClient(servicesRef.current.apiClient);
+      }
 
       setIsLoggedIn(true);
 
@@ -151,6 +183,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         clearError,
         initializeFromStorage,
+        services: servicesRef.current,
       }}
     >
       {children}

@@ -9,15 +9,14 @@
  * - Error handling and recovery
  *
  * Usage:
- *   const { draft, loading, syncing, refreshing, error, onRefresh, onSync } = useSheetsSync();
+ *   const authContext = useContext(AuthContext);
+ *   const { draft, loading, syncing, refreshing, error, onRefresh, onSync } = useSheetsSync(authContext.services);
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ServiceFactory } from '@/services/ServiceFactory';
-import type { SheetsSyncDraft } from '@/services/sheets-sync/ISheetsSync';
+import type { ISheetsSync, SheetsSyncDraft } from '@/services/sheets-sync/ISheetsSync';
 
 const REFRESH_DEBOUNCE_MS = 500;
-const USE_MOCK_SERVICES = true; // Set to false when backend is ready for integration testing
 
 interface UseSheetsSync {
   draft: SheetsSyncDraft | null;
@@ -29,17 +28,12 @@ interface UseSheetsSync {
   onSync: () => Promise<void>;
 }
 
-export function useSheetsSync(): UseSheetsSync {
+export function useSheetsSync(sheetsSyncService: ISheetsSync): UseSheetsSync {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [draft, setDraft] = useState<SheetsSyncDraft | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  // Get sheets sync service from factory
-  const sheetsSyncService = useRef(
-    ServiceFactory.createServices(USE_MOCK_SERVICES ? 'mock' : 'real').sheetsSync
-  ).current;
 
   // Track last refresh time to debounce
   const lastRefreshRef = useRef<number>(0);
@@ -60,7 +54,7 @@ export function useSheetsSync(): UseSheetsSync {
     } finally {
       setLoading(false);
     }
-  }, [sheetsSyncService]);
+  }, []);
 
   /**
    * Refresh draft with debouncing to prevent spam
@@ -104,7 +98,7 @@ export function useSheetsSync(): UseSheetsSync {
     } finally {
       setSyncing(false);
     }
-  }, [draft, sheetsSyncService, loadDraft]);
+  }, [draft, loadDraft]);
 
   /**
    * Load draft on component mount

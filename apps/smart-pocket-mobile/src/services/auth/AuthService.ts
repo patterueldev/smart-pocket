@@ -13,7 +13,7 @@ export class AuthService implements IAuthService {
 
   async setup(credentials: AuthCredentials): Promise<AuthTokens> {
     try {
-      console.log('Attempting setup with credentials:', credentials);
+      console.log('[AuthService] Setup started with:', { apiKey: '***', baseUrl: credentials.baseUrl });
       const payload: SetupRequest = {
         apiKey: credentials.apiKey,
       };
@@ -32,15 +32,18 @@ export class AuthService implements IAuthService {
         expiresIn: response.data.expiresIn,
       };
 
+      console.log('[AuthService] Setup successful, saving to storage');
       // Save tokens and credentials to secure storage
       await Promise.all([
         this.storageService.saveTokens(tokens),
         this.storageService.saveCredentials(credentials),
       ]);
 
+      console.log('[AuthService] Setup complete');
       return tokens;
     } catch (error) {
       const axiosError = error as AxiosError;
+      console.error('[AuthService] Setup failed:', axiosError.message);
       if (axiosError.response?.status === 401) {
         throw new Error('Invalid API key');
       }

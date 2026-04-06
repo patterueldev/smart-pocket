@@ -52,12 +52,14 @@ export class StorageService implements IStorageService {
 
   async saveCredentials(credentials: AuthCredentials): Promise<void> {
     try {
+      console.log('[StorageService] Saving credentials:', { apiKey: '***', baseUrl: credentials.baseUrl });
       await Promise.all([
         SecureStore.setItemAsync(KEYS.API_KEY, credentials.apiKey),
         SecureStore.setItemAsync(KEYS.BASE_URL, credentials.baseUrl),
       ]);
+      console.log('[StorageService] Credentials saved successfully');
     } catch (error) {
-      console.error('Failed to save credentials:', error);
+      console.error('[StorageService] Failed to save credentials:', error);
       throw new Error('Failed to save credentials');
     }
   }
@@ -67,13 +69,18 @@ export class StorageService implements IStorageService {
       const apiKey = await SecureStore.getItemAsync(KEYS.API_KEY);
       const baseUrl = await SecureStore.getItemAsync(KEYS.BASE_URL);
 
+      console.log('[StorageService] Retrieved credentials:', { 
+        hasApiKey: !!apiKey, 
+        baseUrl: baseUrl || 'null' 
+      });
+
       if (!apiKey || !baseUrl) {
         return null;
       }
 
       return { apiKey, baseUrl };
     } catch (error) {
-      console.error('Failed to retrieve credentials:', error);
+      console.error('[StorageService] Failed to retrieve credentials:', error);
       return null;
     }
   }

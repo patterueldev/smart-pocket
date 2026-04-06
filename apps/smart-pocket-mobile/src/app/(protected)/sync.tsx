@@ -12,7 +12,7 @@
  * - Error handling and retry logic
  */
 
-import React from 'react';
+import React, { useContext } from 'react';
 import {
   View,
   ScrollView,
@@ -20,6 +20,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AuthContext } from '@/utils/authContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useSheetsSync } from '@/hooks/useSheetsSync';
 import {
@@ -31,7 +32,10 @@ import {
 } from '@/components/sheets-sync';
 
 export default function SyncScreen() {
-  const { draft, loading, syncing, refreshing, error, onRefresh, onSync } = useSheetsSync();
+  const authContext = useContext(AuthContext);
+  const { draft, loading, syncing, refreshing, error, onRefresh, onSync } = useSheetsSync(
+    authContext.services!.sheetsSync
+  );
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
