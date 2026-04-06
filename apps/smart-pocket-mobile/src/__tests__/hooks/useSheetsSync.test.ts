@@ -33,7 +33,7 @@ describe('useSheetsSync', () => {
 
   it('should initialize with loading state', () => {
     mockSheetsSyncService.createDraft.mockResolvedValue(null);
-    const { result } = renderHook(() => useSheetsSync());
+    const { result } = renderHook(() => useSheetsSync(mockSheetsSyncService));
 
     expect(result.current.loading).toBe(true);
     expect(result.current.syncing).toBe(false);
@@ -54,7 +54,7 @@ describe('useSheetsSync', () => {
 
     mockSheetsSyncService.createDraft.mockResolvedValue(mockDraft);
 
-    const { result } = renderHook(() => useSheetsSync());
+    const { result } = renderHook(() => useSheetsSync(mockSheetsSyncService));
 
     await act(async () => {
       jest.advanceTimersByTime(100);
@@ -70,7 +70,7 @@ describe('useSheetsSync', () => {
     const error = new Error('Failed to load');
     mockSheetsSyncService.createDraft.mockRejectedValue(error);
 
-    const { result } = renderHook(() => useSheetsSync());
+    const { result } = renderHook(() => useSheetsSync(mockSheetsSyncService));
 
     await act(async () => {
       jest.advanceTimersByTime(100);
@@ -93,7 +93,7 @@ describe('useSheetsSync', () => {
 
     mockSheetsSyncService.createDraft.mockResolvedValue(mockDraft);
 
-    const { result } = renderHook(() => useSheetsSync());
+    const { result } = renderHook(() => useSheetsSync(mockSheetsSyncService));
 
     await act(async () => {
       jest.advanceTimersByTime(100);
@@ -119,7 +119,7 @@ describe('useSheetsSync', () => {
       changes: [],
     });
 
-    const { result } = renderHook(() => useSheetsSync());
+    const { result } = renderHook(() => useSheetsSync(mockSheetsSyncService));
 
     await act(async () => {
       jest.advanceTimersByTime(100);
@@ -150,7 +150,7 @@ describe('useSheetsSync', () => {
 
     mockSheetsSyncService.createDraft.mockResolvedValue(mockDraft);
 
-    const { result } = renderHook(() => useSheetsSync());
+    const { result } = renderHook(() => useSheetsSync(mockSheetsSyncService));
 
     await act(async () => {
       jest.advanceTimersByTime(100);
@@ -178,7 +178,7 @@ describe('useSheetsSync', () => {
 
     mockSheetsSyncService.createDraft.mockResolvedValue(mockDraft);
 
-    const { result } = renderHook(() => useSheetsSync());
+    const { result } = renderHook(() => useSheetsSync(mockSheetsSyncService));
 
     await act(async () => {
       jest.advanceTimersByTime(100);
@@ -207,7 +207,7 @@ describe('useSheetsSync', () => {
 
     mockSheetsSyncService.createDraft.mockResolvedValue(mockDraft);
 
-    const { result } = renderHook(() => useSheetsSync());
+    const { result } = renderHook(() => useSheetsSync(mockSheetsSyncService));
 
     await act(async () => {
       jest.advanceTimersByTime(100);
@@ -227,7 +227,7 @@ describe('useSheetsSync', () => {
   it('should return error when no draft available', async () => {
     mockSheetsSyncService.createDraft.mockRejectedValue(new Error('Load failed'));
 
-    const { result } = renderHook(() => useSheetsSync());
+    const { result } = renderHook(() => useSheetsSync(mockSheetsSyncService));
 
     await act(async () => {
       jest.advanceTimersByTime(100);
@@ -244,7 +244,7 @@ describe('useSheetsSync', () => {
   it('should clear error on successful refresh', async () => {
     mockSheetsSyncService.createDraft.mockRejectedValueOnce(new Error('First error'));
 
-    const { result } = renderHook(() => useSheetsSync());
+    const { result } = renderHook(() => useSheetsSync(mockSheetsSyncService));
 
     await act(async () => {
       jest.advanceTimersByTime(100);

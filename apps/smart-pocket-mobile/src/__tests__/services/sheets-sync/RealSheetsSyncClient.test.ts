@@ -22,35 +22,41 @@ describe('RealSheetsSyncClient', () => {
 
   describe('createDraft()', () => {
     it('should successfully create a draft from backend', async () => {
-      const mockDraft = {
+      const mockResponse = {
+        success: true,
         draftId: 'draft-real-123',
-        totalAccounts: 5,
-        newAccounts: 1,
-        updatedAccounts: 2,
-        unchangedAccounts: 2,
-        changes: [
+        summary: {
+          totalAccounts: 5,
+          newAccounts: 1,
+          updatedAccounts: 2,
+          unchangedAccounts: 2,
+        },
+        pendingChanges: [
           {
-            accountId: 'acc1',
             accountName: 'Checking',
-            currentBalance: 1500,
-            sheetBalance: 1400,
-            currency: 'USD',
-            isNew: false,
-            lastSyncTime: '2026-03-30T10:00:00Z',
+            type: 'UPDATE',
+            cleared: {
+              current: { amount: '1500', currency: 'USD' },
+              synced: { amount: '1400', currency: 'USD' },
+            },
+            uncleared: {
+              current: { amount: '0', currency: 'USD' },
+              synced: { amount: '0', currency: 'USD' },
+            },
           },
         ],
-        createdAt: '2026-03-30T11:00:00Z',
-        lastSyncTime: '2026-03-30T10:00:00Z',
+        timestamp: '2026-03-30T11:00:00Z',
       };
 
-      mockApiClient.post = jest.fn().mockResolvedValue(mockDraft);
+      mockApiClient.post = jest.fn().mockResolvedValue(mockResponse);
 
       const result = await client.createDraft();
 
       expect(mockApiClient.post).toHaveBeenCalledWith('/sheets-sync/draft');
-      expect(result).toEqual(mockDraft);
       expect(result.draftId).toBe('draft-real-123');
       expect(result.totalAccounts).toBe(5);
+      expect(result.newAccounts).toBe(1);
+      expect(result.updatedAccounts).toBe(2);
     });
 
     it('should throw error if draft response is invalid (missing draftId)', async () => {
@@ -168,17 +174,33 @@ describe('RealSheetsSyncClient', () => {
 
   describe('hasPendingChanges()', () => {
     it('should return true if there are pending changes', async () => {
-      const mockDraft = {
+      const mockResponse = {
+        success: true,
         draftId: 'draft-123',
-        totalAccounts: 5,
-        newAccounts: 1,
-        updatedAccounts: 2,
-        unchangedAccounts: 2,
-        changes: [],
-        createdAt: '2026-03-30T11:00:00Z',
+        summary: {
+          totalAccounts: 5,
+          newAccounts: 1,
+          updatedAccounts: 2,
+          unchangedAccounts: 2,
+        },
+        pendingChanges: [
+          {
+            accountName: 'Checking',
+            type: 'UPDATE',
+            cleared: {
+              current: { amount: '1500', currency: 'USD' },
+              synced: { amount: '1400', currency: 'USD' },
+            },
+            uncleared: {
+              current: { amount: '0', currency: 'USD' },
+              synced: { amount: '0', currency: 'USD' },
+            },
+          },
+        ],
+        timestamp: '2026-03-30T11:00:00Z',
       };
 
-      mockApiClient.post = jest.fn().mockResolvedValue(mockDraft);
+      mockApiClient.post = jest.fn().mockResolvedValue(mockResponse);
 
       const hasPending = await client.hasPendingChanges();
 
@@ -186,17 +208,20 @@ describe('RealSheetsSyncClient', () => {
     });
 
     it('should return false if there are no pending changes', async () => {
-      const mockDraft = {
+      const mockResponse = {
+        success: true,
         draftId: 'draft-123',
-        totalAccounts: 5,
-        newAccounts: 0,
-        updatedAccounts: 0,
-        unchangedAccounts: 5,
-        changes: [],
-        createdAt: '2026-03-30T11:00:00Z',
+        summary: {
+          totalAccounts: 5,
+          newAccounts: 0,
+          updatedAccounts: 0,
+          unchangedAccounts: 5,
+        },
+        pendingChanges: [],
+        timestamp: '2026-03-30T11:00:00Z',
       };
 
-      mockApiClient.post = jest.fn().mockResolvedValue(mockDraft);
+      mockApiClient.post = jest.fn().mockResolvedValue(mockResponse);
 
       const hasPending = await client.hasPendingChanges();
 
@@ -233,38 +258,43 @@ describe('RealSheetsSyncClient', () => {
     });
 
     it('should query backend if cache is empty', async () => {
-      const mockDraft = {
+      const mockResponse = {
+        success: true,
         draftId: 'draft-123',
-        totalAccounts: 5,
-        newAccounts: 0,
-        updatedAccounts: 0,
-        unchangedAccounts: 5,
-        changes: [],
-        createdAt: '2026-03-30T11:00:00Z',
-        lastSyncTime: '2026-03-29T10:00:00Z',
+        summary: {
+          totalAccounts: 5,
+          newAccounts: 0,
+          updatedAccounts: 0,
+          unchangedAccounts: 5,
+        },
+        pendingChanges: [],
+        timestamp: '2026-03-29T10:00:00Z',
       };
 
-      mockApiClient.post = jest.fn().mockResolvedValue(mockDraft);
+      mockApiClient.post = jest.fn().mockResolvedValue(mockResponse);
 
       const lastSyncTime = await client.getLastSyncTime();
 
-      expect(lastSyncTime).toBe('2026-03-29T10:00:00Z');
+      // Draft response doesn't include lastSyncTime, so result should be null
+      expect(lastSyncTime).toBeNull();
       expect(mockApiClient.post).toHaveBeenCalledWith('/sheets-sync/draft');
     });
 
     it('should return null if no sync time available', async () => {
-      const mockDraft = {
+      const mockResponse = {
+        success: true,
         draftId: 'draft-123',
-        totalAccounts: 5,
-        newAccounts: 0,
-        updatedAccounts: 0,
-        unchangedAccounts: 5,
-        changes: [],
-        createdAt: '2026-03-30T11:00:00Z',
-        lastSyncTime: null,
+        summary: {
+          totalAccounts: 5,
+          newAccounts: 0,
+          updatedAccounts: 0,
+          unchangedAccounts: 5,
+        },
+        pendingChanges: [],
+        timestamp: '2026-03-30T11:00:00Z',
       };
 
-      mockApiClient.post = jest.fn().mockResolvedValue(mockDraft);
+      mockApiClient.post = jest.fn().mockResolvedValue(mockResponse);
 
       const lastSyncTime = await client.getLastSyncTime();
 
@@ -330,22 +360,25 @@ describe('RealSheetsSyncClient', () => {
       await client.executeSyncFromDraft('draft-123');
       client.clearCache();
 
-      // After clearing, should query backend again
-      const mockDraft = {
+      // After clearing, should query backend draft (which returns null lastSyncTime)
+      const mockResponse = {
+        success: true,
         draftId: 'draft-456',
-        totalAccounts: 5,
-        newAccounts: 0,
-        updatedAccounts: 0,
-        unchangedAccounts: 5,
-        changes: [],
-        createdAt: '2026-03-30T11:00:00Z',
-        lastSyncTime: '2026-03-29T10:00:00Z',
+        summary: {
+          totalAccounts: 5,
+          newAccounts: 0,
+          updatedAccounts: 0,
+          unchangedAccounts: 5,
+        },
+        pendingChanges: [],
+        timestamp: '2026-03-29T10:00:00Z',
       };
 
-      mockApiClient.post = jest.fn().mockResolvedValue(mockDraft);
+      mockApiClient.post = jest.fn().mockResolvedValue(mockResponse);
       const lastSyncTime = await client.getLastSyncTime();
 
-      expect(lastSyncTime).toBe('2026-03-29T10:00:00Z');
+      // Draft response doesn't include lastSyncTime
+      expect(lastSyncTime).toBeNull();
       expect(mockApiClient.post).toHaveBeenCalled();
     });
   });
