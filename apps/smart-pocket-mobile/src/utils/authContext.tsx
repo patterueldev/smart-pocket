@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { createContext, useState, useCallback, useRef, useEffect } from 'react';
 import { ServiceFactory, type IServices } from '@/services';
-import { RealSheetsSyncClient } from '@/services/sheets-sync';
 import { AuthTokens, AuthCredentials } from '@/types/auth';
 
 // Use mock services for development (backend not ready yet)
@@ -76,10 +75,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await apiClient.initialize(credentials.baseUrl, tokens.accessToken);
         
         console.log('[AuthProvider] API client initialized, recreating sheetsSync client');
-        // Recreate sheetsSync client with initialized API client
-        if (servicesRef.current.apiClient && !USE_MOCK_SERVICES) {
-          console.log('[AuthProvider] Recreating RealSheetsSyncClient with initialized ApiClient');
-          servicesRef.current.sheetsSync = new RealSheetsSyncClient(servicesRef.current.apiClient);
+        // Recreate sheetsSync client with initialized API client via ServiceFactory
+        if (servicesRef.current.apiClient) {
+          console.log('[AuthProvider] Recreating sheetsSync client with initialized ApiClient');
+          servicesRef.current.sheetsSync = ServiceFactory.createSheetsSyncClient(
+            USE_MOCK_SERVICES ? 'mock' : 'real',
+            servicesRef.current.apiClient
+          );
         }
 
         setIsLoggedIn(true);
@@ -116,10 +118,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await apiClient.initialize(credentials.baseUrl, tokens.accessToken);
       
       console.log('[AuthProvider] API client initialized, recreating sheetsSync client');
-      // Recreate sheetsSync client with initialized API client
-      if (servicesRef.current.apiClient && !USE_MOCK_SERVICES) {
-        console.log('[AuthProvider] Recreating RealSheetsSyncClient with initialized ApiClient');
-        servicesRef.current.sheetsSync = new RealSheetsSyncClient(servicesRef.current.apiClient);
+      // Recreate sheetsSync client with initialized API client via ServiceFactory
+      if (servicesRef.current.apiClient) {
+        console.log('[AuthProvider] Recreating sheetsSync client with initialized ApiClient');
+        servicesRef.current.sheetsSync = ServiceFactory.createSheetsSyncClient(
+          USE_MOCK_SERVICES ? 'mock' : 'real',
+          servicesRef.current.apiClient
+        );
       }
 
       setIsLoggedIn(true);

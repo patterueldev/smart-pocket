@@ -88,4 +88,30 @@ export class ServiceFactory {
       sheetsSync,
     };
   }
+
+  /**
+   * Create a sheetsSync client instance with dependency injection.
+   * Used to recreate sheetsSync client after ApiClient is initialized with auth credentials.
+   * 
+   * @param mode - 'real' (backend), 'mock' (mock data), or 'auto' (use config)
+   * @param apiClient - The ApiClient instance to inject into RealSheetsSyncClient
+   * @returns ISheetsSync instance (RealSheetsSyncClient or MockSheetsSyncClient)
+   */
+  static createSheetsSyncClient(mode: ServiceMode = 'auto', apiClient: IApiClient): ISheetsSync {
+    // Determine actual mode
+    let actualMode: 'real' | 'mock' = 'mock';
+    if (mode === 'auto') {
+      actualMode = config.sheets_sync_mode;
+    } else if (mode !== 'mock') {
+      actualMode = mode;
+    }
+
+    if (config.debug) {
+      console.log('[ServiceFactory] createSheetsSyncClient called with mode:', actualMode);
+    }
+
+    return actualMode === 'mock'
+      ? new MockSheetsSyncClient()
+      : new RealSheetsSyncClient(apiClient);
+  }
 }
