@@ -73,31 +73,21 @@ jobs:
           EOF
           echo "✅ credentials.json created for EAS Build"
 
-      # I'm going to temporarily create zipped artifact for the credentials and keystore, so I can download it and run EAS Build locally until I get the GitHub Actions workflow working end-to-end. Once it's working, I'll remove this step and the .zip file from the repository.
-      - name: Upload credentials and keystore
+      - name: Build Android APK with EAS Build
+        working-directory: apps/smart-pocket-mobile
+        env:
+          NODE_ENV: production
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          PROFILE=${{ inputs.env == 'prod' && 'production' || 'quality' }}
+          # --cache-key ensures cache across builds, --json for structured output
+          npx eas-cli build --platform android --profile $PROFILE --local --non-interactive --output=./app-production.apk
+          echo "✅ APK built successfully with profile: $PROFILE"
+
+      - name: Upload APK
         uses: actions/upload-artifact@v6
         with:
-          name: android-build-credentials
-          path: |
-            apps/smart-pocket-mobile/release.keystore
-            apps/smart-pocket-mobile/credentials.json
-            retention-days: 1
-
-      # - name: Build Android APK with EAS Build
-      #   working-directory: apps/smart-pocket-mobile
-      #   env:
-      #     NODE_ENV: production
-      #     ANDROID_HOME: ${{ env.ANDROID_HOME }}
-      #     EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-      #   run: |
-      #     PROFILE=${{ inputs.env == 'prod' && 'production' || 'quality' }}
-      #     # --cache-key ensures cache across builds, --json for structured output
-      #     npx eas-cli build --platform android --profile $PROFILE --local --non-interactive --output=./app-production.apk
-      #     echo "✅ APK built successfully with profile: $PROFILE"
-
-      # - name: Upload APK
-      #   uses: actions/upload-artifact@v6
-      #   with:
-      #     name: android-production-apk
-      #     path: apps/smart-pocket-mobile/app-production.apk
-      #     retention-days: 30
+          name: android-production-apk
+          path: apps/smart-pocket-mobile/app-production.apk
+          retention-days: 30
