@@ -71,6 +71,12 @@ jobs:
           zip -r SmartPocket.ipa Payload/
           rm -rf Payload
 
+      - name: Upload IPA
+        uses: actions/upload-artifact@v6
+        with:
+          name: SmartPocket-${{ inputs.env }}-v${{ steps.version.outputs.VERSION }}.ipa
+          path: apps/smart-pocket-mobile/ios/build/SmartPocket.ipa
+
       - name: Upload IPA to AltStore Source Manager
         working-directory: apps/smart-pocket-mobile/ios/build
         run: |
