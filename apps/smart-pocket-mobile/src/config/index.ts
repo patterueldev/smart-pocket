@@ -1,7 +1,29 @@
+import Constants from 'expo-constants';
+
 /**
  * Mobile App Configuration
  * Environment-specific settings for features and services
  */
+
+/**
+ * Get API base URL from app.config.js (set by APP_ENV at build time)
+ */
+const getApiBaseUrl = (): string => {
+  // First, try to get from Constants.expoConfig (set in app.config.js based on APP_ENV)
+  const configuredUrl = Constants.expoConfig?.extra?.api?.baseUrl;
+  if (configuredUrl) {
+    return configuredUrl;
+  }
+
+  // Fallback to environment variables (for testing/development)
+  const envUrl = process.env.REACT_APP_API_URL || process.env.API_URL;
+  if (envUrl) {
+    return envUrl;
+  }
+
+  // Final fallback
+  return 'http://localhost:3000';
+};
 
 /**
  * Feature flags and service configuration
@@ -33,10 +55,10 @@ export const config = {
 
   /**
    * API Configuration
-   * Backend base URL (will be configured at runtime)
+   * Backend base URL comes from app.config.js (set by APP_ENV at build time)
    */
   api: {
-    baseUrl: process.env.REACT_APP_API_URL || 'http://localhost:3000',
+    baseUrl: getApiBaseUrl(),
   },
 };
 
