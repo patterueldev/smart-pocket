@@ -109,7 +109,7 @@ The backend currently provides:
 
 **POST /sheets-sync/draft**
 
-Creates a draft of pending changes by comparing Actual Budget accounts with Google Sheets data.
+Creates a draft of pending changes by comparing Actual Budget accounts with Google Sheets data. Returns the backend API response with cleared/uncleared balance breakdowns for each account.
 
 Request:
 ```bash
@@ -118,27 +118,80 @@ curl -X POST http://localhost:3000/sheets-sync/draft \
   -H "Content-Type: application/json"
 ```
 
+Response Structure:
+- `success` - Always true on success
+- `draftId` - Unique draft identifier (persists for 24 hours in storage)
+- `summary` - Account statistics (total, new, updated, unchanged counts)
+- `pendingChanges` - Array of accounts with changes
+  - `accountName` - Display name from Actual Budget
+  - `type` - Either `NEW` or `UPDATE`
+  - `cleared` & `uncleared` - Separate balance states
+    - `current` - Current balance in Actual Budget
+    - `synced` - Last synced balance in Google Sheets
+- `timestamp` - When draft was created
+
 Response (200 OK):
 ```json
 {
-  "draftId": "draft-abc123xyz-1234567890",
-  "totalAccounts": 9,
-  "newAccounts": 1,
-  "updatedAccounts": 8,
-  "unchangedAccounts": 0,
-  "changes": [
+  "success": true,
+  "draftId": "draft-6w0wgsgdh44-1775441174498",
+  "summary": {
+    "totalAccounts": 9,
+    "newAccounts": 0,
+    "updatedAccounts": 7,
+    "unchangedAccounts": 2
+  },
+  "pendingChanges": [
     {
-      "accountId": "acc-1",
       "accountName": "Cash",
-      "currentBalance": 15500,
-      "sheetBalance": 15000,
-      "currency": "PHP",
-      "isNew": false,
-      "lastSyncTime": "2026-03-30T00:31:00.000Z"
+      "type": "UPDATE",
+      "cleared": {
+        "current": {
+          "amount": "3416.00",
+          "currency": "PHP"
+        },
+        "synced": {
+          "amount": "5889.00",
+          "currency": "PHP"
+        }
+      },
+      "uncleared": {
+        "current": {
+          "amount": "-1330.00",
+          "currency": "PHP"
+        },
+        "synced": {
+          "amount": "0.00",
+          "currency": "PHP"
+        }
+      }
+    },
+    {
+      "accountName": "BPI Savings",
+      "type": "UPDATE",
+      "cleared": {
+        "current": {
+          "amount": "2606.86",
+          "currency": "PHP"
+        },
+        "synced": {
+          "amount": "282.01",
+          "currency": "PHP"
+        }
+      },
+      "uncleared": {
+        "current": {
+          "amount": "0.00",
+          "currency": "PHP"
+        },
+        "synced": {
+          "amount": "0.00",
+          "currency": "PHP"
+        }
+      }
     }
   ],
-  "createdAt": "2026-03-30T00:31:43.591Z",
-  "lastSyncTime": "2026-03-30T00:31:00.000Z"
+  "timestamp": "2026-04-06T02:06:14.498Z"
 }
 ```
 
