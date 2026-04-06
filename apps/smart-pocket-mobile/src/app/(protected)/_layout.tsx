@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import 'react-native-reanimated';
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  anchor: 'index',
 };
 
 export default function ProtectedLayout() {
@@ -14,9 +14,16 @@ export default function ProtectedLayout() {
     return <Redirect href="/setup" />;
   }
   return (
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
+    <Stack>
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="sync"
+        options={{
+          title: 'Sheets Sync',
+          headerBackTitleVisible: false,
+        }}
+      />
+      <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+    </Stack>
   );
 }

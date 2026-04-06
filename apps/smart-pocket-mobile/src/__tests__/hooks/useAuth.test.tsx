@@ -359,10 +359,10 @@ describe('useAuth Hook', () => {
       expect(mockRouter.replace).toHaveBeenCalledWith('/setup');
     });
 
-    it('should be able to navigate to protected tabs', () => {
-      mockRouter.replace('/(protected)/(tabs)');
+    it('should be able to navigate to protected dashboard', () => {
+      mockRouter.replace('/(protected)/dashboard');
 
-      expect(mockRouter.replace).toHaveBeenCalledWith('/(protected)/(tabs)');
+      expect(mockRouter.replace).toHaveBeenCalledWith('/(protected)/dashboard');
     });
   });
 

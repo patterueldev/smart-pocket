@@ -20,7 +20,7 @@ export const createAuthContextMethods = (
       try {
         const tokens: AuthTokens = await authService.setup(credentials);
         await apiClient.initialize(credentials.baseUrl, tokens.accessToken);
-        router.replace('/(protected)/(tabs)');
+        router.replace('/(protected)/dashboard');
         return { success: true, tokens };
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Setup failed';
@@ -140,7 +140,7 @@ describe('authContext Methods', () => {
 
       await authMethods.setup(credentials);
 
-      expect(mockRouter.replace).toHaveBeenCalledWith('/(protected)/(tabs)');
+      expect(mockRouter.replace).toHaveBeenCalledWith('/(protected)/dashboard');
     });
 
     it('should return tokens on success', async () => {

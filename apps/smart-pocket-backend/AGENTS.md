@@ -102,6 +102,203 @@ The backend currently provides:
 - **POST /auth/refresh** - Issue new access token via refresh token
 - **GET /auth/test** - Protected endpoint (requires Bearer token)
 - **GET /health** - Health check endpoint
+- **POST /sheets-sync/draft** - Create sync draft with pending changes
+- **POST /sheets-sync/sync** - Execute sync from draft ID
+
+### Google Sheets Sync Endpoints
+
+**POST /sheets-sync/draft**
+
+Creates a draft of pending changes by comparing Actual Budget accounts with Google Sheets data. Returns the backend API response with cleared/uncleared balance breakdowns for each account.
+
+Request:
+```bash
+curl -X POST http://localhost:3000/sheets-sync/draft \
+  -H "Authorization: Bearer <your-jwt-token>" \
+  -H "Content-Type: application/json"
+```
+
+Response Structure:
+- `success` - Always true on success
+- `draftId` - Unique draft identifier (persists for 24 hours in storage)
+- `summary` - Account statistics (total, new, updated, unchanged counts)
+- `pendingChanges` - Array of accounts with changes
+  - `accountName` - Display name from Actual Budget
+  - `type` - Either `NEW` or `UPDATE`
+  - `cleared` & `uncleared` - Separate balance states
+    - `current` - Current balance in Actual Budget
+    - `synced` - Last synced balance in Google Sheets
+- `timestamp` - When draft was created
+
+Response (200 OK):
+```json
+{
+  "success": true,
+  "draftId": "draft-6w0wgsgdh44-1775441174498",
+  "summary": {
+    "totalAccounts": 9,
+    "newAccounts": 0,
+    "updatedAccounts": 7,
+    "unchangedAccounts": 2
+  },
+  "pendingChanges": [
+    {
+      "accountName": "Cash",
+      "type": "UPDATE",
+      "cleared": {
+        "current": {
+          "amount": "3416.00",
+          "currency": "PHP"
+        },
+        "synced": {
+          "amount": "5889.00",
+          "currency": "PHP"
+        }
+      },
+      "uncleared": {
+        "current": {
+          "amount": "-1330.00",
+          "currency": "PHP"
+        },
+        "synced": {
+          "amount": "0.00",
+          "currency": "PHP"
+        }
+      }
+    },
+    {
+      "accountName": "BPI Savings",
+      "type": "UPDATE",
+      "cleared": {
+        "current": {
+          "amount": "2606.86",
+          "currency": "PHP"
+        },
+        "synced": {
+          "amount": "282.01",
+          "currency": "PHP"
+        }
+      },
+      "uncleared": {
+        "current": {
+          "amount": "0.00",
+          "currency": "PHP"
+        },
+        "synced": {
+          "amount": "0.00",
+          "currency": "PHP"
+        }
+      }
+    }
+  ],
+  "timestamp": "2026-04-06T02:06:14.498Z"
+}
+```
+
+**POST /sheets-sync/sync**
+
+Executes the sync operation by updating Google Sheets with data from the draft.
+
+Request:
+```bash
+curl -X POST http://localhost:3000/sheets-sync/sync \
+  -H "Authorization: Bearer <your-jwt-token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "draftId": "draft-abc123xyz-1234567890"
+  }'
+```
+
+Response (200 OK):
+```json
+{
+  "success": true,
+  "syncedAt": "2026-03-30T00:31:43.591Z",
+  "accountsUpdated": 8,
+  "accountsAdded": 1,
+  "message": "Successfully synced 9 accounts to Google Sheets"
+}
+```
+
+Error Response (404 Not Found):
+```json
+{
+  "error": "Draft not found",
+  "draftId": "draft-abc123xyz-1234567890"
+}
+```
+
+### Implementation Details
+
+**Files**:
+- `src/controllers/sheetsSyncController.ts` - HTTP request handling
+- `src/routes/sheets-sync.ts` - Route definitions
+- `src/services/SheetsSyncService.ts` - Business logic
+- `src/services/ActualBudgetService.ts` - Actual Budget API integration
+- `src/services/GoogleSheetsService.ts` - Google Sheets API integration
+- `src/middleware/validateSyncRequest.ts` - Request validation
+- `src/__tests__/sheets-sync.test.ts` - 20+ test cases
+
+**Architecture**:
+```
+Request
+  ↓
+Middleware (auth, validation)
+  ↓
+sheetsSyncController (HTTP layer)
+  ↓
+SheetsSyncService (business logic)
+  ├→ ActualBudgetService (fetch accounts)
+  └→ GoogleSheetsService (compare & update sheets)
+  ↓
+Response (formatted)
+```
+
+**Key Services**:
+
+1. **SheetsSyncService**
+   - Creates drafts by comparing data sources
+   - Executes syncs from approved drafts
+   - Handles draft lifecycle (creation, storage, deletion)
+
+2. **ActualBudgetService**
+   - Authenticates with Actual Budget
+   - Retrieves budget and accounts
+   - Calculates balance sums
+   - Caches data for performance
+
+3. **GoogleSheetsService**
+   - Authenticates with Google API
+   - Reads current sheet data
+   - Writes updated balances
+   - Handles formatting (currency, dates)
+
+**SOLID Principles**:
+- **SRP**: Each service has single responsibility
+- **OCP**: New sync sources can be added (interface-based)
+- **LSP**: All services implement contracts correctly
+- **ISP**: Services depend only on needed methods
+- **DIP**: Services injected via container, not hardcoded
+
+### Testing
+
+**Test Coverage**: 56 tests
+```bash
+npm test                    # Run all tests
+npm test -- --coverage      # With coverage report
+npm test -- sheets-sync     # Sheets sync tests only
+```
+
+**Test Scenarios Covered**:
+- Draft creation with account comparison
+- Sync execution with Google Sheets updates
+- Error handling (missing accounts, API failures)
+- Currency formatting (12 currencies supported)
+- Empty sync (no changes)
+- Concurrent requests
+- Token refresh during operation
+
+See [README.md - Testing Sheets Sync](./README.md#testing-sheets-sync) for detailed test examples.
 
 See [README.md - Authentication Endpoints](./README.md#authentication-endpoints) for curl examples and testing instructions.
 
