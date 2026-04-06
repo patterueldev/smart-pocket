@@ -50,3 +50,7 @@ app-example
 
 # test coverage
 /coverage
+
+# keystores
+*.keystore
+credentials.json
