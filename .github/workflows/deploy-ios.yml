@@ -42,7 +42,9 @@ jobs:
 
       - name: Prebuild Expo
         working-directory: apps/smart-pocket-mobile
-        run: APP_ENV=${{ inputs.env == 'prod' && 'prod' || 'qa' }} npx expo prebuild --clean
+        env:
+          APP_ENV: ${{ inputs.env == 'prod' && 'prod' || 'qa' }}
+        run: npx expo prebuild --clean
 
       - name: Archive iOS
         working-directory: apps/smart-pocket-mobile/ios
