@@ -1,0 +1,33 @@
+services:
+  smart-pocket-dev-backend:
+    build: 
+      context: ./apps/smart-pocket-backend
+      dockerfile: ../../docker/Backend.dev.dockerfile
+    container_name: smart-pocket-dev-backend
+    volumes:
+      - ./apps/smart-pocket-backend/src:/app/src:delegated
+      - ./apps/smart-pocket-backend/package.json:/app/package.json:delegated
+      - /app/node_modules
+      - ./keys:/data/keys:ro
+    environment:
+      - NODE_ENV=development
+      - API_KEYS=${API_KEYS}
+      - ACTUAL_BUDGET_SERVER_URL=${ACTUAL_BUDGET_SERVER_URL}
+      - ACTUAL_BUDGET_PASSWORD=${ACTUAL_BUDGET_PASSWORD}
+      - ACTUAL_BUDGET_ID=${ACTUAL_BUDGET_ID}
+      - GOOGLE_SHEET_ID=${GOOGLE_SHEET_ID:-}
+      - GOOGLE_SHEET_NAME=${GOOGLE_SHEET_NAME:-}
+    restart: unless-stopped
+    # If not using cloudflared, uncomment the following lines to expose the backend on port 3000
+    # ports:
+    #   - "3000:3000"
+
+  smart-pocket-cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: smart-pocket-cloudflared
+    command: 
+      - tunnel
+      - --no-autoupdate
+      - run
+      - --token
+      - ${CLOUDFLARED_TOKEN}

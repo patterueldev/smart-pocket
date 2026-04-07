@@ -1,18 +1,22 @@
 name: iOS - Build & Deploy
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+    inputs:
+      env:
+        required: true
+        type: string
+        description: 'Deployment environment: qa or prod'
 
 jobs:
   build-ios:
+    environment: ${{ inputs.env == 'prod' && 'PROD' || 'QA' }}
     runs-on: macos-latest
     outputs:
       version: ${{ steps.version.outputs.VERSION }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       
       - name: Extract version from package.json
         id: version
@@ -27,19 +31,30 @@ jobs:
         with:
           node-version: '24'
 
+      - name: Setup Xcode Version
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
       - name: Install dependencies
         working-directory: apps/smart-pocket-mobile
         run: npm install
 
       - name: Prebuild Expo
         working-directory: apps/smart-pocket-mobile
+        env:
+          APP_ENV: ${{ inputs.env == 'prod' && 'prod' || 'qa' }}
         run: npx expo prebuild --clean
 
       - name: Archive iOS
         working-directory: apps/smart-pocket-mobile/ios
+        env:
+          APP_ENV: ${{ inputs.env == 'prod' && 'prod' || 'qa' }}
         run: |
-          xcodebuild -workspace SmartPocket.xcworkspace \
-                     -scheme SmartPocket \
+          WORKSPACE=${{ inputs.env == 'prod' && 'SmartPocket.xcworkspace' || 'SmartPocketQA.xcworkspace' }}
+          SCHEME=${{ inputs.env == 'prod' && 'SmartPocket' || 'SmartPocketQA' }}
+          xcodebuild -workspace "$WORKSPACE" \
+                     -scheme "$SCHEME" \
                      -configuration Release \
                      -sdk iphoneos \
                      -destination generic/platform=iOS \
@@ -53,11 +68,18 @@ jobs:
       - name: Export IPA
         working-directory: apps/smart-pocket-mobile/ios
         run: |
+          APP_NAME=${{ inputs.env == 'prod' && 'SmartPocket' || 'SmartPocketQA' }}
           mkdir -p build/Payload
-          cp -r build/SmartPocket.xcarchive/Products/Applications/SmartPocket.app build/Payload/
+          cp -r build/SmartPocket.xcarchive/Products/Applications/${APP_NAME}.app build/Payload/
           cd build
           zip -r SmartPocket.ipa Payload/
           rm -rf Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v6
+        with:
+          name: SmartPocket-${{ inputs.env }}-v${{ steps.version.outputs.VERSION }}.ipa
+          path: apps/smart-pocket-mobile/ios/build/SmartPocket.ipa
 
       - name: Upload IPA to AltStore Source Manager
         working-directory: apps/smart-pocket-mobile/ios/build
@@ -66,5 +88,6 @@ jobs:
             -H "X-Access-Key: ${{ secrets.ALTSTORE_ACCESS_KEY }}:${{ secrets.ALTSTORE_SECRET }}" \
             -F "appId=${{ secrets.ALTSTORE_APP_ID }}" \
             -F "localizedDescription=Production release ${{ steps.version.outputs.VERSION }}" \
-            -F "ipa=@SmartPocket.ipa"
+            -F "ipa=@SmartPocket.ipa" \
+            -F "overwrite=${{ inputs.env == 'qa' && 'true' || 'false' }}"
           echo "✅ IPA uploaded to AltStore Source Manager"

@@ -41,3 +41,16 @@ app-example
 # generated native folders
 /ios
 /android
+
+# build files
+*.apk
+*.aab
+*.ipa
+*.xcarchive
+
+# test coverage
+/coverage
+
+# keystores
+*.keystore
+credentials.json
