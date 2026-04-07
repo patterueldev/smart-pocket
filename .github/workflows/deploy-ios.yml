@@ -88,5 +88,6 @@ jobs:
             -H "X-Access-Key: ${{ secrets.ALTSTORE_ACCESS_KEY }}:${{ secrets.ALTSTORE_SECRET }}" \
             -F "appId=${{ secrets.ALTSTORE_APP_ID }}" \
             -F "localizedDescription=Production release ${{ steps.version.outputs.VERSION }}" \
-            -F "ipa=@SmartPocket.ipa"
+            -F "ipa=@SmartPocket.ipa" \
+            -F "overwrite=${{ inputs.env == 'qa' && 'true' || 'false' }}"
           echo "✅ IPA uploaded to AltStore Source Manager"
