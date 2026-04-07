@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { createContext, useState, useCallback, useRef, useEffect } from 'react';
+import React, { createContext, useState, useCallback, useRef } from 'react';
 import { ServiceFactory, type IServices } from '@/services';
 import { AuthTokens, AuthCredentials } from '@/types/auth';
 
