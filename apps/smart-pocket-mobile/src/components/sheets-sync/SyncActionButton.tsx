@@ -1,6 +1,5 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, View } from 'react-native';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 interface SyncActionButtonProps {
   onPress: () => void;
@@ -9,14 +8,10 @@ interface SyncActionButtonProps {
 }
 
 export function SyncActionButton({ onPress, loading, disabled = false }: SyncActionButtonProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
   return (
     <TouchableOpacity
       style={[
         styles.button,
-        isDark && styles.buttonDark,
         (loading || disabled) && styles.buttonDisabled,
       ]}
       onPress={onPress}
@@ -44,9 +39,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  buttonDark: {
-    backgroundColor: '#66BB6A',
   },
   buttonDisabled: {
     opacity: 0.5,

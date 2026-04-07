@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import type { AccountChange } from '@/services/sheets-sync/ISheetsSync';
 
 interface SyncChangeItemProps {
@@ -8,9 +7,6 @@ interface SyncChangeItemProps {
 }
 
 export function SyncChangeItem({ change }: SyncChangeItemProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
   const CURRENCY_SYMBOLS: Record<string, string> = {
     USD: '$',
     EUR: '€',
@@ -40,9 +36,9 @@ export function SyncChangeItem({ change }: SyncChangeItemProps) {
   };
 
   return (
-    <View style={[styles.container, isDark && styles.containerDark]}>
+    <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={[styles.accountName, isDark && styles.accountNameDark]}>
+        <Text style={styles.accountName}>
           {change.accountName}
         </Text>
         {change.isNew && <Text style={styles.badge}>NEW</Text>}
@@ -50,24 +46,24 @@ export function SyncChangeItem({ change }: SyncChangeItemProps) {
 
       <View style={styles.balances}>
         <View style={styles.balanceColumn}>
-          <Text style={[styles.label, isDark && styles.labelDark]}>Current</Text>
-          <Text style={[styles.balance, isDark && styles.balanceDark]}>
+          <Text style={styles.label}>Current</Text>
+          <Text style={styles.balance}>
             {formatAmount(change.currentBalance, change.currency)}
           </Text>
         </View>
 
-        <Text style={[styles.arrow, isDark && styles.arrowDark]}>→</Text>
+        <Text style={styles.arrow}>→</Text>
 
         <View style={styles.balanceColumn}>
-          <Text style={[styles.label, isDark && styles.labelDark]}>On Sheet</Text>
-          <Text style={[styles.balanceSheet, isDark && styles.balanceSheetDark]}>
+          <Text style={styles.label}>On Sheet</Text>
+          <Text style={styles.balanceSheet}>
             {formatAmount(change.sheetBalance, change.currency)}
           </Text>
         </View>
       </View>
 
       {change.lastSyncTime && (
-        <Text style={[styles.syncTime, isDark && styles.syncTimeDark]}>
+        <Text style={styles.syncTime}>
           Last synced: {new Date(change.lastSyncTime).toLocaleDateString()}
         </Text>
       )}
@@ -83,10 +79,6 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e0e0e0',
     backgroundColor: '#fff',
   },
-  containerDark: {
-    backgroundColor: '#1a1a1a',
-    borderBottomColor: '#333',
-  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -97,9 +89,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
-  },
-  accountNameDark: {
-    color: '#fff',
   },
   badge: {
     fontSize: 10,
@@ -125,39 +114,24 @@ const styles = StyleSheet.create({
     color: '#999',
     marginBottom: 4,
   },
-  labelDark: {
-    color: '#666',
-  },
   balance: {
     fontSize: 14,
     fontWeight: '600',
     color: '#D32F2F',
-  },
-  balanceDark: {
-    color: '#EF5350',
   },
   balanceSheet: {
     fontSize: 14,
     fontWeight: '600',
     color: '#388E3C',
   },
-  balanceSheetDark: {
-    color: '#66BB6A',
-  },
   arrow: {
     fontSize: 14,
     fontWeight: '600',
     color: '#999',
   },
-  arrowDark: {
-    color: '#666',
-  },
   syncTime: {
     fontSize: 12,
     color: '#999',
     marginTop: 8,
-  },
-  syncTimeDark: {
-    color: '#666',
   },
 });

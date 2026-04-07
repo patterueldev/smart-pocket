@@ -76,7 +76,7 @@ module.exports = {
     orientation: 'portrait',
     icon: './assets/images/icon.png',
     scheme: envConfig.scheme,
-    userInterfaceStyle: 'automatic',
+    userInterfaceStyle: 'light',
     newArchEnabled: true,
     ios: {
       bundleIdentifier: envConfig.ios.bundleIdentifier,
@@ -108,9 +108,6 @@ module.exports = {
           imageWidth: 200,
           resizeMode: 'contain',
           backgroundColor: '#ffffff',
-          dark: {
-            backgroundColor: '#000000',
-          },
         },
       ],
     ],

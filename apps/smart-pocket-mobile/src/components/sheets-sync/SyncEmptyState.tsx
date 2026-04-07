@@ -1,15 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 
 interface SyncEmptyStateProps {
   lastSyncTime?: string | null;
 }
 
 export function SyncEmptyState({ lastSyncTime }: SyncEmptyStateProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
-
   const formatDate = (isoDate?: string | null): string => {
     if (!isoDate) return 'Not synced yet';
     const date = new Date(isoDate);
@@ -24,10 +20,10 @@ export function SyncEmptyState({ lastSyncTime }: SyncEmptyStateProps) {
   };
 
   return (
-    <View style={[styles.container, isDark && styles.containerDark]}>
-      <Text style={[styles.checkmark]}>✓</Text>
-      <Text style={[styles.title, isDark && styles.titleDark]}>Everything is synced</Text>
-      <Text style={[styles.date, isDark && styles.dateDark]}>Last sync: {formatDate(lastSyncTime)}</Text>
+    <View style={styles.container}>
+      <Text style={styles.checkmark}>✓</Text>
+      <Text style={styles.title}>Everything is synced</Text>
+      <Text style={styles.date}>Last sync: {formatDate(lastSyncTime)}</Text>
     </View>
   );
 }
@@ -40,9 +36,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     backgroundColor: '#f5f5f5',
   },
-  containerDark: {
-    backgroundColor: '#1a1a1a',
-  },
   checkmark: {
     fontSize: 64,
     marginBottom: 16,
@@ -54,14 +47,8 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 8,
   },
-  titleDark: {
-    color: '#fff',
-  },
   date: {
     fontSize: 14,
     color: '#666',
-  },
-  dateDark: {
-    color: '#999',
   },
 });
