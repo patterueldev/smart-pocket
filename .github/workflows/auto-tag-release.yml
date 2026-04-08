@@ -41,6 +41,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git credentials
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
 
       - name: Read version from package.json
         id: version
@@ -70,10 +79,6 @@ jobs:
       - name: Create and push tag
         if: steps.tag-exists.outputs.tag-exists == 'false'
         run: |
-          # Configure git identity for tagging
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git config user.name "github-actions[bot]"
-          
           TAG="${{ steps.version.outputs.tag }}"
           PR_TITLE="${{ github.event.pull_request.title }}"
           
