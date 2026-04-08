@@ -2,24 +2,24 @@
 # Auto Tag Release
 #
 # Purpose:
-#   Automatically creates and pushes a version tag when a PR is merged to main.
+#   Automatically creates and pushes a version tag when commits are pushed to main.
 #   Extracts version from package.json to ensure consistent tagging.
 #
 # Trigger:
-#   - PR closed and merged to main (pull_request event with merged=true)
+#   - Push to main branch (which occurs after PR merge)
 #
 # What it does:
-#   1. Checks if PR was merged (not just closed)
-#   2. Reads version from apps/smart-pocket-backend/package.json
-#   3. Creates annotated tag: v{version}
-#   4. Pushes tag to remote
-#   5. Tag push triggers prod-build.yml workflow
+#   1. Reads version from apps/smart-pocket-backend/package.json
+#   2. Creates annotated tag: v{version}
+#   3. Pushes tag to remote
+#   4. Tag push triggers prod-build.yml workflow
 #
 # Related Workflows:
 #   • .github/workflows/prod-build.yml (triggered by tag push)
 #   • .github/workflows/pr-base-checks.yml (enforces rc/* or hotfix/* for main)
 #
 # Notes:
+#   - Runs on every push to main (should be idempotent - only creates tag if not exists)
 #   - Both apps (backend & mobile) must have the same version in package.json
 #   - Tag format: v1.0.0 (semantic versioning)
 #   - Only creates tag if version doesn't already exist
@@ -27,17 +27,14 @@
 name: Auto Tag Release
 
 on:
-  pull_request:
+  push:
     branches:
       - main
-    types:
-      - closed
 
 jobs:
   create-tag:
     name: Create Release Tag
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -80,13 +77,14 @@ jobs:
         if: steps.tag-exists.outputs.tag-exists == 'false'
         run: |
           TAG="${{ steps.version.outputs.tag }}"
-          PR_TITLE="${{ github.event.pull_request.title }}"
+          COMMIT_SHA="${{ github.sha }}"
+          COMMIT_MSG=$(git log -1 --pretty=%B $COMMIT_SHA)
           
-          # Create annotated tag with PR info
+          # Create annotated tag with commit info
           git tag -a "$TAG" -m "Release $TAG
 
-          Merged PR: $PR_TITLE (#${{ github.event.pull_request.number }})
-          Commit: ${{ github.event.pull_request.merge_commit_sha }}"
+          Commit: $COMMIT_SHA
+          Message: $COMMIT_MSG"
           
           # Push tag to remote
           git push origin "$TAG"
@@ -97,5 +95,5 @@ jobs:
         if: steps.tag-exists.outputs.tag-exists == 'true'
         run: |
           TAG="${{ steps.version.outputs.tag }}"
-          echo "Skipping tag creation - $TAG already exists"
-          echo "To deploy this version, manually push the existing tag or bump version in package.json"
+          echo "Tag $TAG already exists - skipping creation"
+          echo "Ensure version in package.json is bumped to create a new tag"
