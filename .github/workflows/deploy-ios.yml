@@ -42,10 +42,14 @@ jobs:
 
       - name: Prebuild Expo
         working-directory: apps/smart-pocket-mobile
-        run: APP_ENV=${{ inputs.env == 'prod' && 'prod' || 'qa' }} npx expo prebuild --clean
+        env:
+          APP_ENV: ${{ inputs.env == 'prod' && 'prod' || 'qa' }}
+        run: npx expo prebuild --clean
 
       - name: Archive iOS
         working-directory: apps/smart-pocket-mobile/ios
+        env:
+          APP_ENV: ${{ inputs.env == 'prod' && 'prod' || 'qa' }}
         run: |
           WORKSPACE=${{ inputs.env == 'prod' && 'SmartPocket.xcworkspace' || 'SmartPocketQA.xcworkspace' }}
           SCHEME=${{ inputs.env == 'prod' && 'SmartPocket' || 'SmartPocketQA' }}
@@ -71,6 +75,12 @@ jobs:
           zip -r SmartPocket.ipa Payload/
           rm -rf Payload
 
+      - name: Upload IPA
+        uses: actions/upload-artifact@v6
+        with:
+          name: SmartPocket-${{ inputs.env }}-v${{ steps.version.outputs.VERSION }}.ipa
+          path: apps/smart-pocket-mobile/ios/build/SmartPocket.ipa
+
       - name: Upload IPA to AltStore Source Manager
         working-directory: apps/smart-pocket-mobile/ios/build
         run: |
@@ -78,5 +88,6 @@ jobs:
             -H "X-Access-Key: ${{ secrets.ALTSTORE_ACCESS_KEY }}:${{ secrets.ALTSTORE_SECRET }}" \
             -F "appId=${{ secrets.ALTSTORE_APP_ID }}" \
             -F "localizedDescription=Production release ${{ steps.version.outputs.VERSION }}" \
-            -F "ipa=@SmartPocket.ipa"
+            -F "ipa=@SmartPocket.ipa" \
+            -F "overwrite=${{ inputs.env == 'qa' && 'true' || 'false' }}"
           echo "✅ IPA uploaded to AltStore Source Manager"

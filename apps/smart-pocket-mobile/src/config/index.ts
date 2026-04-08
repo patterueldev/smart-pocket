@@ -1,6 +1,11 @@
+import Constants from 'expo-constants';
+
 /**
  * Mobile App Configuration
  * Environment-specific settings for features and services
+ * 
+ * All configuration is driven by APP_ENV environment variable set at build time.
+ * APP_ENV determines which environment config from app.config.js is used.
  */
 
 /**
@@ -33,10 +38,17 @@ export const config = {
 
   /**
    * API Configuration
-   * Backend base URL (will be configured at runtime)
+   * Backend base URL comes from app.config.js (set by APP_ENV at build time)
+   * Note: In tests, this returns a mock URL since Constants.expoConfig is not available
    */
-  api: {
-    baseUrl: process.env.REACT_APP_API_URL || 'http://localhost:3000',
+  get api() {
+    // In test environments, Constants.expoConfig is not populated
+    // Default to a test URL to allow imports without errors
+    const baseUrl = Constants.expoConfig?.extra?.api?.baseUrl || 'http://localhost:3000';
+    
+    return {
+      baseUrl,
+    };
   },
 };
 

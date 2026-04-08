@@ -543,15 +543,19 @@ USE_REAL_SHEETS_SYNC=true npm start
 ```
 
 **Configuration Files**:
-- `src/config/index.ts` - Feature flags and base URL
-- `app.config.js` - Environment-specific API endpoints
-- `src/constants/config.ts` - Runtime config loading
+- `src/config/index.ts` - Feature flags and API base URL (reads from app.config.js)
+- `app.config.js` - Environment-specific API endpoints (set by APP_ENV at build time)
+- `src/constants/config.ts` - Runtime config loading from Expo Constants
 
-**Base URL Priority**:
-1. User-provided URL (from setup screen)
-2. Environment variable `REACT_APP_API_URL`
-3. App environment config (app.config.js)
-4. Default: `http://localhost:3000`
+**Base URL Configuration**:
+The API base URL is **exclusively** determined by the `APP_ENV` environment variable set at build time:
+- `APP_ENV=dev` → `https://smartpocket-dev.nicenature.space`
+- `APP_ENV=qa` → `https://smartpocket-qa.nicenature.space`
+- `APP_ENV=prod` → `https://smartpocket.patteruel.dev`
+
+Build command: `APP_ENV=<dev|qa|prod> npx expo prebuild --clean`
+
+**No longer supported**: REACT_APP_API_URL, API_URL environment variables (removed in Phase 2)
 
 ### Mode Switching Reference
 

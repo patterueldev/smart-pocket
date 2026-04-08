@@ -30,11 +30,65 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  detect-changes:
+    name: Detect changed files
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.changes.outputs.backend }}
+      android: ${{ steps.changes.outputs.android }}
+      ios: ${{ steps.changes.outputs.ios }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed files
+        id: changes
+        run: |
+          # Compare RC branch against main (production)
+          MERGE_BASE=$(git merge-base origin/main HEAD)
+          
+          echo "Comparing against main branch (production):"
+          echo "Merge base: $MERGE_BASE"
+          echo ""
+          
+          # Check if backend files changed
+          if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-backend/"; then
+            echo "backend=true" >> $GITHUB_OUTPUT
+            echo "✅ Changes detected in backend files."
+          else
+            echo "backend=false" >> $GITHUB_OUTPUT
+            echo "⊘ No changes detected in backend files."
+          fi
+          
+          # Check if mobile files changed
+          if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-mobile/"; then
+            echo "android=true" >> $GITHUB_OUTPUT
+            echo "ios=true" >> $GITHUB_OUTPUT
+            echo "✅ Changes detected in mobile files."
+          else
+            echo "android=false" >> $GITHUB_OUTPUT
+            echo "ios=false" >> $GITHUB_OUTPUT
+            echo "⊘ No changes detected in mobile files."
+          fi
+
+      - name: Output detection results
+        run: |
+          echo "✅ Detection complete:"
+          echo "- Backend changed: ${{ steps.changes.outputs.backend }}"
+          echo "- Android changed: ${{ steps.changes.outputs.android }}"
+          echo "- iOS changed: ${{ steps.changes.outputs.ios }}"
+
   deploy:
     name: Orchestrate QA Build & Deploy
+    needs: detect-changes
     uses: ./.github/workflows/deploy-orchestrator.yml
     with:
       env: qa
+      backend: ${{ needs.detect-changes.outputs.backend }}
+      android: ${{ needs.detect-changes.outputs.android }}
+      ios: ${{ needs.detect-changes.outputs.ios }}
     secrets: inherit
     permissions:
       contents: read

@@ -21,7 +21,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthContext } from '@/utils/authContext';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useSheetsSync } from '@/hooks/useSheetsSync';
 import {
   SyncEmptyState,
@@ -36,8 +35,6 @@ export default function SyncScreen() {
   const { draft, loading, syncing, refreshing, error, onRefresh, onSync } = useSheetsSync(
     authContext.services!.sheetsSync
   );
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === 'dark';
 
   // Check if there are pending changes to sync
   const hasPendingChanges = draft && draft.changes && draft.changes.length > 0;
@@ -45,12 +42,12 @@ export default function SyncScreen() {
   // Loading state - show skeleton placeholders
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.skeletonContainer}>
           {[1, 2, 3].map((i) => (
             <View
               key={i}
-              style={[styles.skeletonItem, isDark && styles.skeletonItemDark]}
+              style={styles.skeletonItem}
             />
           ))}
         </View>
@@ -61,7 +58,7 @@ export default function SyncScreen() {
   // Error state - show error message with retry button
   if (error && !hasPendingChanges) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={styles.container}>
         <SyncErrorState error={error} onRetry={onRefresh} />
       </SafeAreaView>
     );
@@ -70,7 +67,7 @@ export default function SyncScreen() {
   // Empty state - all synced
   if (!hasPendingChanges) {
     return (
-      <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+      <SafeAreaView style={styles.container}>
         <ScrollView
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
@@ -82,15 +79,15 @@ export default function SyncScreen() {
 
   // Main sync screen - display changes and sync button
   return (
-    <SafeAreaView style={[styles.container, isDark && styles.containerDark]}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.contentWrapper}>
         <ScrollView
-          contentContainerStyle={[styles.scrollContent, isDark && styles.scrollContentDark]}
+          contentContainerStyle={styles.scrollContent}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
           {/* Show error if it occurred during sync operation */}
           {error && (
-            <View style={[styles.inlineError, isDark && styles.inlineErrorDark]}>
+            <View style={styles.inlineError}>
               <SyncErrorState error={error} onRetry={onRefresh} />
             </View>
           )}
@@ -125,17 +122,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  containerDark: {
-    backgroundColor: '#000',
-  },
   contentWrapper: {
     flex: 1,
   },
   scrollContent: {
     backgroundColor: '#fff',
-  },
-  scrollContentDark: {
-    backgroundColor: '#000',
   },
   skeletonContainer: {
     padding: 16,
@@ -146,9 +137,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
     borderRadius: 8,
   },
-  skeletonItemDark: {
-    backgroundColor: '#333',
-  },
   inlineError: {
     marginHorizontal: 16,
     marginTop: 16,
@@ -156,8 +144,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffebee',
     borderRadius: 8,
     overflow: 'hidden',
-  },
-  inlineErrorDark: {
-    backgroundColor: '#5a1a1a',
   },
 });

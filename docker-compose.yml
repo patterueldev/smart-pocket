@@ -1,9 +1,9 @@
 services:
-  smart-pocket-backend:
+  smart-pocket-dev-backend:
     build: 
       context: ./apps/smart-pocket-backend
       dockerfile: ../../docker/Backend.dev.dockerfile
-    container_name: smart-pocket-backend
+    container_name: smart-pocket-dev-backend
     volumes:
       - ./apps/smart-pocket-backend/src:/app/src:delegated
       - ./apps/smart-pocket-backend/package.json:/app/package.json:delegated
@@ -22,9 +22,9 @@ services:
     # ports:
     #   - "3000:3000"
 
-  cloudflared:
+  smart-pocket-cloudflared:
     image: cloudflare/cloudflared:latest
-    container_name: cloudflared
+    container_name: smart-pocket-cloudflared
     command: 
       - tunnel
       - --no-autoupdate
