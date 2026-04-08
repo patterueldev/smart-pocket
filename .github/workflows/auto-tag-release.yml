@@ -51,8 +51,8 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           
-          echo "📦 Version from package.json: $VERSION"
-          echo "🏷️  Tag to create: $TAG"
+          echo "Version from package.json: $VERSION"
+          echo "Tag to create: $TAG"
 
       - name: Check if tag already exists
         id: tag-exists
@@ -61,15 +61,19 @@ jobs:
           
           if git rev-parse "$TAG" >/dev/null 2>&1; then
             echo "tag-exists=true" >> $GITHUB_OUTPUT
-            echo "⚠️  Tag $TAG already exists"
+            echo "Tag $TAG already exists"
           else
             echo "tag-exists=false" >> $GITHUB_OUTPUT
-            echo "✅ Tag $TAG does not exist, will create it"
+            echo "Tag $TAG does not exist, will create it"
           fi
 
       - name: Create and push tag
         if: steps.tag-exists.outputs.tag-exists == 'false'
         run: |
+          # Configure git identity for tagging
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          
           TAG="${{ steps.version.outputs.tag }}"
           PR_TITLE="${{ github.event.pull_request.title }}"
           
@@ -82,7 +86,7 @@ jobs:
           # Push tag to remote
           git push origin "$TAG"
           
-          echo "✅ Tag $TAG created and pushed"
+          echo "Tag $TAG created and pushed"
 
       - name: Skip if tag exists
         if: steps.tag-exists.outputs.tag-exists == 'true'
