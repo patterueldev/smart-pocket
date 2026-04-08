@@ -1,0 +1,92 @@
+#
+# Auto Tag Release
+#
+# Purpose:
+#   Automatically creates and pushes a version tag when a PR is merged to main.
+#   Extracts version from package.json to ensure consistent tagging.
+#
+# Trigger:
+#   - PR closed and merged to main (pull_request event with merged=true)
+#
+# What it does:
+#   1. Checks if PR was merged (not just closed)
+#   2. Reads version from apps/smart-pocket-backend/package.json
+#   3. Creates annotated tag: v{version}
+#   4. Pushes tag to remote
+#   5. Tag push triggers prod-build.yml workflow
+#
+# Related Workflows:
+#   • .github/workflows/prod-build.yml (triggered by tag push)
+#   • .github/workflows/pr-base-checks.yml (enforces rc/* or hotfix/* for main)
+#
+# Notes:
+#   - Both apps (backend & mobile) must have the same version in package.json
+#   - Tag format: v1.0.0 (semantic versioning)
+#   - Only creates tag if version doesn't already exist
+#
+name: Auto Tag Release
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  create-tag:
+    name: Create Release Tag
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Read version from package.json
+        id: version
+        run: |
+          VERSION=$(jq -r '.version' apps/smart-pocket-backend/package.json)
+          TAG="v$VERSION"
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          
+          echo "📦 Version from package.json: $VERSION"
+          echo "🏷️  Tag to create: $TAG"
+
+      - name: Check if tag already exists
+        id: tag-exists
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "tag-exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️  Tag $TAG already exists"
+          else
+            echo "tag-exists=false" >> $GITHUB_OUTPUT
+            echo "✅ Tag $TAG does not exist, will create it"
+          fi
+
+      - name: Create and push tag
+        if: steps.tag-exists.outputs.tag-exists == 'false'
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          
+          # Create annotated tag with PR info
+          git tag -a "$TAG" -m "Release $TAG
+
+Merged PR: $PR_TITLE (#${{ github.event.pull_request.number }})
+Commit: ${{ github.event.pull_request.merge_commit_sha }}"
+          
+          # Push tag to remote
+          git push origin "$TAG"
+          
+          echo "✅ Tag $TAG created and pushed"
+
+      - name: Skip if tag exists
+        if: steps.tag-exists.outputs.tag-exists == 'true'
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          echo "⏭️  Skipping tag creation - $TAG already exists"
+          echo "To deploy this version, manually push the existing tag or bump version in package.json"
