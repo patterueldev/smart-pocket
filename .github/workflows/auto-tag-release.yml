@@ -76,8 +76,8 @@ jobs:
           # Create annotated tag with PR info
           git tag -a "$TAG" -m "Release $TAG
 
-Merged PR: $PR_TITLE (#${{ github.event.pull_request.number }})
-Commit: ${{ github.event.pull_request.merge_commit_sha }}"
+          Merged PR: $PR_TITLE (#${{ github.event.pull_request.number }})
+          Commit: ${{ github.event.pull_request.merge_commit_sha }}"
           
           # Push tag to remote
           git push origin "$TAG"
@@ -88,5 +88,5 @@ Commit: ${{ github.event.pull_request.merge_commit_sha }}"
         if: steps.tag-exists.outputs.tag-exists == 'true'
         run: |
           TAG="${{ steps.version.outputs.tag }}"
-          echo "⏭️  Skipping tag creation - $TAG already exists"
+          echo "Skipping tag creation - $TAG already exists"
           echo "To deploy this version, manually push the existing tag or bump version in package.json"
