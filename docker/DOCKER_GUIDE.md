@@ -160,7 +160,7 @@ docker run \
   -p 3000:80 \
   -e NODE_ENV=production \
   --restart always \
-  --health-cmd='curl -f http://localhost:3000/api/health || exit 1' \
+  --health-cmd='curl -f http://localhost/api/health || exit 1' \
   --health-interval=30s \
   smart-pocket-backend:latest
 ```

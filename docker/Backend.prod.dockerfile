@@ -60,7 +60,7 @@ RUN printf '%s\n' \
   '    index index.html;' \
   '' \
   '    location = /api {' \
-  '        return 301 /api/;' \
+  '        return 308 /api/;' \
   '    }' \
   '' \
   '    location /api/ {' \
