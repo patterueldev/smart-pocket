@@ -1,44 +1,70 @@
-# Production Dockerfile for Smart Pocket Backend
-# Multi-stage build with nginx reverse proxy for production
+# Production Dockerfile for Smart Pocket unified web + API deployment
+# Builds:
+# - React web app from apps/smart-pocket-mobile
+# - Node API from apps/smart-pocket-backend
+# Serves web at "/" and API at "/api" via nginx reverse proxy.
 
-FROM node:24-alpine AS builder
+FROM node:24-bookworm-slim AS backend-builder
 
-WORKDIR /app
-
-# Install dependencies (including dev deps for build)
-COPY package*.json ./
+WORKDIR /workspace/apps/smart-pocket-backend
+COPY apps/smart-pocket-backend/package*.json ./
 RUN npm install --legacy-peer-deps
-
-# Copy and build application
-COPY . .
+COPY apps/smart-pocket-backend/ ./
 RUN npm run build
 
-# Runtime stage with nginx
-FROM node:24-alpine
+FROM node:24-bookworm-slim AS frontend-builder
+
+ARG APP_ENV=prod
+ARG USE_REAL_SHEETS_SYNC=true
+ENV APP_ENV=${APP_ENV}
+ENV USE_REAL_SHEETS_SYNC=${USE_REAL_SHEETS_SYNC}
+
+WORKDIR /workspace/apps/smart-pocket-mobile
+COPY apps/smart-pocket-mobile/package*.json ./
+RUN npm ci
+COPY apps/smart-pocket-mobile/ ./
+RUN npx expo export --platform web
+
+FROM node:24-bookworm-slim AS runtime
 
 WORKDIR /app
 
-# Install nginx and supervisor to manage multiple processes
-RUN apk add --no-cache nginx supervisor wget
+# Install nginx and supervisor to run web server + backend process
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends nginx supervisor wget && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy compiled app and dependencies from builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
+# Reuse backend dependencies from build stage and prune dev deps
+COPY apps/smart-pocket-backend/package*.json ./
+COPY --from=backend-builder /workspace/apps/smart-pocket-backend/node_modules ./node_modules
+RUN npm prune --omit=dev
 
-# Create and configure nginx directories with proper permissions
-RUN mkdir -p /etc/nginx/conf.d /var/run/nginx /var/log/nginx /var/cache/nginx && \
-    chown -R nginx:nginx /var/run/nginx /var/cache/nginx /var/log/nginx
+# Copy compiled backend and generated web bundle
+COPY --from=backend-builder /workspace/apps/smart-pocket-backend/dist ./dist
+COPY --from=frontend-builder /workspace/apps/smart-pocket-mobile/dist /usr/share/nginx/html
 
-# Configure nginx as reverse proxy for Node.js
+# Create nginx directories
+RUN mkdir -p /etc/nginx/conf.d /var/run/nginx /var/log/nginx /var/cache/nginx
+RUN rm -f /etc/nginx/sites-enabled/default
+
+# Nginx config:
+# - Serve SPA from root
+# - Proxy /api/* -> backend on port 3001
 RUN printf '%s\n' \
   'server {' \
   '    listen 80 default_server;' \
   '    server_name _;' \
   '    client_max_body_size 10M;' \
-  '    ' \
-  '    location / {' \
-  '        proxy_pass http://localhost:3001;' \
+  '' \
+  '    root /usr/share/nginx/html;' \
+  '    index index.html;' \
+  '' \
+  '    location = /api {' \
+  '        return 301 /api/;' \
+  '    }' \
+  '' \
+  '    location /api/ {' \
+  '        proxy_pass http://127.0.0.1:3001/;' \
   '        proxy_http_version 1.1;' \
   '        proxy_set_header Upgrade $http_upgrade;' \
   '        proxy_set_header Connection "upgrade";' \
@@ -51,9 +77,13 @@ RUN printf '%s\n' \
   '        proxy_send_timeout 60s;' \
   '        proxy_read_timeout 60s;' \
   '    }' \
+  '' \
+  '    location / {' \
+  '        try_files $uri $uri/ /index.html;' \
+  '    }' \
   '}' > /etc/nginx/conf.d/default.conf
 
-# Create supervisord configuration for managing Node.js and nginx
+# Supervisord config for nginx + backend process
 RUN mkdir -p /etc/supervisor/conf.d
 RUN printf '%s\n' \
   '[supervisord]' \
@@ -68,7 +98,7 @@ RUN printf '%s\n' \
   'autorestart=true' \
   'stderr_logfile=/var/log/nodejs.err.log' \
   'stdout_logfile=/var/log/nodejs.out.log' \
-  'environment=NODE_ENV=production' \
+  'environment=NODE_ENV="production",PORT="3001"' \
   '' \
   '[program:nginx]' \
   'command=/usr/sbin/nginx -g "daemon off;"' \
@@ -78,12 +108,11 @@ RUN printf '%s\n' \
   'stdout_logfile=/var/log/nginx/access.log' \
   > /etc/supervisor/conf.d/supervisord.conf
 
-# Expose ports: 80 for nginx (public), 3001 for Node.js (internal)
-EXPOSE 80 3001
+# Public entrypoint is nginx
+EXPOSE 80
 
-# Health check via nginx
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost/health || exit 1
+# Health check through nginx + /api route
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost/api/health || exit 1
 
-# Start supervisor to manage nginx and Node.js
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

@@ -467,22 +467,26 @@ docker-compose down
 
 ## Production Deployment
 
-For production, use the optimized production image:
+For production, use the optimized unified image (web frontend + backend API):
 
 ```bash
 # Build production image
 docker build \
   -f docker/Backend.prod.dockerfile \
   -t smart-pocket-backend:latest \
-  ./apps/smart-pocket-backend
+  .
 
 # Run with environment variables
 docker run \
-  -p 3000:3000 \
+  -p 3000:80 \
   -e NODE_ENV=production \
   --restart always \
   smart-pocket-backend:latest
 ```
+
+In this image:
+- Frontend is served at `/`
+- Backend API is proxied at `/api` (example health check: `/api/health`)
 
 See `docker/DOCKER_GUIDE.md` for more production details.
 

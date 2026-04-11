@@ -28,7 +28,7 @@ const getConfig = () => {
       android: {
         package: 'dev.patteruel.smartpocket.dev',
       },
-      apiBaseUrl: 'https://smartpocket-dev.nicenature.space',
+      apiBaseUrl: 'https://smartpocket-dev.nicenature.space/api',
     },
     qa: {
       name: 'Smart Pocket QA',
@@ -39,7 +39,7 @@ const getConfig = () => {
       android: {
         package: 'dev.patteruel.smartpocket.qa',
       },
-      apiBaseUrl: 'https://smartpocket-qa.nicenature.space',
+      apiBaseUrl: 'https://smartpocket-qa.nicenature.space/api',
     },
     prod: {
       name: 'Smart Pocket',
@@ -50,7 +50,7 @@ const getConfig = () => {
       android: {
         package: 'dev.patteruel.smartpocket',
       },
-      apiBaseUrl: 'https://smartpocket.patteruel.dev',
+      apiBaseUrl: 'https://smartpocket.patteruel.dev/api',
     },
   };
 

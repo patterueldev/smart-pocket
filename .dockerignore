@@ -1,0 +1,15 @@
+.git
+.github
+.env
+.env.*
+**/.DS_Store
+**/node_modules
+**/dist
+**/coverage
+**/.expo
+**/.expo-shared
+**/.next
+**/*.log
+cicd
+old-app
+production

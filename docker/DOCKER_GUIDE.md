@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Smart Pocket Backend includes Docker support for both development and production environments.
+Smart Pocket includes Docker support for backend development and a unified production web+API image.
 
 ### Development Container (`Backend.dev.dockerfile`)
 - **Purpose**: Local development with hot reload
@@ -14,11 +14,12 @@ The Smart Pocket Backend includes Docker support for both development and produc
   - Development dependencies installed
 
 ### Production Container (`Backend.prod.dockerfile`)
-- **Purpose**: Optimized production deployment
+- **Purpose**: Optimized production deployment for frontend + backend in one container
 - **Base Image**: Node.js 24 Alpine (multi-stage build)
 - **Features**:
-  - Minimal image size
-  - Production dependencies only
+  - Mobile web bundle served by nginx at `/`
+  - Backend API reverse-proxied at `/api`
+  - Production backend dependencies only
   - Non-root user for security
   - Health checks included
 
@@ -149,24 +150,24 @@ docker-compose logs --tail=100 smart-pocket-backend
 docker build \
   -f docker/Backend.prod.dockerfile \
   -t smart-pocket-backend:latest \
-  ./apps/smart-pocket-backend
+  .
 ```
 
 ### Run Production Container
 
 ```bash
 docker run \
-  -p 3000:3000 \
+  -p 3000:80 \
   -e NODE_ENV=production \
   --restart always \
-  --health-cmd='curl -f http://localhost:3000/health || exit 1' \
+  --health-cmd='curl -f http://localhost:3000/api/health || exit 1' \
   --health-interval=30s \
   smart-pocket-backend:latest
 ```
 
 ### Features
 
-- **Multi-stage Build**: Only production code and dependencies included
+- **Multi-stage Build**: Builds mobile web bundle + backend API in one image
 - **Health Checks**: Automatic health status monitoring
 - **Non-root User**: Runs as nodejs user for security
 - **Minimal Size**: Alpine Linux + production deps only
@@ -295,7 +296,7 @@ For CI/CD pipelines, use the production Dockerfile:
 docker build \
   -f docker/Backend.prod.dockerfile \
   -t smart-pocket-backend:$VERSION \
-  ./apps/smart-pocket-backend
+  .
 
 # Push to registry
 docker push smart-pocket-backend:$VERSION
