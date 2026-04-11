@@ -15,7 +15,7 @@ Smart Pocket includes Docker support for backend development and a unified produ
 
 ### Production Container (`Backend.prod.dockerfile`)
 - **Purpose**: Optimized production deployment for frontend + backend in one container
-- **Base Image**: Node.js 24 Alpine (multi-stage build)
+- **Base Image**: Node.js 24 Bookworm Slim (multi-stage build)
 - **Features**:
   - Mobile web bundle served by nginx at `/`
   - Backend API reverse-proxied at `/api`
@@ -169,8 +169,8 @@ docker run \
 
 - **Multi-stage Build**: Builds mobile web bundle + backend API in one image
 - **Health Checks**: Automatic health status monitoring
-- **Non-root User**: Runs as nodejs user for security
-- **Minimal Size**: Alpine Linux + production deps only
+- **Base Runtime**: Debian Bookworm Slim with Node.js 24
+- **Production Dependencies**: Runtime backend dependencies only
 - **Auto-restart**: `--restart always` for uptime
 
 ## Troubleshooting

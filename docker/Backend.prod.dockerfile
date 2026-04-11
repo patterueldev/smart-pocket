@@ -14,7 +14,9 @@ RUN npm run build
 
 FROM node:24-bookworm-slim AS frontend-builder
 
+# Build-time environment selection for Expo config (valid: dev, qa, prod)
 ARG APP_ENV=prod
+# Feature flag passed to web build to enable real sheets-sync integration
 ARG USE_REAL_SHEETS_SYNC=true
 ENV APP_ENV=${APP_ENV}
 ENV USE_REAL_SHEETS_SYNC=${USE_REAL_SHEETS_SYNC}
