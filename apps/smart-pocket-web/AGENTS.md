@@ -168,7 +168,7 @@ See **README.md** for:
 
 - Backend API: `@apps/smart-pocket-backend/AGENTS.md`
 - Mobile App: `@apps/smart-pocket-mobile/AGENTS.md`
-- Docker Setup: `@docker/DOCKER_GUIDE.md`
+- Docker Setup: `@infrastructure/docker/DOCKER_GUIDE.md`
 - Project Overview: `@AGENTS.md`
 
 ---

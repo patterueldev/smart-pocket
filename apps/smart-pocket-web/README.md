@@ -444,7 +444,7 @@ This runs the production build locally for testing before deployment.
 
 ### Deployment to Docker
 
-The web app can be containerized. See `@docker/DOCKER_GUIDE.md` for setup.
+The web app can be containerized. See `@infrastructure/docker/DOCKER_GUIDE.md` for setup.
 
 **Development Dockerfile**:
 ```dockerfile
