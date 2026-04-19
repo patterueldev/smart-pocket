@@ -3,24 +3,40 @@ import userEvent from '@testing-library/user-event';
 import App from '../App';
 
 describe('App Component', () => {
-  it('renders the app title', () => {
-    render(<App />);
-    expect(screen.getByText('Smart Pocket Web')).toBeInTheDocument();
+  beforeEach(() => {
+    // Clear localStorage before each test
+    localStorage.clear();
   });
 
-  it('renders welcome message', () => {
+  it('renders the setup page on initial load', () => {
     render(<App />);
-    expect(screen.getByText('Welcome to the web application for Smart Pocket')).toBeInTheDocument();
+    expect(screen.getByText('Setup Smart Pocket')).toBeInTheDocument();
+    expect(screen.getByText('Enter your API credentials to get started')).toBeInTheDocument();
   });
 
-  it('has a working counter button', async () => {
+  it('has API Key and API Base URL input fields', () => {
+    render(<App />);
+    expect(screen.getByLabelText('API Key')).toBeInTheDocument();
+    expect(screen.getByLabelText('API Base URL')).toBeInTheDocument();
+  });
+
+  it('disables submit button when form is empty', () => {
+    render(<App />);
+    const submitButton = screen.getByRole('button', { name: /Setup/i });
+    expect(submitButton).toBeDisabled();
+  });
+
+  it('enables submit button when form is filled', async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    const button = screen.getByRole('button', { name: /Counter: 0/i });
-    expect(button).toBeInTheDocument();
+    const apiKeyInput = screen.getByLabelText('API Key');
+    const apiUrlInput = screen.getByLabelText('API Base URL');
+    const submitButton = screen.getByRole('button', { name: /Setup/i });
 
-    await user.click(button);
-    expect(screen.getByRole('button', { name: /Counter: 1/i })).toBeInTheDocument();
+    await user.type(apiKeyInput, 'test-api-key');
+    await user.type(apiUrlInput, 'http://localhost:3000/api');
+
+    expect(submitButton).not.toBeDisabled();
   });
 });
