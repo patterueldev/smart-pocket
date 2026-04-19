@@ -1,16 +1,17 @@
-import { useState } from 'react';
+/**
+ * Root App Component
+ * Wraps the entire application with AuthProvider and Router
+ */
+
+import { AuthProvider } from './components/AuthProvider';
+import { Router } from './router';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <div style={{ padding: '20px', textAlign: 'center' }}>
-      <h1>Smart Pocket Web</h1>
-      <p>Welcome to the web application for Smart Pocket</p>
-      <button onClick={() => setCount((c) => c + 1)} style={{ padding: '10px 20px', marginTop: '20px' }}>
-        Counter: {count}
-      </button>
-    </div>
+    <AuthProvider>
+      <Router />
+    </AuthProvider>
   );
 }
 

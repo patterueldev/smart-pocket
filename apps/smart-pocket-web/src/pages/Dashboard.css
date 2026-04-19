@@ -1,0 +1,130 @@
+/* Dashboard Styles */
+
+.dashboard-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 20px;
+}
+
+.dashboard-wrapper {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  width: 100%;
+  max-width: 600px;
+  margin-top: 40px;
+}
+
+.dashboard-header {
+  margin-bottom: 30px;
+}
+
+.dashboard-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+}
+
+.dashboard-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.dashboard-features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.dashboard-feature-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    transform 0.2s;
+  text-align: left;
+}
+
+.dashboard-feature-card:not(.disabled):hover {
+  background-color: #e8e8e8;
+  transform: translateX(4px);
+}
+
+.dashboard-feature-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.feature-card-content {
+  flex: 1;
+}
+
+.feature-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+
+.feature-card-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.feature-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.feature-card-subtitle {
+  font-size: 13px;
+  color: #999;
+  margin: 0;
+  margin-left: 34px;
+}
+
+.feature-card-arrow {
+  font-size: 18px;
+  color: #1a1a1a;
+  margin-left: 10px;
+  flex-shrink: 0;
+}
+
+.dashboard-spacer {
+  flex: 1;
+  min-height: 40px;
+}
+
+.dashboard-logout {
+  width: 100%;
+  padding: 12px;
+  background: white;
+  border: 2px solid #ff6b6b;
+  border-radius: 8px;
+  color: #ff6b6b;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+  font-size: 14px;
+}
+
+.dashboard-logout:hover {
+  background-color: #ffe0e0;
+}

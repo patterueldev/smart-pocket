@@ -10,9 +10,7 @@ describe('App Component', () => {
 
   it('renders welcome message', () => {
     render(<App />);
-    expect(
-      screen.getByText('Welcome to the web application for Smart Pocket')
-    ).toBeInTheDocument();
+    expect(screen.getByText('Welcome to the web application for Smart Pocket')).toBeInTheDocument();
   });
 
   it('has a working counter button', async () => {
