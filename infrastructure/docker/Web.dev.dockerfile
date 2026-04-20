@@ -119,7 +119,7 @@ stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
 priority=30
-environment=VITE_API_URL=http://localhost/api,VITE_BASE_URL=/ui/
+environment=VITE_API_URL=http://localhost/api
 EOF
 
 # ============================================================
