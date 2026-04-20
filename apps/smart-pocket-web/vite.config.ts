@@ -11,5 +11,11 @@ export default defineConfig({
       '127.0.0.1',
       'smartpocket-dev.nicenature.space',
     ],
+    hmr: {
+      host: 'smartpocket-dev.nicenature.space',
+      protocol: 'wss',
+      port: 443,
+      path: '/@vite/ws',
+    },
   },
 })
