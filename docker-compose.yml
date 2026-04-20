@@ -14,7 +14,6 @@ services:
       - ./keys:/data/keys:ro
     environment:
       - NODE_ENV=development
-      - VITE_API_BASE_URL=http://smartpocket-dev.nicenature.space/api
       - API_KEYS=${API_KEYS}
       - ACTUAL_BUDGET_SERVER_URL=${ACTUAL_BUDGET_SERVER_URL}
       - ACTUAL_BUDGET_PASSWORD=${ACTUAL_BUDGET_PASSWORD}
