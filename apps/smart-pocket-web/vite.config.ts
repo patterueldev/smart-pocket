@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Base path for the app - served at /ui/ when behind nginx, root (/) for localhost
+  base: process.env.VITE_BASE_URL || '/',
   plugins: [react()],
   server: {
     allowedHosts: [
