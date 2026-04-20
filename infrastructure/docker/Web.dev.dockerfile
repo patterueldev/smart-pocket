@@ -119,6 +119,7 @@ stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
 priority=30
+environment=VITE_BASE_URL=/ui/
 EOF
 
 # ============================================================
