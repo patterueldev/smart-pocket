@@ -139,11 +139,24 @@ async function withBudget<T>(config: ActualBudgetConfig, operation: () => Promis
   try {
     await ensureBudgetLoaded(config);
     const result = await operation();
-    await api.shutdown();
+    // Shutdown asynchronously without waiting
+    api.shutdown().catch(err => {
+      const error = err instanceof Error ? err.message : String(err);
+      logger.warn('Error shutting down Actual Budget', { error });
+    });
     return result;
   } catch (error) {
-    await api.shutdown();
-    throw error;
+    // Shutdown asynchronously without waiting
+    api.shutdown().catch(shutdownErr => {
+      const shutdownError = shutdownErr instanceof Error ? shutdownErr.message : String(shutdownErr);
+      logger.warn('Error shutting down Actual Budget during error cleanup', { error: shutdownError });
+    });
+    // Convert non-Error objects to Error before throwing
+    if (error instanceof Error) {
+      throw error;
+    } else {
+      throw new Error(String(error));
+    }
   }
 }
 

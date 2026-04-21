@@ -65,6 +65,17 @@ class App {
   }
 
   start(): void {
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', (reason: unknown) => {
+      const errorMessage = reason instanceof Error ? reason.message : String(reason);
+      const errorStack = reason instanceof Error && reason.stack ? reason.stack : JSON.stringify(reason);
+      this.logger.warn('Unhandled promise rejection', {
+        message: errorMessage,
+        stack: errorStack,
+      });
+      // Don't exit - log but continue running to serve other requests
+    });
+
     const PORT = config.port;
     this.app.listen(PORT, () => {
       this.logger.info(`Server running on port ${PORT}`, {

@@ -98,13 +98,17 @@ class SheetsSyncController implements ISheetsSyncController {
 
       res.status(200).json(response);
     } catch (error) {
+      // Log detailed error information
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error && error.stack ? error.stack : JSON.stringify(error);
       logger.warn('Error creating draft', {
-        errorMessage: error instanceof Error ? error.message : String(error),
+        errorMessage,
+        errorStack: errorStack || 'Unknown stack',
       });
 
       const response: CreateDraftResponse = {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create draft',
+        error: errorMessage || 'Failed to create draft',
         draftId: '',
         summary: { totalAccounts: 0, newAccounts: 0, updatedAccounts: 0, unchangedAccounts: 0 },
         pendingChanges: [],
