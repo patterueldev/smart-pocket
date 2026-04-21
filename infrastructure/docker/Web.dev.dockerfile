@@ -111,7 +111,7 @@ EOF
 RUN cat > /etc/supervisor/conf.d/frontend.conf <<'EOF'
 [program:frontend]
 directory=/app/frontend
-command=/bin/sh -c "VITE_BASE_URL=/ui/ npm run dev"
+command=/bin/sh -c "VITE_BASE_URL=/ui/ CHOKIDAR_USEPOLLING=true npm run dev"
 autostart=true
 autorestart=true
 stdout_logfile=/dev/stdout
