@@ -73,6 +73,8 @@
   border-radius: 8px;
   font-size: 15px;
   font-family: inherit;
+  background-color: white;
+  color: #1a1a1a;
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
