@@ -144,7 +144,22 @@ async function ensureBudgetLoaded(config: ActualBudgetConfig): Promise<void> {
   } else {
     // First time - download from server
     logger.debug('Downloading budget from server', { syncId });
-    await api.downloadBudget(syncId);
+    try {
+      await api.downloadBudget(syncId);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      // Provide helpful guidance if download fails
+      if (errorMsg.includes('not found') || errorMsg.includes('sync id')) {
+        const helpfulError = new Error(
+          `Budget sync failed: "${syncId}" not found on server. ` +
+          `Verify ACTUAL_BUDGET_ID is set to the Sync ID from your budget's Settings > Advanced page. ` +
+          `Original error: ${errorMsg}`
+        );
+        logger.error('Budget download failed - invalid Sync ID', helpfulError);
+        throw helpfulError;
+      }
+      throw error;
+    }
 
     // Update cache map by scanning the data directory
     refreshSyncIdToBudgetIdMap(cacheDir);
@@ -157,7 +172,10 @@ async function ensureBudgetLoaded(config: ActualBudgetConfig): Promise<void> {
       await api.sync();
     } else {
       logger.warn('Budget not found in cache after download', { syncId });
-      throw new Error(`Failed to locate downloaded budget for ${syncId}`);
+      throw new Error(
+        `Failed to locate downloaded budget for ${syncId}. ` +
+        `Check that ACTUAL_BUDGET_ID is the correct Sync ID from your budget's Settings > Advanced.`
+      );
     }
   }
 }
