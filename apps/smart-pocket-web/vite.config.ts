@@ -36,6 +36,12 @@ export default defineConfig({
           port: 5173,
           path: '/@vite/ws',
         },
+    watch: {
+      // Use polling for file watching in Docker volumes
+      // Poll every 50ms to catch file changes quickly
+      usePolling: true,
+      interval: 50,
+    },
   },
 })
 
