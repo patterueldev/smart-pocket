@@ -18,7 +18,7 @@ export function Setup() {
   const form = useSetupForm({
     defaultApiBaseUrl,
     onSuccess: async (credentials) => {
-      authContext.setup(credentials.apiKey, credentials.apiBaseUrl);
+      await authContext.setup(credentials.apiKey, credentials.apiBaseUrl);
       navigate('/dashboard');
     },
   });
