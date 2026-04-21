@@ -48,8 +48,8 @@ export function Dashboard() {
   const navigate = useNavigate();
   const authContext = useAuth();
 
-  const handleLogout = () => {
-    authContext.logout();
+  const handleLogout = async () => {
+    await authContext.logout();
     navigate('/setup');
   };
 
@@ -61,13 +61,16 @@ export function Dashboard() {
 
   return (
     <div className="dashboard-container">
-      <div className="dashboard-wrapper">
-        {/* Header */}
-        <div className="dashboard-header">
+      {/* Header */}
+      <div className="dashboard-header">
+        <div className="dashboard-header-content">
           <h1 className="dashboard-title">Dashboard</h1>
           <p className="dashboard-subtitle">Welcome back, 👋</p>
         </div>
+      </div>
 
+      {/* Main Content */}
+      <div className="dashboard-main">
         {/* Features Grid */}
         <div className="dashboard-features">
           {FEATURES.map((feature) => (
@@ -77,22 +80,21 @@ export function Dashboard() {
               disabled={!feature.enabled}
               className={`dashboard-feature-card ${!feature.enabled ? 'disabled' : ''}`}
             >
-              <div className="feature-card-content">
-                <div className="feature-card-header">
-                  <span className="feature-card-icon">{feature.icon}</span>
+              <div className="feature-card-header">
+                <span className="feature-card-icon">{feature.icon}</span>
+                <div className="feature-card-content">
                   <h3 className="feature-card-title">{feature.title}</h3>
+                  <p className="feature-card-subtitle">{feature.subtitle}</p>
                 </div>
-                <p className="feature-card-subtitle">{feature.subtitle}</p>
               </div>
               {feature.enabled && <span className="feature-card-arrow">→</span>}
             </button>
           ))}
         </div>
+      </div>
 
-        {/* Spacer */}
-        <div className="dashboard-spacer"></div>
-
-        {/* Logout Button */}
+      {/* Footer */}
+      <div className="dashboard-footer">
         <button onClick={handleLogout} className="dashboard-logout">
           Logout
         </button>
