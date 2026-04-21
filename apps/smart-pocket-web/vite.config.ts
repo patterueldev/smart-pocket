@@ -21,12 +21,21 @@ export default defineConfig({
       '127.0.0.1',
       'smartpocket-dev.nicenature.space',
     ],
-    hmr: {
-      host: 'smartpocket-dev.nicenature.space',
-      protocol: 'wss',
-      port: 443,
-      path: '/@vite/ws',
-    },
+    hmr: process.env.VITE_BASE_URL
+      ? {
+          // Remote development with domain
+          host: 'smartpocket-dev.nicenature.space',
+          protocol: 'wss',
+          port: 443,
+          path: '/@vite/ws',
+        }
+      : {
+          // Local development on localhost
+          host: 'localhost',
+          protocol: 'ws',
+          port: 5173,
+          path: '/@vite/ws',
+        },
   },
 })
 
