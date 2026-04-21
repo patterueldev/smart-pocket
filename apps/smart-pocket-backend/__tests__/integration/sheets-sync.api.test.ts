@@ -14,10 +14,10 @@ describe('Sheets Sync API Integration Tests', () => {
     expressApp = appInstance.getApp();
   });
 
-  describe('POST /sheets-sync/draft', () => {
+  describe('POST /api/sheets-sync/draft', () => {
     it('should return 401 when not authenticated', async () => {
       const response = await request(expressApp)
-        .post('/sheets-sync/draft')
+        .post('/api/sheets-sync/draft')
         .expect(401);
 
       expect(response.body).toHaveProperty('success', false);
@@ -26,7 +26,7 @@ describe('Sheets Sync API Integration Tests', () => {
 
     it('should enforce Bearer token format', async () => {
       const response = await request(expressApp)
-        .post('/sheets-sync/draft')
+        .post('/api/sheets-sync/draft')
         .set({ Authorization: 'InvalidFormat token' })
         .expect(401);
 
@@ -35,7 +35,7 @@ describe('Sheets Sync API Integration Tests', () => {
 
     it('should return response with proper structure', async () => {
       const response = await request(expressApp)
-        .post('/sheets-sync/draft')
+        .post('/api/sheets-sync/draft')
         .expect(401);
 
       expect(response.body).toHaveProperty('success');
@@ -44,10 +44,10 @@ describe('Sheets Sync API Integration Tests', () => {
     });
   });
 
-  describe('POST /sheets-sync/sync', () => {
+  describe('POST /api/sheets-sync/sync', () => {
     it('should return 401 when not authenticated', async () => {
       const response = await request(expressApp)
-        .post('/sheets-sync/sync')
+        .post('/api/sheets-sync/sync')
         .send({ draftId: 'draft-123' })
         .expect(401);
 
@@ -57,7 +57,7 @@ describe('Sheets Sync API Integration Tests', () => {
 
     it('should enforce Bearer token format', async () => {
       const response = await request(expressApp)
-        .post('/sheets-sync/sync')
+        .post('/api/sheets-sync/sync')
         .set({ Authorization: 'InvalidFormat token' })
         .send({ draftId: 'draft-123' })
         .expect(401);
@@ -67,7 +67,7 @@ describe('Sheets Sync API Integration Tests', () => {
 
     it('should return response with proper structure', async () => {
       const response = await request(expressApp)
-        .post('/sheets-sync/sync')
+        .post('/api/sheets-sync/sync')
         .send({ draftId: 'draft-123' })
         .expect(401);
 
@@ -79,7 +79,7 @@ describe('Sheets Sync API Integration Tests', () => {
   describe('Route availability', () => {
     it('should have /sheets-sync/draft endpoint', async () => {
       // Endpoint should be defined (even if auth fails)
-      const response = await request(expressApp).post('/sheets-sync/draft');
+      const response = await request(expressApp).post('/api/sheets-sync/draft');
 
       // Should get 401 (auth), not 404 (not found)
       expect(response.status).toBe(401);
@@ -88,7 +88,7 @@ describe('Sheets Sync API Integration Tests', () => {
     it('should have /sheets-sync/sync endpoint', async () => {
       // Endpoint should be defined (even if auth fails)
       const response = await request(expressApp)
-        .post('/sheets-sync/sync')
+        .post('/api/sheets-sync/sync')
         .send({});
 
       // Should not get 404 (not found)
@@ -101,7 +101,7 @@ describe('Sheets Sync API Integration Tests', () => {
       // With invalid Bearer token (to get past auth), we'll hit validation
       // But auth will reject first, so we're testing that the middleware chain exists
       const response = await request(expressApp)
-        .post('/sheets-sync/sync')
+        .post('/api/sheets-sync/sync')
         .send({ invalid: 'field' })
         .expect(401);
 
@@ -111,28 +111,28 @@ describe('Sheets Sync API Integration Tests', () => {
 
   describe('HTTP methods', () => {
     it('should not accept GET requests to /draft', async () => {
-      const response = await request(expressApp).get('/sheets-sync/draft');
+      const response = await request(expressApp).get('/api/sheets-sync/draft');
 
       // Should get 404 (method not allowed) or 405
       expect([404, 405]).toContain(response.status);
     });
 
     it('should not accept GET requests to /sync', async () => {
-      const response = await request(expressApp).get('/sheets-sync/sync');
+      const response = await request(expressApp).get('/api/sheets-sync/sync');
 
       // Should get 404 (method not allowed) or 405
       expect([404, 405]).toContain(response.status);
     });
 
     it('should accept POST requests to /draft', async () => {
-      const response = await request(expressApp).post('/sheets-sync/draft');
+      const response = await request(expressApp).post('/api/sheets-sync/draft');
 
       // Should get 401 (auth required), not 404/405
       expect(response.status).toBe(401);
     });
 
     it('should accept POST requests to /sync', async () => {
-      const response = await request(expressApp).post('/sheets-sync/sync');
+      const response = await request(expressApp).post('/api/sheets-sync/sync');
 
       // Should get 401 (auth required), not 404/405
       expect(response.status).toBe(401);
@@ -142,14 +142,14 @@ describe('Sheets Sync API Integration Tests', () => {
   describe('Response formats', () => {
     it('should return JSON responses', async () => {
       const response = await request(expressApp)
-        .post('/sheets-sync/draft')
+        .post('/api/sheets-sync/draft')
         .set('Accept', 'application/json');
 
       expect(response.headers['content-type']).toMatch(/application\/json/);
     });
 
     it('should return error responses as JSON', async () => {
-      const response = await request(expressApp).post('/sheets-sync/sync');
+      const response = await request(expressApp).post('/api/sheets-sync/sync');
 
       expect(response.headers['content-type']).toMatch(/application\/json/);
       expect(response.body).toHaveProperty('success');
