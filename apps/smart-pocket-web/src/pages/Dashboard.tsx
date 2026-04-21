@@ -63,6 +63,7 @@ export function Dashboard() {
             onClick={() => handleFeatureClick(feature.route, feature.enabled)}
             disabled={!feature.enabled}
             className={`dashboard-feature-card ${!feature.enabled ? 'disabled' : ''}`}
+            type="button"
           >
             <div className="feature-card-header">
               <span className="feature-card-icon">{feature.icon}</span>

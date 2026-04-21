@@ -4,6 +4,7 @@
  * Includes header, navigation, and content area
  */
 
+import { useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import './MainLayout.css';
@@ -25,18 +26,18 @@ export function MainLayout({
   const location = useLocation();
   const authContext = useAuth();
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await authContext.logout();
     navigate('/setup', { replace: true });
-  };
+  }, [authContext, navigate]);
 
-  const handleNavigation = (path: string) => {
+  const handleNavigation = useCallback((path: string) => {
     navigate(path);
-  };
+  }, [navigate]);
 
-  const isActive = (path: string) => {
+  const isActive = useCallback((path: string) => {
     return location.pathname === path;
-  };
+  }, [location.pathname]);
 
   return (
     <div className="main-layout">
@@ -51,7 +52,11 @@ export function MainLayout({
 
         {/* Header actions */}
         <div className="main-header-actions">
-          <button onClick={handleLogout} className="main-header-logout-btn">
+          <button 
+            onClick={handleLogout} 
+            className="main-header-logout-btn"
+            type="button"
+          >
             Logout
           </button>
         </div>
@@ -64,12 +69,16 @@ export function MainLayout({
             <button
               className={`main-nav-item ${isActive('/dashboard') ? 'active' : ''}`}
               onClick={() => handleNavigation('/dashboard')}
+              type="button"
+              data-testid="nav-dashboard"
             >
               Dashboard
             </button>
             <button
               className={`main-nav-item ${isActive('/sheets-sync') ? 'active' : ''}`}
               onClick={() => handleNavigation('/sheets-sync')}
+              type="button"
+              data-testid="nav-sheets-sync"
             >
               Google Sheets Sync
             </button>
