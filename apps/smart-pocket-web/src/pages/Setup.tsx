@@ -4,6 +4,7 @@
  * Coordinates the form hook with the UI component and auth context
  */
 
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getApiBaseUrl } from '../utils/config';
@@ -16,10 +17,11 @@ export function Setup() {
   const defaultApiBaseUrl = getApiBaseUrl();
 
   // If already authenticated, redirect to dashboard
-  if (!authContext.isInitializing && authContext.isSetup) {
-    navigate('/dashboard', { replace: true });
-    return null;
-  }
+  useEffect(() => {
+    if (!authContext.isInitializing && authContext.isSetup) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [authContext.isInitializing, authContext.isSetup, navigate]);
 
   const form = useSetupForm({
     defaultApiBaseUrl,
@@ -29,5 +31,15 @@ export function Setup() {
     },
   });
 
-  return <SetupFormUI {...form} defaultApiBaseUrl={defaultApiBaseUrl} />;
+  // Show loading while initializing
+  if (authContext.isInitializing) {
+    return <div style={{ padding: '20px' }}>Loading...</div>;
+  }
+
+  // Show setup form only if not authenticated
+  if (!authContext.isSetup) {
+    return <SetupFormUI {...form} defaultApiBaseUrl={defaultApiBaseUrl} />;
+  }
+
+  return null;
 }
