@@ -62,6 +62,7 @@ function loadActualApi(): ActualAppApiModule {
 function refreshSyncIdToBudgetIdMap(dataDir: string): void {
   try {
     if (!fs.existsSync(dataDir)) {
+      logger.debug('Cache directory does not exist', { dataDir });
       return;
     }
 
@@ -74,15 +75,34 @@ function refreshSyncIdToBudgetIdMap(dataDir: string): void {
     budgetDirs.forEach((budgetId) => {
       const metadataPath = path.join(dataDir, budgetId, 'metadata.json');
       if (fs.existsSync(metadataPath)) {
-        const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
-        if (metadata.cloudFileId) {
-          syncIdToBudgetIdMap[metadata.cloudFileId] = budgetId;
+        try {
+          const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
+          if (metadata.cloudFileId) {
+            syncIdToBudgetIdMap[metadata.cloudFileId] = budgetId;
+            logger.debug('Mapped budget', {
+              cloudFileId: metadata.cloudFileId,
+              budgetId,
+            });
+          } else {
+            logger.debug('Metadata missing cloudFileId', {
+              budgetId,
+              metadataKeys: Object.keys(metadata),
+            });
+          }
+        } catch (parseError) {
+          logger.warn('Failed to parse metadata.json', {
+            budgetId,
+            error: parseError instanceof Error ? parseError.message : String(parseError),
+          });
         }
+      } else {
+        logger.debug('No metadata.json found', { budgetId });
       }
     });
 
     logger.debug('Refreshed budget cache map', {
       budgetCount: Object.keys(syncIdToBudgetIdMap).length,
+      mappings: syncIdToBudgetIdMap,
     });
   } catch (error) {
     logger.warn('Failed to refresh budget cache map', {
@@ -128,6 +148,17 @@ async function ensureBudgetLoaded(config: ActualBudgetConfig): Promise<void> {
 
     // Update cache map by scanning the data directory
     refreshSyncIdToBudgetIdMap(cacheDir);
+    
+    // Now load the budget we just downloaded
+    const budgetId = syncIdToBudgetIdMap[syncId];
+    if (budgetId) {
+      logger.debug('Loading downloaded budget', { syncId, budgetId });
+      await api.loadBudget(budgetId);
+      await api.sync();
+    } else {
+      logger.warn('Budget not found in cache after download', { syncId });
+      throw new Error(`Failed to locate downloaded budget for ${syncId}`);
+    }
   }
 }
 
@@ -154,6 +185,14 @@ async function withBudget<T>(config: ActualBudgetConfig, operation: () => Promis
     // Convert non-Error objects to Error before throwing
     if (error instanceof Error) {
       throw error;
+    } else if (error && typeof error === 'object') {
+      // For plain objects, preserve the original object structure in error message
+      const err = error as Record<string, unknown>;
+      const message = err.message ? String(err.message) : JSON.stringify(error);
+      const apiError = new Error(message);
+      // Attach the original error object to the Error for later inspection
+      Object.assign(apiError, error);
+      throw apiError;
     } else {
       throw new Error(String(error));
     }

@@ -100,26 +100,41 @@ class SheetsSyncController implements ISheetsSyncController {
     } catch (error) {
       // Log detailed error information
       let errorMessage = '';
+      let errorType = '';
+      let errorCode = '';
       let errorDetails: Record<string, unknown> = {};
       
       if (error instanceof Error) {
         errorMessage = error.message;
+        errorType = 'Error';
         errorDetails = {
           message: error.message,
           stack: error.stack,
         };
       } else if (error && typeof error === 'object') {
-        // Handle plain objects
+        // Handle plain objects (like APIError from Actual Budget)
         const err = error as Record<string, unknown>;
+        errorType = typeof err.type === 'string' ? err.type : 'Object';
+        errorCode = typeof err.code === 'string' ? err.code : '';
         errorMessage = err.message ? String(err.message) : JSON.stringify(error);
-        errorDetails = err;
+        
+        // Build details from object properties
+        errorDetails = {
+          type: errorType,
+          message: errorMessage,
+        };
+        if (errorCode) {
+          errorDetails.code = errorCode;
+        }
       } else {
         errorMessage = String(error);
-        errorDetails = { error: String(error) };
+        errorType = typeof error;
+        errorDetails = { error: errorMessage };
       }
 
       logger.warn('Error creating draft', {
         errorMessage,
+        errorType,
         ...errorDetails,
       });
 
