@@ -22,7 +22,7 @@ const FEATURES: Feature[] = [
     id: 'sheets-sync',
     title: 'Google Sheets Sync',
     subtitle: 'Sync Actual Budget accounts to Google Sheets',
-    route: '/sync',
+    route: '/sheets-sync',
     icon: '📊',
     enabled: true,
   },
