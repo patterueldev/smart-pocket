@@ -15,6 +15,7 @@
 import { useMemo } from 'react';
 import { useSheetsSync } from '@/hooks/useSheetsSync';
 import { MockSheetsSyncClient } from '@/services/sheets-sync/MockSheetsSyncClient';
+import { MainLayout } from '@/components/MainLayout';
 import {
   SyncEmptyState,
   SyncSummary,
@@ -47,61 +48,44 @@ export function Sync() {
   // Loading state - show skeleton placeholders
   if (loading) {
     return (
-      <div className="sync-page">
-        <div className="sync-header">
-          <h1>Google Sheets Sync</h1>
-          <p>Review and sync your Actual Budget accounts</p>
-        </div>
+      <MainLayout title="Google Sheets Sync" subtitle="Review and sync your accounts">
         <div className="sync-skeleton-container">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="sync-skeleton-item" />
           ))}
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
   // Error state - show error message with retry button (no pending changes)
   if (error && !hasPendingChanges) {
     return (
-      <div className="sync-page">
-        <div className="sync-header">
-          <h1>Google Sheets Sync</h1>
-          <p>Review and sync your Actual Budget accounts</p>
-        </div>
+      <MainLayout title="Google Sheets Sync" subtitle="Review and sync your accounts">
         <div className="sync-content-wrapper">
           <SyncErrorState error={error} onRetry={onRefresh} />
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
   // Empty state - all synced
   if (!hasPendingChanges) {
     return (
-      <div className="sync-page">
-        <div className="sync-header">
-          <h1>Google Sheets Sync</h1>
-          <p>Review and sync your Actual Budget accounts</p>
-        </div>
+      <MainLayout title="Google Sheets Sync" subtitle="Review and sync your accounts">
         <div className="sync-content-wrapper">
           <div className="sync-empty-state-wrapper">
             <SyncEmptyState lastSyncTime={draft?.lastSyncTime} />
           </div>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
   // Main sync screen - display changes and sync button
   return (
-    <div className="sync-page">
-      <div className="sync-header">
-        <h1>Google Sheets Sync</h1>
-        <p>Review and sync your Actual Budget accounts</p>
-      </div>
-
-      <div className="sync-content-wrapper">
+    <MainLayout title="Google Sheets Sync" subtitle="Review and sync your accounts">
+      <div className="sync-page-content">
         {/* Show error if it occurred during sync operation */}
         {error && (
           <div className="sync-inline-error">
@@ -129,12 +113,12 @@ export function Sync() {
             />
           ))}
         </div>
-      </div>
 
-      {/* Action button - sync to Google Sheets */}
-      <div className="sync-action-button-wrapper">
-        <SyncActionButton onPress={onSync} loading={syncing} disabled={error !== null} />
+        {/* Action button - sync to Google Sheets */}
+        <div className="sync-action-button-wrapper">
+          <SyncActionButton onPress={onSync} loading={syncing} disabled={error !== null} />
+        </div>
       </div>
-    </div>
+    </MainLayout>
   );
 }

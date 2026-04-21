@@ -10,6 +10,7 @@ import { useAuth } from '../hooks/useAuth';
 import { getApiBaseUrl } from '../utils/config';
 import { useSetupForm } from '../hooks/useSetupForm';
 import { SetupFormUI } from '../components/SetupFormUI';
+import { MainLayout } from '../components/MainLayout';
 
 export function Setup() {
   const navigate = useNavigate();
@@ -33,12 +34,26 @@ export function Setup() {
 
   // Show loading while initializing
   if (authContext.isInitializing) {
-    return <div style={{ padding: '20px' }}>Loading...</div>;
+    return (
+      <MainLayout title="Loading..." showNavigation={false}>
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          Initializing application...
+        </div>
+      </MainLayout>
+    );
   }
 
   // Show setup form only if not authenticated
   if (!authContext.isSetup) {
-    return <SetupFormUI {...form} defaultApiBaseUrl={defaultApiBaseUrl} />;
+    return (
+      <MainLayout
+        title="Smart Pocket Setup"
+        subtitle="Configure your API credentials"
+        showNavigation={false}
+      >
+        <SetupFormUI {...form} defaultApiBaseUrl={defaultApiBaseUrl} />
+      </MainLayout>
+    );
   }
 
   return null;
