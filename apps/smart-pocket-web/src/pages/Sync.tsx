@@ -14,8 +14,9 @@
 
 import { useMemo } from 'react';
 import { useSheetsSync } from '@/hooks/useSheetsSync';
-import { MockSheetsSyncClient } from '@/services/sheets-sync/MockSheetsSyncClient';
+import { RealSheetsSyncClient } from '@/services/sheets-sync/RealSheetsSyncClient';
 import { MainLayout } from '@/components/MainLayout';
+import { useAuth } from '@/hooks/useAuth';
 import {
   SyncEmptyState,
   SyncSummary,
@@ -28,16 +29,25 @@ import './Sync.css';
 /**
  * Sync Page Component
  *
- * Note: This page currently uses MockSheetsSyncClient for development.
- * In a future phase, the sheets-sync service will be provided through
- * the AuthContext via ServiceFactory extension.
+ * Uses RealSheetsSyncClient to sync with the backend API
+ * The auth context provides the API key (used as Bearer token)
  */
 export function Sync() {
-  // Initialize mock sheets sync client
-  // In production, this will come from AuthContext/ServiceFactory
+  const authContext = useAuth();
+
+  // Initialize real sheets sync client with auth context
+  // The client will use the API key from auth context as the Bearer token
   const sheetsSync = useMemo(() => {
-    return new MockSheetsSyncClient();
-  }, []);
+    if (!authContext.apiKey) {
+      throw new Error('API key not found in auth context');
+    }
+
+    return new RealSheetsSyncClient(async () => {
+      // Return the API key as the access token
+      // The backend expects: Authorization: Bearer <apiKey>
+      return authContext.apiKey!;
+    });
+  }, [authContext.apiKey]);
 
   const { draft, loading, syncing, error, onRefresh, onSync } =
     useSheetsSync(sheetsSync);
