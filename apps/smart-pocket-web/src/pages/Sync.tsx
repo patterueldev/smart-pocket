@@ -30,24 +30,16 @@ import './Sync.css';
  * Sync Page Component
  *
  * Uses RealSheetsSyncClient to sync with the backend API
- * The auth context provides the API key (used as Bearer token)
+ * The auth context provides the access token for authentication
  */
 export function Sync() {
   const authContext = useAuth();
 
   // Initialize real sheets sync client with auth context
-  // The client will use the API key from auth context as the Bearer token
+  // The client will use the access token from auth context for Bearer authentication
   const sheetsSync = useMemo(() => {
-    if (!authContext.apiKey) {
-      throw new Error('API key not found in auth context');
-    }
-
-    return new RealSheetsSyncClient(async () => {
-      // Return the API key as the access token
-      // The backend expects: Authorization: Bearer <apiKey>
-      return authContext.apiKey!;
-    });
-  }, [authContext.apiKey]);
+    return new RealSheetsSyncClient(authContext.getAccessToken);
+  }, [authContext.getAccessToken]);
 
   const { draft, loading, syncing, error, onRefresh, onSync } =
     useSheetsSync(sheetsSync);

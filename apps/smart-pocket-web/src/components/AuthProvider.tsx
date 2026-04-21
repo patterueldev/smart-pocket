@@ -1,14 +1,14 @@
 /**
  * AuthProvider Component
  * Provides authentication context to the app
- * Manages API configuration and authentication state with localStorage persistence
+ * Manages API configuration, tokens, and authentication state with localStorage persistence
  */
 
 import { useState, useEffect, type ReactNode } from 'react';
 import { AuthContext } from '../utils/createAuthContext';
 import type { AuthContextType } from '../utils/AuthContextType';
 import { ServiceFactory } from '../services/ServiceFactory';
-import type { AuthCredentials } from '../types/auth';
+import type { AuthCredentials } from '@/types/auth';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -22,6 +22,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [apiBaseUrl, setApiBaseUrl] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isSetup, setIsSetup] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +46,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setApiKey(credentials.apiKey);
           setApiBaseUrl(credentials.baseUrl);
           setIsSetup(true);
-        } else {
+        }
+        // Also restore tokens if available
+        if (tokens?.accessToken) {
+          setAccessToken(tokens.accessToken);
+        }
+        if (!credentials) {
           console.log('[AuthProvider] No stored credentials found');
         }
       } catch (err) {
@@ -59,12 +65,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     loadStoredAuth();
   }, [authService]);
 
+  const getAccessToken = async (): Promise<string> => {
+    if (accessToken) {
+      return accessToken;
+    }
+    
+    // If no access token but we have refresh capability, we could refresh here
+    // For now, throw an error as the user must re-authenticate
+    throw new Error('No access token available. Please log in again.');
+  };
+
   const setup = async (apiKey: string, apiBaseUrl: string) => {
     setIsLoading(true);
     setError(null);
     try {
       const credentials: AuthCredentials = { apiKey, baseUrl: apiBaseUrl };
-      await authService.setup(credentials);
+      const tokens = await authService.setup(credentials);
       
       // Also keep in localStorage for backward compatibility
       localStorage.setItem('sp_api_key', apiKey);
@@ -72,6 +88,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       setApiKey(apiKey);
       setApiBaseUrl(apiBaseUrl);
+      setAccessToken(tokens.accessToken);
       setIsSetup(true);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Setup failed';
@@ -91,6 +108,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.removeItem('sp_api_base_url');
       setApiKey(null);
       setApiBaseUrl(null);
+      setAccessToken(null);
       setIsSetup(false);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Logout failed';
@@ -99,6 +117,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Even on error, clear UI state
       setApiKey(null);
       setApiBaseUrl(null);
+      setAccessToken(null);
       setIsSetup(false);
     } finally {
       setIsLoading(false);
@@ -108,9 +127,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const value: AuthContextType = {
     apiKey,
     apiBaseUrl,
+    accessToken,
     isSetup,
     setup,
     logout,
+    getAccessToken,
     isLoading,
     error,
     isInitializing,
