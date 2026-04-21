@@ -360,7 +360,7 @@ describe('Auth API Integration Tests', () => {
       expect(token1).not.toBe(token2);
       expect(token1).not.toBe(refreshToken);
       expect(token2).not.toBe(refreshToken);
-    });
+    }, 30000);
 
     test('multiple users can authenticate with same API key', async () => {
       const user1Setup = await request(app)

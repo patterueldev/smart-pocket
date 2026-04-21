@@ -99,11 +99,28 @@ class SheetsSyncController implements ISheetsSyncController {
       res.status(200).json(response);
     } catch (error) {
       // Log detailed error information
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      const errorStack = error instanceof Error && error.stack ? error.stack : JSON.stringify(error);
+      let errorMessage = '';
+      let errorDetails: Record<string, unknown> = {};
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        errorDetails = {
+          message: error.message,
+          stack: error.stack,
+        };
+      } else if (error && typeof error === 'object') {
+        // Handle plain objects
+        const err = error as Record<string, unknown>;
+        errorMessage = err.message ? String(err.message) : JSON.stringify(error);
+        errorDetails = err;
+      } else {
+        errorMessage = String(error);
+        errorDetails = { error: String(error) };
+      }
+
       logger.warn('Error creating draft', {
         errorMessage,
-        errorStack: errorStack || 'Unknown stack',
+        ...errorDetails,
       });
 
       const response: CreateDraftResponse = {
