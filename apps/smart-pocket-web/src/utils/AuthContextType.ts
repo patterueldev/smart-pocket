@@ -7,6 +7,8 @@ export interface AuthContextType {
   apiKey: string | null;
   apiBaseUrl: string | null;
   isSetup: boolean;
-  setup: (apiKey: string, apiBaseUrl: string) => void;
-  logout: () => void;
+  isLoading: boolean;
+  error: string | null;
+  setup: (apiKey: string, apiBaseUrl: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
