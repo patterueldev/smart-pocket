@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Setup } from './pages/Setup';
 import { Dashboard } from './pages/Dashboard';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { RootRoute } from './components/RootRoute';
 import { getBasename } from './config/routing';
 
 export function Router() {
@@ -17,8 +18,8 @@ export function Router() {
   return (
     <BrowserRouter basename={basename}>
       <Routes>
-        {/* Root - redirect to setup or dashboard based on auth state */}
-        <Route path="/" element={<Navigate to="/setup" replace />} />
+        {/* Root - smart redirect based on auth state */}
+        <Route path="/" element={<RootRoute />} />
 
         {/* Setup page - public */}
         <Route path="/setup" element={<Setup />} />
