@@ -20,7 +20,6 @@ services:
       - ACTUAL_BUDGET_ID=${ACTUAL_BUDGET_ID}
       - GOOGLE_SHEET_ID=${GOOGLE_SHEET_ID:-}
       - GOOGLE_SHEET_NAME=${GOOGLE_SHEET_NAME:-}
-      - VITE_BASE_URL=/ui/
     restart: unless-stopped
     ports:
       - "3000:80"
