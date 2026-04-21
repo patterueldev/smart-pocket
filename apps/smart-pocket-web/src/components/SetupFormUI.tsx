@@ -27,6 +27,13 @@ export function SetupFormUI({
 }: SetupFormUIProps) {
   const isValid = apiKey.trim().length > 0 && apiBaseUrl.trim().length > 0;
 
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isValid && !isLoading) {
+      handleSubmit();
+    }
+  };
+
   return (
     <div className="setup-form-container">
       <div className="setup-form-wrapper">
@@ -36,66 +43,68 @@ export function SetupFormUI({
           <p className="setup-form-subtitle">Enter your API credentials to get started</p>
         </div>
 
-        {/* Error Display */}
-        {error && (
-          <div className="setup-form-error">
-            <p>{error}</p>
+        <form onSubmit={handleFormSubmit}>
+          {/* Error Display */}
+          {error && (
+            <div className="setup-form-error">
+              <p>{error}</p>
+            </div>
+          )}
+
+          {/* API Key Input */}
+          <div className="setup-form-field">
+            <label htmlFor="api-key" className="setup-form-label">
+              API Key
+            </label>
+            <input
+              id="api-key"
+              type="password"
+              className="setup-form-input"
+              placeholder="Enter API key"
+              value={apiKey}
+              onChange={(e) => handleApiKeyChange(e.target.value)}
+              disabled={isLoading}
+              autoComplete="off"
+            />
+            {apiKey.length > 0 && apiKey.trim().length === 0 && (
+              <p className="setup-form-field-error">API key cannot be empty</p>
+            )}
           </div>
-        )}
 
-        {/* API Key Input */}
-        <div className="setup-form-field">
-          <label htmlFor="api-key" className="setup-form-label">
-            API Key
-          </label>
-          <input
-            id="api-key"
-            type="password"
-            className="setup-form-input"
-            placeholder="Enter API key"
-            value={apiKey}
-            onChange={(e) => handleApiKeyChange(e.target.value)}
-            disabled={isLoading}
-            autoComplete="off"
-          />
-          {apiKey.length > 0 && apiKey.trim().length === 0 && (
-            <p className="setup-form-field-error">API key cannot be empty</p>
-          )}
-        </div>
+          {/* Server URL Input */}
+          <div className="setup-form-field">
+            <label htmlFor="api-base-url" className="setup-form-label">
+              API Base URL
+            </label>
+            <input
+              id="api-base-url"
+              type="url"
+              className="setup-form-input"
+              placeholder={defaultApiBaseUrl}
+              value={apiBaseUrl}
+              onChange={(e) => handleApiBaseUrlChange(e.target.value)}
+              disabled={isLoading}
+              autoComplete="off"
+            />
+            <p className="setup-form-field-hint">Default: {defaultApiBaseUrl}</p>
+          </div>
 
-        {/* Server URL Input */}
-        <div className="setup-form-field">
-          <label htmlFor="api-base-url" className="setup-form-label">
-            API Base URL
-          </label>
-          <input
-            id="api-base-url"
-            type="url"
-            className="setup-form-input"
-            placeholder={defaultApiBaseUrl}
-            value={apiBaseUrl}
-            onChange={(e) => handleApiBaseUrlChange(e.target.value)}
-            disabled={isLoading}
-            autoComplete="off"
-          />
-          <p className="setup-form-field-hint">Default: {defaultApiBaseUrl}</p>
-        </div>
-
-        {/* Submit Button */}
-        <button
-          onClick={handleSubmit}
-          disabled={!isValid || isLoading}
-          className="setup-form-submit"
-        >
-          {isLoading ? (
-            <>
-              <span className="setup-form-spinner"></span>
-              Setting up...
-            </>
-          ) : (
-            'Setup'
-          )}
-        </button>
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={!isValid || isLoading}
+            className="setup-form-submit"
+          >
+            {isLoading ? (
+              <>
+                <span className="setup-form-spinner"></span>
+                Setting up...
+              </>
+            ) : (
+              'Setup'
+            )}
+          </button>
+        </form>
       </div>
     </div>
   );
