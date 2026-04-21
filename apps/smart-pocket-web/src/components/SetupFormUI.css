@@ -1,38 +1,40 @@
-/* SetupFormUI Styles - Website Layout */
+/* SetupFormUI Styles - Website Layout (Full-Width) */
 
 .setup-form-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 40px 20px;
+  padding: 0;
 }
 
 .setup-form-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 60px 40px;
+  max-width: none;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  padding: 60px;
+  border-radius: 0;
+  box-shadow: none;
   width: 100%;
-  max-width: 500px;
 }
 
 .setup-form-header {
   margin-bottom: 40px;
-  text-align: center;
+  text-align: left;
 }
 
 .setup-form-title {
   font-size: 32px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: white;
   margin: 0 0 12px 0;
 }
 
 .setup-form-subtitle {
   font-size: 16px;
-  color: #666;
+  color: rgba(255, 255, 255, 0.9);
   margin: 0;
 }
 
