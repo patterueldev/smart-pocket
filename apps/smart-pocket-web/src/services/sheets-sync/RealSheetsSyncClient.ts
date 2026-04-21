@@ -21,7 +21,7 @@ import { getApiBaseUrl } from '@/utils/config';
  * - Caching of draft ID and last sync time
  */
 export class RealSheetsSyncClient implements ISheetsSync {
-  private readonly baseUrl = '/api/sheets-sync';
+  private readonly baseUrl = '/sheets-sync';
   private lastSyncTimeCache: string | null = null;
 
   constructor(private getAccessToken: () => Promise<string>) {

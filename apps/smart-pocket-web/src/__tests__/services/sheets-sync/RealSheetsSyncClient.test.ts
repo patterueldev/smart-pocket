@@ -94,7 +94,7 @@ describe('RealSheetsSyncClient', () => {
       expect(draft.changes.length).toBe(1);
 
       expect(axios.post).toHaveBeenCalledWith(
-        expect.stringContaining('/api/sheets-sync/draft'),
+        expect.stringContaining('/sheets-sync/draft'),
         {},
         expect.objectContaining({
           headers: { Authorization: 'Bearer test-token' },
@@ -146,7 +146,7 @@ describe('RealSheetsSyncClient', () => {
       expect(result.accountsAdded).toBe(1);
 
       expect(axios.post).toHaveBeenCalledWith(
-        expect.stringContaining('/api/sheets-sync/sync'),
+        expect.stringContaining('/sheets-sync/sync'),
         { draftId: 'draft-123' },
         expect.objectContaining({
           headers: { Authorization: 'Bearer test-token' },
