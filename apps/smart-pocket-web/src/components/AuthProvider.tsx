@@ -25,6 +25,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isSetup, setIsSetup] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
   const authService = ServiceFactory.getAuthService();
 
   // Load stored auth on mount
@@ -32,14 +33,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const loadStoredAuth = async () => {
       try {
         const { credentials, tokens } = await authService.loadStoredAuth();
-        if (credentials && tokens) {
+        console.log('[AuthProvider] Loaded from storage:', {
+          hasCredentials: !!credentials,
+          hasTokens: !!tokens,
+          credentialsApiKey: credentials?.apiKey ? '***' : undefined,
+        });
+        // Credentials alone are enough to mark as setup
+        // Tokens will be refreshed on next API call if needed
+        if (credentials) {
+          console.log('[AuthProvider] Restoring auth state from storage');
           setApiKey(credentials.apiKey);
           setApiBaseUrl(credentials.baseUrl);
           setIsSetup(true);
+        } else {
+          console.log('[AuthProvider] No stored credentials found');
         }
       } catch (err) {
         console.error('Failed to load stored auth:', err);
         setError(err instanceof Error ? err.message : 'Failed to load authentication');
+      } finally {
+        setIsInitializing(false);
       }
     };
 
@@ -100,6 +113,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     isLoading,
     error,
+    isInitializing,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
