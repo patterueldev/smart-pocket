@@ -15,6 +15,12 @@ export function Setup() {
   const authContext = useAuth();
   const defaultApiBaseUrl = getApiBaseUrl();
 
+  // If already authenticated, redirect to dashboard
+  if (!authContext.isInitializing && authContext.isSetup) {
+    navigate('/dashboard', { replace: true });
+    return null;
+  }
+
   const form = useSetupForm({
     defaultApiBaseUrl,
     onSuccess: async (credentials) => {
