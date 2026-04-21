@@ -48,8 +48,12 @@ export function Sync() {
   if (loading) {
     return (
       <div className="sync-page">
+        <div className="sync-header">
+          <h1>Google Sheets Sync</h1>
+          <p>Review and sync your Actual Budget accounts</p>
+        </div>
         <div className="sync-skeleton-container">
-          {[1, 2, 3].map((i) => (
+          {[1, 2, 3, 4].map((i) => (
             <div key={i} className="sync-skeleton-item" />
           ))}
         </div>
@@ -57,11 +61,17 @@ export function Sync() {
     );
   }
 
-  // Error state - show error message with retry button
+  // Error state - show error message with retry button (no pending changes)
   if (error && !hasPendingChanges) {
     return (
       <div className="sync-page">
-        <SyncErrorState error={error} onRetry={onRefresh} />
+        <div className="sync-header">
+          <h1>Google Sheets Sync</h1>
+          <p>Review and sync your Actual Budget accounts</p>
+        </div>
+        <div className="sync-content-wrapper">
+          <SyncErrorState error={error} onRetry={onRefresh} />
+        </div>
       </div>
     );
   }
@@ -70,8 +80,14 @@ export function Sync() {
   if (!hasPendingChanges) {
     return (
       <div className="sync-page">
+        <div className="sync-header">
+          <h1>Google Sheets Sync</h1>
+          <p>Review and sync your Actual Budget accounts</p>
+        </div>
         <div className="sync-content-wrapper">
-          <SyncEmptyState lastSyncTime={draft?.lastSyncTime} />
+          <div className="sync-empty-state-wrapper">
+            <SyncEmptyState lastSyncTime={draft?.lastSyncTime} />
+          </div>
         </div>
       </div>
     );
@@ -95,11 +111,13 @@ export function Sync() {
 
         {/* Summary of changes */}
         {draft && (
-          <SyncSummary
-            totalAccounts={draft.totalAccounts}
-            newAccounts={draft.newAccounts}
-            updatedAccounts={draft.updatedAccounts}
-          />
+          <div className="sync-summary-section">
+            <SyncSummary
+              totalAccounts={draft.totalAccounts}
+              newAccounts={draft.newAccounts}
+              updatedAccounts={draft.updatedAccounts}
+            />
+          </div>
         )}
 
         {/* List of accounts with changes */}
@@ -114,7 +132,9 @@ export function Sync() {
       </div>
 
       {/* Action button - sync to Google Sheets */}
-      <SyncActionButton onPress={onSync} loading={syncing} disabled={error !== null} />
+      <div className="sync-action-button-wrapper">
+        <SyncActionButton onPress={onSync} loading={syncing} disabled={error !== null} />
+      </div>
     </div>
   );
 }
