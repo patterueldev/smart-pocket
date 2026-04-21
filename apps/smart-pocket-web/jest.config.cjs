@@ -16,7 +16,14 @@ module.exports = {
           jsx: 'react-jsx',
           esModuleInterop: true,
           allowSyntheticDefaultImports: true,
-          types: ['jest', '@testing-library/jest-dom'],
+          types: ['jest', '@testing-library/jest-dom', 'node'],
+          module: 'esnext',
+          target: 'es2020',
+          moduleResolution: 'bundler',
+          baseUrl: '.',
+          paths: {
+            '@/*': ['src/*'],
+          },
         },
       },
     ],
@@ -37,6 +44,7 @@ module.exports = {
   },
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
+    '^@/(.*)$': '<rootDir>/src/$1',
   },
 };
 

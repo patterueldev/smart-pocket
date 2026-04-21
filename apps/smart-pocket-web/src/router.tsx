@@ -8,6 +8,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Setup } from './pages/Setup';
 import { Dashboard } from './pages/Dashboard';
+import { Sync } from './pages/Sync';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { RootRoute } from './components/RootRoute';
 import { getBasename } from './config/routing';
@@ -30,6 +31,16 @@ export function Router() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Sheets Sync - protected */}
+        <Route
+          path="/sync"
+          element={
+            <ProtectedRoute>
+              <Sync />
             </ProtectedRoute>
           }
         />

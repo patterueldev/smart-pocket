@@ -1,0 +1,49 @@
+.sync-action-button {
+  background-color: #388e3c;
+  color: #fff;
+  border: none;
+  margin: 0 16px 24px 16px;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: calc(100% - 32px);
+  transition: background-color 0.2s;
+}
+
+.sync-action-button:hover:not(:disabled) {
+  background-color: #2e7d32;
+}
+
+.sync-action-button:active:not(:disabled) {
+  background-color: #1b5e20;
+}
+
+.sync-action-button-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sync-action-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.sync-action-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: sync-spin 0.8s linear infinite;
+}
+
+@keyframes sync-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

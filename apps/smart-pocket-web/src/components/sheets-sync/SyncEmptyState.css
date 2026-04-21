@@ -1,0 +1,27 @@
+.sync-empty-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  background-color: #f5f5f5;
+  text-align: center;
+}
+
+.sync-empty-checkmark {
+  font-size: 64px;
+  margin-bottom: 16px;
+  color: #388e3c;
+}
+
+.sync-empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.sync-empty-date {
+  font-size: 14px;
+  color: #666;
+}

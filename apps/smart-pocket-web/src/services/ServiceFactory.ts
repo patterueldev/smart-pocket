@@ -29,8 +29,21 @@ export class ServiceFactory {
    */
   static getAuthService(): IAuthService {
     if (!this.authService) {
-      const useMock = import.meta.env.MODE === 'development' && 
-                      new URLSearchParams(window.location.search).get('useMockAuth') === 'true';
+      // Support both Vite (import.meta.env) and Jest (process.env)
+      let isDevelopment = false;
+      try {
+        // Try to access import.meta.env (Vite)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const meta = (globalThis as any).import?.meta?.env;
+        isDevelopment = meta?.MODE === 'development';
+      } catch {
+        // Fall back to process.env (Jest/Node.js)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        isDevelopment = (globalThis as any).process?.env?.NODE_ENV === 'development';
+      }
+      
+      const useMock = isDevelopment && 
+                      (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('useMockAuth') === 'true');
       
       const storageService = this.getStorageService();
       
