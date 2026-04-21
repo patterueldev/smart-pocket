@@ -4,7 +4,7 @@
  * Includes header, navigation, and content area
  */
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import './MainLayout.css';
 
@@ -22,6 +22,7 @@ export function MainLayout({
   showNavigation = true,
 }: MainLayoutProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const authContext = useAuth();
 
   const handleLogout = async () => {
@@ -31,6 +32,10 @@ export function MainLayout({
 
   const handleNavigation = (path: string) => {
     navigate(path);
+  };
+
+  const isActive = (path: string) => {
+    return location.pathname === path;
   };
 
   return (
@@ -57,14 +62,14 @@ export function MainLayout({
         <nav className="main-navigation">
           <div className="main-navigation-content">
             <button
-              className="main-nav-item"
+              className={`main-nav-item ${isActive('/dashboard') ? 'active' : ''}`}
               onClick={() => handleNavigation('/dashboard')}
             >
               Dashboard
             </button>
             <button
-              className="main-nav-item"
-              onClick={() => handleNavigation('/sync')}
+              className={`main-nav-item ${isActive('/sheets-sync') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/sheets-sync')}
             >
               Google Sheets Sync
             </button>

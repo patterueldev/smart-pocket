@@ -37,7 +37,7 @@ export function Router() {
 
         {/* Sheets Sync - protected */}
         <Route
-          path="/sync"
+          path="/sheets-sync"
           element={
             <ProtectedRoute>
               <Sync />
