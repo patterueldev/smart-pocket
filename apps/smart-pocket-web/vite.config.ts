@@ -24,11 +24,12 @@ export default defineConfig({
     hmr: process.env.VITE_BASE_URL
       ? {
           // Remote development with domain
-          // App is served at /ui/, so WebSocket is at /ui/@vite/ws
+          // Vite automatically prepends base (/ui/) to the path
+          // So we only need @vite/ws, not /ui/@vite/ws
           host: 'smartpocket-dev.nicenature.space',
           protocol: 'wss',
           port: 443,
-          path: '/ui/@vite/ws',
+          path: '/@vite/ws',
         }
       : {
           // Local development on localhost
