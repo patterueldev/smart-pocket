@@ -52,7 +52,7 @@ export function SetupFormUI({
             id="api-key"
             type="password"
             className="setup-form-input"
-            placeholder="Enter your API key"
+            placeholder="Enter API key"
             value={apiKey}
             onChange={(e) => handleApiKeyChange(e.target.value)}
             disabled={isLoading}
