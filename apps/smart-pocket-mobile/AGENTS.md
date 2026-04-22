@@ -643,6 +643,16 @@ Example:
 
 ---
 
+## 📌 Version Management
+
+**When bumping mobile version** (e.g., `npm version patch`):
+- ✅ Updates `package.json` automatically
+- ⚠️ **ALSO manually update** `app.config.js` line 75: `version: '1.1.0'`
+- ℹ️ These two must stay synchronized for EAS builds and app store releases
+- Note: iOS `buildNumber` and Android `versionCode` are generated automatically
+
+---
+
 ## ✅ What to Do
 
 1. **First time?** → Read [README.md § Getting Started](./README.md#getting-started)

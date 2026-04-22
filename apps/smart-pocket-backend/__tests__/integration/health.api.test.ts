@@ -13,10 +13,10 @@ describe('Health API Integration Tests', () => {
     app = appInstance.getApp();
   });
 
-  describe('GET /health', () => {
+  describe('GET /api/health', () => {
     test('should return 200 with healthy status', async () => {
       const response = await request(app)
-        .get('/health');
+        .get('/api/health');
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('success');
@@ -25,21 +25,21 @@ describe('Health API Integration Tests', () => {
 
     test('should return JSON response', async () => {
       const response = await request(app)
-        .get('/health');
+        .get('/api/health');
 
       expect(response.headers['content-type']).toMatch(/application\/json/);
     });
 
     test('should not require authentication', async () => {
       const response = await request(app)
-        .get('/health');
+        .get('/api/health');
 
       expect(response.status).toBe(200);
     });
 
     test('should work without Authorization header', async () => {
       const response = await request(app)
-        .get('/health')
+        .get('/api/health')
         .set('Authorization', '');
 
       expect(response.status).toBe(200);
@@ -48,7 +48,7 @@ describe('Health API Integration Tests', () => {
 
     test('should include message and timestamp', async () => {
       const response = await request(app)
-        .get('/health');
+        .get('/api/health');
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('message');
@@ -59,7 +59,7 @@ describe('Health API Integration Tests', () => {
 
     test('should return valid ISO timestamp', async () => {
       const response = await request(app)
-        .get('/health');
+        .get('/api/health');
 
       expect(response.status).toBe(200);
       // Check that timestamp is a valid ISO string
@@ -73,7 +73,7 @@ describe('Health API Integration Tests', () => {
         .fill(null)
         .map(() =>
           request(app)
-            .get('/health')
+            .get('/api/health')
         );
 
       const responses = await Promise.all(promises);
@@ -86,7 +86,7 @@ describe('Health API Integration Tests', () => {
 
     test('should not expose sensitive information', async () => {
       const response = await request(app)
-        .get('/health');
+        .get('/api/health');
 
       const body = JSON.stringify(response.body);
       expect(body).not.toMatch(/secret/i);
@@ -99,7 +99,7 @@ describe('Health API Integration Tests', () => {
   describe('GET /health with different methods', () => {
     test('should work with GET method', async () => {
       const response = await request(app)
-        .get('/health');
+        .get('/api/health');
 
       expect(response.status).toBe(200);
     });

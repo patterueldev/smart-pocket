@@ -39,6 +39,10 @@ export interface SyncExecutionResult {
   errorMessage?: string;
 }
 
+/**
+ * Core sync interface - used by SheetsSyncController
+ * Handles draft creation, retrieval, and sync execution
+ */
 export interface ISheetsSync {
   createDraft(
     actualBalances: AccountBalance[],
@@ -50,6 +54,19 @@ export interface ISheetsSync {
 
   executeSyncFromDraft(draftId: string): Promise<SyncExecutionResult>;
 
+  /**
+   * Get accounts with pending changes from a draft
+   * Used by controller to convert to sheet format before updating
+   */
+  getAccountsForSync(draft: Draft): AccountBalance[];
+}
+
+/**
+ * Admin interface - optional management operations
+ * Not required for core controller functionality
+ * Available for future admin dashboards or cleanup tasks
+ */
+export interface ISheetsSyncAdmin {
   listDrafts(): Promise<Draft[]>;
 
   clearExpiredDrafts(): Promise<number>;

@@ -28,7 +28,7 @@ const getConfig = () => {
       android: {
         package: 'dev.patteruel.smartpocket.dev',
       },
-      apiBaseUrl: 'https://smartpocket-dev.nicenature.space',
+      apiBaseUrl: 'https://smartpocketapi-dev.nicenature.space',
     },
     qa: {
       name: 'Smart Pocket QA',
@@ -72,7 +72,7 @@ module.exports = {
   expo: {
     name: envConfig.name,
     slug: 'smart-pocket',
-    version: '1.0.1',
+    version: '1.1.0',
     orientation: 'portrait',
     icon: './assets/images/icon.png',
     scheme: envConfig.scheme,

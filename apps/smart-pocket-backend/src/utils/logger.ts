@@ -4,7 +4,15 @@ interface LogData {
   [key: string]: string | number | boolean | object;
 }
 
-class Logger {
+export interface ILogger {
+  log(message: string, data?: LogData | null): void;
+  error(message: string, error?: Error | null): void;
+  warn(message: string, data?: LogData | null): void;
+  info(message: string, data?: LogData | null): void;
+  debug(message: string, data?: LogData | null): void;
+}
+
+class Logger implements ILogger {
   log(message: string, data?: LogData | null): void {
     // eslint-disable-next-line no-console
     console.log(`[LOG] ${message}`, data || '');

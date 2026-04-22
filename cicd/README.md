@@ -666,7 +666,7 @@ docker pull registry/smart-pocket-backend:v1.0.3
 - **Quick Guide**: See `./AGENTS.md` for AI agent reference
 - **Backend**: See `../apps/smart-pocket-backend/AGENTS.md`
 - **Mobile**: See `../apps/smart-pocket-mobile/AGENTS.md`
-- **Docker**: See `../docker/DOCKER_GUIDE.md`
+- **Docker**: See `../infrastructure/docker/DOCKER_GUIDE.md`
 - **Root Guide**: See `../AGENTS.md`
 
 ---

@@ -35,6 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.changes.outputs.backend }}
+      frontend: ${{ steps.changes.outputs.frontend }}
       android: ${{ steps.changes.outputs.android }}
       ios: ${{ steps.changes.outputs.ios }}
     steps:
@@ -62,6 +63,15 @@ jobs:
             echo "⊘ No changes detected in backend files."
           fi
           
+          # Check if frontend files changed
+          if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-web/"; then
+            echo "frontend=true" >> $GITHUB_OUTPUT
+            echo "✅ Changes detected in frontend files."
+          else
+            echo "frontend=false" >> $GITHUB_OUTPUT
+            echo "⊘ No changes detected in frontend files."
+          fi
+          
           # Check if mobile files changed
           if git diff --name-only $MERGE_BASE HEAD | grep -q "^apps/smart-pocket-mobile/"; then
             echo "android=true" >> $GITHUB_OUTPUT
@@ -77,6 +87,7 @@ jobs:
         run: |
           echo "✅ Detection complete:"
           echo "- Backend changed: ${{ steps.changes.outputs.backend }}"
+          echo "- Frontend changed: ${{ steps.changes.outputs.frontend }}"
           echo "- Android changed: ${{ steps.changes.outputs.android }}"
           echo "- iOS changed: ${{ steps.changes.outputs.ios }}"
 
@@ -87,6 +98,7 @@ jobs:
     with:
       env: qa
       backend: ${{ needs.detect-changes.outputs.backend }}
+      frontend: ${{ needs.detect-changes.outputs.frontend }}
       android: ${{ needs.detect-changes.outputs.android }}
       ios: ${{ needs.detect-changes.outputs.ios }}
     secrets: inherit

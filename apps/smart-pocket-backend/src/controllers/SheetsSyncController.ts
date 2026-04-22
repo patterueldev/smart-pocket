@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import Logger from '../utils/logger';
-import ActualBudgetService from '../services/ActualBudgetService';
-import GoogleSheetsService from '../services/GoogleSheetsService';
-import SheetsSyncService from '../services/SheetsSync/SheetsSyncService';
+import { ILogger } from '../utils/logger';
+import { IActualBudgetService, ActualBudgetConfig } from '../interfaces/IActualBudgetService';
+import { IGoogleSheetsService, GoogleSheetsConfig } from '../interfaces/IGoogleSheetsService';
+import { ISheetsSync, PendingChange } from '../interfaces/ISheetsSync';
 import config from '../config/env';
 import { ISheetsSyncController } from '../interfaces/ISheetsSyncController';
 import {
@@ -11,22 +11,18 @@ import {
   ExecuteSyncRequest,
   ExecuteSyncResponse,
 } from '../models/sheets-sync';
-import { ActualBudgetConfig } from '../interfaces/IActualBudgetService';
-import { GoogleSheetsConfig } from '../interfaces/IGoogleSheetsService';
-import { PendingChange } from '../interfaces/ISheetsSync';
-
-const logger = new Logger();
 
 class SheetsSyncController implements ISheetsSyncController {
   constructor(
-    private actualBudgetService: ActualBudgetService,
-    private googleSheetsService: GoogleSheetsService,
-    private sheetsSyncService: SheetsSyncService
+    private actualBudgetService: IActualBudgetService,
+    private googleSheetsService: IGoogleSheetsService,
+    private sheetsSyncService: ISheetsSync,
+    private logger: ILogger
   ) {}
 
   async createDraft(req: Request, res: Response): Promise<void> {
     try {
-      logger.info('Creating sheets sync draft');
+      this.logger.info('Creating sheets sync draft');
 
       // Get Actual Budget config from request or environment
       const actualBudgetServerUrl =
@@ -71,7 +67,7 @@ class SheetsSyncController implements ISheetsSyncController {
       };
 
       const actualBalances = await this.actualBudgetService.getAccountBalances(actualBudgetConfig);
-      logger.info(`Fetched ${actualBalances.length} account balances from Actual Budget`);
+      this.logger.info(`Fetched ${actualBalances.length} account balances from Actual Budget`);
 
       // Fetch last synced balances from Google Sheets
       const googleSheetsConfig: GoogleSheetsConfig = {
@@ -83,7 +79,7 @@ class SheetsSyncController implements ISheetsSyncController {
 
       const sheetBalances =
         await this.googleSheetsService.getLastSyncedBalances(googleSheetsConfig);
-      logger.info(`Fetched ${sheetBalances.length} account balances from Google Sheets`);
+      this.logger.info(`Fetched ${sheetBalances.length} account balances from Google Sheets`);
 
       // Create draft
       const draft = await this.sheetsSyncService.createDraft(actualBalances, sheetBalances);
@@ -98,13 +94,49 @@ class SheetsSyncController implements ISheetsSyncController {
 
       res.status(200).json(response);
     } catch (error) {
-      logger.warn('Error creating draft', {
-        errorMessage: error instanceof Error ? error.message : String(error),
+      // Log detailed error information
+      let errorMessage = '';
+      let errorType = '';
+      let errorCode = '';
+      let errorDetails: Record<string, unknown> = {};
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        errorType = 'Error';
+        errorDetails = {
+          message: error.message,
+          stack: error.stack,
+        };
+      } else if (error && typeof error === 'object') {
+        // Handle plain objects (like APIError from Actual Budget)
+        const err = error as Record<string, unknown>;
+        errorType = typeof err.type === 'string' ? err.type : 'Object';
+        errorCode = typeof err.code === 'string' ? err.code : '';
+        errorMessage = err.message ? String(err.message) : JSON.stringify(error);
+        
+        // Build details from object properties
+        errorDetails = {
+          type: errorType,
+          message: errorMessage,
+        };
+        if (errorCode) {
+          errorDetails.code = errorCode;
+        }
+      } else {
+        errorMessage = String(error);
+        errorType = typeof error;
+        errorDetails = { error: errorMessage };
+      }
+
+      this.logger.warn('Error creating draft', {
+        errorMessage,
+        errorType,
+        ...errorDetails,
       });
 
       const response: CreateDraftResponse = {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create draft',
+        error: errorMessage || 'Failed to create draft',
         draftId: '',
         summary: { totalAccounts: 0, newAccounts: 0, updatedAccounts: 0, unchangedAccounts: 0 },
         pendingChanges: [],
@@ -129,7 +161,7 @@ class SheetsSyncController implements ISheetsSyncController {
         return;
       }
 
-      logger.info('Executing sheets sync from draft', { draftId });
+      this.logger.info('Executing sheets sync from draft', { draftId });
 
       // Get draft to validate it exists
       const draft = await this.sheetsSyncService.getDraft(draftId);
@@ -154,19 +186,14 @@ class SheetsSyncController implements ISheetsSyncController {
         return;
       }
 
-      // Get accounts to sync from draft
-      const accountsToSync = draft.pendingChanges
-        .map((change: PendingChange) => {
-          const account = draft.allAccounts.find((a: any) => a.accountName === change.accountName);
-          return account;
-        })
-        .filter((account: any) => account !== undefined);
+      // Get accounts to sync from draft using service helper
+      const accountsToSync = this.sheetsSyncService.getAccountsForSync(draft);
 
       // Convert to SheetBalance format for update
-      const balancesToUpdate = accountsToSync.map((account: any) => ({
-        accountName: account!.accountName,
-        cleared: account!.cleared,
-        uncleared: account!.uncleared,
+      const balancesToUpdate = accountsToSync.map((account) => ({
+        accountName: account.accountName,
+        cleared: account.cleared,
+        uncleared: account.uncleared,
       }));
 
       // Update Google Sheets
@@ -204,7 +231,7 @@ class SheetsSyncController implements ISheetsSyncController {
 
       res.status(200).json(response);
     } catch (error) {
-      logger.warn('Error executing sync', {
+      this.logger.warn('Error executing sync', {
         errorMessage: error instanceof Error ? error.message : String(error),
       });
 

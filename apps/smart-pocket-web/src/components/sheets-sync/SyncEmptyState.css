@@ -1,0 +1,75 @@
+.sync-empty-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 40px;
+  background: linear-gradient(135deg, #f5f5f5 0%, #fafafa 100%);
+  text-align: center;
+  border-radius: 16px;
+  border: 2px dashed #e0e0e0;
+}
+
+.sync-empty-checkmark {
+  font-size: 80px;
+  margin-bottom: 24px;
+  color: #388e3c;
+  animation: pulse-check 2s ease-in-out infinite;
+}
+
+@keyframes pulse-check {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.sync-empty-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+}
+
+.sync-empty-date {
+  font-size: 15px;
+  color: #666;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .sync-empty-state {
+    padding: 40px 30px;
+    border-radius: 12px;
+  }
+
+  .sync-empty-checkmark {
+    font-size: 64px;
+  }
+
+  .sync-empty-title {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sync-empty-state {
+    padding: 30px 20px;
+    border-radius: 8px;
+  }
+
+  .sync-empty-checkmark {
+    font-size: 56px;
+    margin-bottom: 16px;
+  }
+
+  .sync-empty-title {
+    font-size: 20px;
+  }
+
+  .sync-empty-date {
+    font-size: 14px;
+  }
+}

@@ -4,7 +4,7 @@ import helmet from 'helmet';
 
 import config from './config/env';
 import container from './container';
-import { Logger } from './utils/logger';
+import { ILogger } from './utils/logger';
 import requestLogger from './middleware/requestLogger';
 import errorHandler from './middleware/errorHandler';
 import healthRoutes from './routes/health';
@@ -20,10 +20,10 @@ interface NotFoundResponse {
 
 class App {
   private app: Express;
-  private logger: Logger;
+  private logger: ILogger;
 
   constructor() {
-    this.logger = container.get<Logger>('logger');
+    this.logger = container.get<ILogger>('logger');
     this.app = express();
     this.setupMiddleware();
     this.setupRoutes();
@@ -38,12 +38,13 @@ class App {
   }
 
   private setupRoutes(): void {
-    this.app.use('/health', healthRoutes);
-    this.app.use('/auth', authRoutes);
+    // API routes with /api/ prefix
+    this.app.use('/api/health', healthRoutes);
+    this.app.use('/api/auth', authRoutes);
 
-    // Mount sheets-sync routes
+    // Mount sheets-sync routes under /api/
     const sheetsSyncController = container.get<ISheetsSyncController>('sheetsSyncController');
-    this.app.use('/sheets-sync', createSheetsSyncRoutes(sheetsSyncController as any));
+    this.app.use('/api/sheets-sync', createSheetsSyncRoutes(sheetsSyncController));
 
     this.app.use((req: Request, res: Response<NotFoundResponse>) => {
       res.status(404).json({
@@ -64,6 +65,17 @@ class App {
   }
 
   start(): void {
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', (reason: unknown) => {
+      const errorMessage = reason instanceof Error ? reason.message : String(reason);
+      const errorStack = reason instanceof Error && reason.stack ? reason.stack : JSON.stringify(reason);
+      this.logger.warn('Unhandled promise rejection', {
+        message: errorMessage,
+        stack: errorStack,
+      });
+      // Don't exit - log but continue running to serve other requests
+    });
+
     const PORT = config.port;
     this.app.listen(PORT, () => {
       this.logger.info(`Server running on port ${PORT}`, {
