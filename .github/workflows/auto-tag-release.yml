@@ -3,17 +3,18 @@
 #
 # Purpose:
 #   Automatically creates and pushes a version tag when commits are pushed to main.
-#   Extracts version from package.json to ensure consistent tagging.
+#   Extracts versions from all apps and uses the maximum version for the tag.
 #   Explicitly triggers prod-build.yml via repository_dispatch (not via tag push).
 #
 # Trigger:
 #   - Push to main branch (which occurs after PR merge)
 #
 # What it does:
-#   1. Reads version from apps/smart-pocket-backend/package.json
-#   2. Creates annotated tag: v{version}
-#   3. Pushes tag to remote
-#   4. Explicitly triggers prod-build.yml with tag via repository_dispatch
+#   1. Reads versions from all affected apps (backend, mobile, web)
+#   2. Determines the greatest version across all apps
+#   3. Creates annotated tag: v{max_version}
+#   4. Pushes tag to remote
+#   5. Explicitly triggers prod-build.yml with tag via repository_dispatch
 #
 # Related Workflows:
 #   • .github/workflows/prod-build.yml (triggered via repository_dispatch)
@@ -21,8 +22,9 @@
 #
 # Notes:
 #   - Runs on every push to main (should be idempotent - only creates tag if not exists)
-#   - Both apps (backend & mobile) must have the same version in package.json
+#   - Only apps with changes get version bumps (backend, mobile, web have independent versions)
 #   - Tag format: v1.0.0 (semantic versioning)
+#   - Tag uses the greatest version across all apps
 #   - Only creates tag if version doesn't already exist
 #   - Uses repository_dispatch instead of tag push event (avoids GITHUB_TOKEN security restriction)
 #
@@ -54,16 +56,27 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
 
-      - name: Read version from package.json
+      - name: Read versions from all apps
         id: version
         run: |
-          VERSION=$(jq -r '.version' apps/smart-pocket-backend/package.json)
+          # Read versions from each app
+          BACKEND_VERSION=$(jq -r '.version' apps/smart-pocket-backend/package.json)
+          MOBILE_VERSION=$(jq -r '.version' apps/smart-pocket-mobile/package.json)
+          WEB_VERSION=$(jq -r '.version' apps/smart-pocket-web/package.json)
+          
+          echo "Backend version: $BACKEND_VERSION"
+          echo "Mobile version: $MOBILE_VERSION"
+          echo "Web version: $WEB_VERSION"
+          
+          # Find the greatest version
+          # Sort versions and take the last (greatest) one
+          VERSION=$(printf "%s\n%s\n%s" "$BACKEND_VERSION" "$MOBILE_VERSION" "$WEB_VERSION" | sort -V | tail -1)
           TAG="v$VERSION"
           
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           
-          echo "Version from package.json: $VERSION"
+          echo "Greatest version across all apps: $VERSION"
           echo "Tag to create: $TAG"
 
       - name: Check if tag already exists
