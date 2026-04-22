@@ -39,8 +39,8 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/backend
           tags: |
-            type=raw,value=${{ inputs.env == 'prod' && 'latest' || 'qa' }}
-            type=sha,prefix=${{ inputs.env == 'prod' && 'latest-' || 'qa-' }}
+            type=raw,value=${{ inputs.env == 'prod' && 'latest' || 'staging' }}
+            type=sha,prefix=${{ inputs.env == 'prod' && 'latest-' || 'staging-' }}
             type=ref,event=branch
 
       - name: Build and push Docker image
@@ -75,7 +75,7 @@ jobs:
         run: |
           ENV_NAME="${{ inputs.env }}"
           ENV_LABEL=$([ "$ENV_NAME" == "prod" ] && echo "Production" || echo "QA")
-          IMAGE_TAG=$([ "$ENV_NAME" == "prod" ] && echo "latest" || echo "qa")
+          IMAGE_TAG=$([ "$ENV_NAME" == "prod" ] && echo "latest" || echo "staging")
           
           echo "## 🚀 $ENV_LABEL Server Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
