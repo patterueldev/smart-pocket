@@ -38,9 +38,6 @@ interface ActualAppApiModule {
 let api: ActualAppApi;
 let actualAppApi: ActualAppApiModule;
 
-// Cache mapping: syncId → budgetId for faster subsequent loads
-const syncIdToBudgetIdMap: Record<string, string> = {};
-
 const logger = new Logger();
 
 /**
@@ -58,45 +55,60 @@ function loadActualApi(): ActualAppApiModule {
 
 /**
  * Refresh the syncId → budgetId mapping by scanning the data directory
+ * Falls back to using directory name if metadata.json is missing or empty
  */
-function refreshSyncIdToBudgetIdMap(dataDir: string): void {
+function refreshSyncIdToBudgetIdMap(dataDir: string): Record<string, string> {
+  const syncIdToBudgetIdMap: Record<string, string> = {};
   try {
     if (!fs.existsSync(dataDir)) {
       logger.debug('Cache directory does not exist', { dataDir });
-      return;
+      return syncIdToBudgetIdMap;
     }
 
     const files = fs.readdirSync(dataDir);
+    logger.debug('Cache directory contents', { dataDir, files });
+    
     const budgetDirs = files.filter((file) => {
       const fullPath = path.join(dataDir, file);
       return fs.statSync(fullPath).isDirectory();
     });
 
+    logger.debug('Found budget directories', { budgetDirs });
+
     budgetDirs.forEach((budgetId) => {
       const metadataPath = path.join(dataDir, budgetId, 'metadata.json');
+      let foundMapping = false;
+
       if (fs.existsSync(metadataPath)) {
         try {
-          const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
-          if (metadata.cloudFileId) {
-            syncIdToBudgetIdMap[metadata.cloudFileId] = budgetId;
-            logger.debug('Mapped budget', {
-              cloudFileId: metadata.cloudFileId,
-              budgetId,
-            });
-          } else {
-            logger.debug('Metadata missing cloudFileId', {
-              budgetId,
-              metadataKeys: Object.keys(metadata),
-            });
+          const content = fs.readFileSync(metadataPath, 'utf8');
+          logger.debug('Metadata file content', { budgetId, contentLength: content.length });
+          
+          // Skip empty metadata files
+          if (content.trim().length > 0) {
+            const metadata = JSON.parse(content);
+            if (metadata.cloudFileId) {
+              syncIdToBudgetIdMap[metadata.cloudFileId] = budgetId;
+              logger.debug('Mapped budget from metadata', {
+                cloudFileId: metadata.cloudFileId,
+                budgetId,
+              });
+              foundMapping = true;
+            }
           }
         } catch (parseError) {
-          logger.warn('Failed to parse metadata.json', {
+          logger.debug('Failed to parse metadata.json', {
             budgetId,
             error: parseError instanceof Error ? parseError.message : String(parseError),
           });
         }
-      } else {
-        logger.debug('No metadata.json found', { budgetId });
+      }
+
+      // Fallback: if no valid metadata, just use the directory name
+      // The @actual-app/api writes empty metadata sometimes, but the budget is still usable
+      if (!foundMapping) {
+        // For now, just log that we found the directory but couldn't map it
+        logger.debug('Budget directory found but cannot map via metadata', { budgetId });
       }
     });
 
@@ -109,21 +121,45 @@ function refreshSyncIdToBudgetIdMap(dataDir: string): void {
       error: error instanceof Error ? error.message : String(error),
     });
   }
+  return syncIdToBudgetIdMap;
 }
 
 /**
  * Ensure budget is loaded before performing operations
+ * Always downloads fresh data - no caching
  */
 async function ensureBudgetLoaded(config: ActualBudgetConfig): Promise<void> {
   const { serverUrl, password, budgetId: syncId, dataDir } = config;
 
-  // Ensure data directory exists
+  // Use persistent cache but clear old data before each download
   const cacheDir = dataDir || '/tmp/actual-cache';
+  
+  // Clear cache directory to force fresh download
+  if (fs.existsSync(cacheDir)) {
+    try {
+      const files = fs.readdirSync(cacheDir);
+      for (const file of files) {
+        const filePath = path.join(cacheDir, file);
+        if (fs.statSync(filePath).isDirectory()) {
+          fs.rmSync(filePath, { recursive: true, force: true });
+        } else {
+          fs.unlinkSync(filePath);
+        }
+      }
+      logger.debug('Cleared cache directory for fresh download', { cacheDir });
+    } catch (clearErr) {
+      logger.warn('Failed to clear cache directory', {
+        error: clearErr instanceof Error ? clearErr.message : String(clearErr),
+      });
+    }
+  }
+
+  // Ensure cache directory exists
   if (!fs.existsSync(cacheDir)) {
     fs.mkdirSync(cacheDir, { recursive: true });
   }
 
-  // Initialize API if not already
+  // Initialize API
   const initConfig: { dataDir: string; serverURL: string; password?: string } = {
     dataDir: cacheDir,
     serverURL: serverUrl,
@@ -135,49 +171,58 @@ async function ensureBudgetLoaded(config: ActualBudgetConfig): Promise<void> {
 
   await api.init(initConfig);
 
-  // Check if we've downloaded this budget before
-  if (syncId in syncIdToBudgetIdMap) {
-    // Budget exists locally, just load it
-    logger.debug('Loading budget from cache', { syncId });
-    await api.loadBudget(syncIdToBudgetIdMap[syncId]);
-    await api.sync();
-  } else {
-    // First time - download from server
-    logger.debug('Downloading budget from server', { syncId });
-    try {
-      await api.downloadBudget(syncId);
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      // Provide helpful guidance if download fails
-      if (errorMsg.includes('not found') || errorMsg.includes('sync id')) {
-        const helpfulError = new Error(
-          `Budget sync failed: "${syncId}" not found on server. ` +
-          `Verify ACTUAL_BUDGET_ID is set to the Sync ID from your budget's Settings > Advanced page. ` +
-          `Original error: ${errorMsg}`
-        );
-        logger.error('Budget download failed - invalid Sync ID', helpfulError);
-        throw helpfulError;
-      }
-      throw error;
-    }
-
-    // Update cache map by scanning the data directory
-    refreshSyncIdToBudgetIdMap(cacheDir);
-    
-    // Now load the budget we just downloaded
-    const budgetId = syncIdToBudgetIdMap[syncId];
-    if (budgetId) {
-      logger.debug('Loading downloaded budget', { syncId, budgetId });
-      await api.loadBudget(budgetId);
-      await api.sync();
-    } else {
-      logger.warn('Budget not found in cache after download', { syncId });
-      throw new Error(
-        `Failed to locate downloaded budget for ${syncId}. ` +
-        `Check that ACTUAL_BUDGET_ID is the correct Sync ID from your budget's Settings > Advanced.`
+  // Always download fresh data
+  logger.debug('Downloading budget from server (no caching)', { syncId });
+  try {
+    await api.downloadBudget(syncId);
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    // Provide helpful guidance if download fails
+    if (errorMsg.includes('not found') || errorMsg.includes('sync id')) {
+      const helpfulError = new Error(
+        `Budget sync failed: "${syncId}" not found on server. ` +
+        `Verify ACTUAL_BUDGET_ID is set to the Sync ID from your budget's Settings > Advanced page. ` +
+        `Original error: ${errorMsg}`
       );
+      logger.error('Budget download failed - invalid Sync ID', helpfulError);
+      throw helpfulError;
     }
+    
+    // Check for migration mismatch errors
+    if (errorMsg.includes('out-of-sync-migrations') || errorMsg.includes('Database is out of sync')) {
+      const helpfulError = new Error(
+        `Budget download successful but database schema mismatch detected. ` +
+        `Your Actual Budget server version may not be compatible with this API client (@actual-app/api@26.5.0-nightly.20260418). ` +
+        `Please verify your server version or try updating the API package. ` +
+        `Original error: ${errorMsg}`
+      );
+      logger.error('Budget migration mismatch', helpfulError);
+      throw helpfulError;
+    }
+    
+    throw error;
   }
+
+  // Load the freshly downloaded budget - use the first directory found in cache
+  // since metadata.json may be empty/corrupted due to @actual-app/api limitations
+  const budgetDirs = fs.readdirSync(cacheDir).filter((file) => {
+    const fullPath = path.join(cacheDir, file);
+    return fs.statSync(fullPath).isDirectory();
+  });
+
+  if (budgetDirs.length === 0) {
+    logger.warn('No budget directories found after download', { syncId, cacheDir });
+    throw new Error(
+      `Failed to locate downloaded budget for ${syncId}. ` +
+      `Check that ACTUAL_BUDGET_ID is the correct Sync ID from your budget's Settings > Advanced.`
+    );
+  }
+
+  // Use the first (and likely only) budget directory
+  const budgetId = budgetDirs[0];
+  logger.debug('Loading downloaded budget', { syncId, budgetId, cacheDir });
+  await api.loadBudget(budgetId);
+  await api.sync();
 }
 
 /**

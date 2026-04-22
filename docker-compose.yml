@@ -1,16 +1,13 @@
 services:
-  smart-pocket-dev-web:
+  smart-pocket-backend:
     build:
       context: ./
-      dockerfile: ./infrastructure/docker/Web.dev.dockerfile
-    container_name: smart-pocket-dev-web
+      dockerfile: ./infrastructure/docker/Backend.dev.dockerfile
+    container_name: smart-pocket-backend
     volumes:
       - ./apps/smart-pocket-backend/src:/app/backend/src:delegated
       - ./apps/smart-pocket-backend/package.json:/app/backend/package.json:delegated
-      - ./apps/smart-pocket-web/src:/app/frontend/src:delegated
-      - ./apps/smart-pocket-web/package.json:/app/frontend/package.json:delegated
       - /app/backend/node_modules
-      - /app/frontend/node_modules
       - ./keys:/data/keys:ro
     environment:
       - NODE_ENV=development
@@ -22,7 +19,24 @@ services:
       - GOOGLE_SHEET_NAME=${GOOGLE_SHEET_NAME:-}
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "3000:3000"
+
+  smart-pocket-frontend:
+    build:
+      context: ./
+      dockerfile: ./infrastructure/docker/Frontend.dev.dockerfile
+    container_name: smart-pocket-frontend
+    volumes:
+      - ./apps/smart-pocket-web/src:/app/frontend/src:delegated
+      - ./apps/smart-pocket-web/package.json:/app/frontend/package.json:delegated
+      - /app/frontend/node_modules
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    depends_on:
+      - smart-pocket-backend
 
   smart-pocket-cloudflared:
     image: cloudflare/cloudflared:latest

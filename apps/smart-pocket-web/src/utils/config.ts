@@ -6,19 +6,24 @@
 /**
  * Get the default API base URL based on the current host
  * Examples:
- * - localhost:5173 → http://localhost:3000/api
- * - smartpocket-dev.nicenature.space → https://smartpocket-dev.nicenature.space/api
+ * - localhost:5173 → http://localhost:3000
+ * - smartpocket-dev.nicenature.space → https://smartpocketapi-dev.nicenature.space
  */
 export function getApiBaseUrl(): string {
   const { protocol, hostname } = window.location;
 
-  // For development on localhost, use port 3000
+  // For development on localhost, use port 3000 on the same host
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return `http://${hostname}:3000/api`;
+    return `http://${hostname}:3000`;
   }
 
-  // For remote hosts, use same protocol/hostname with /api path
-  return `${protocol}//${hostname}/api`;
+  // For remote hosts (smartpocket-dev.*), use the API backend domain (smartpocketapi-dev.*)
+  if (hostname === 'smartpocket-dev.nicenature.space') {
+    return `${protocol}//smartpocketapi-dev.nicenature.space`;
+  }
+
+  // Default: use same protocol/hostname
+  return `${protocol}//${hostname}`;
 }
 
 /**

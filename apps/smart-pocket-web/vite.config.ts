@@ -4,10 +4,8 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
-  // Base path: /ui/ for remote, / for localhost
-  // For localhost dev: base should be / (no subpath)
-  // For remote dev: base should be /ui/ (served at subpath)
-  base: process.env.VITE_BASE_URL || '/',
+  // Base path: serve from root
+  base: '/',
   plugins: [react()],
   resolve: {
     alias: {
@@ -15,35 +13,40 @@ export default defineConfig({
     },
   },
   server: {
+    host: '0.0.0.0',
+    port: 5173,
     allowedHosts: [
       'localhost',
       'localhost:5173',
       '127.0.0.1',
       'smartpocket-dev.nicenature.space',
     ],
-    hmr: process.env.VITE_BASE_URL
-      ? {
-          // Remote development with domain
-          // Vite automatically prepends base (/ui/) to the path
-          // So we only need @vite/ws, not /ui/@vite/ws
-          host: 'smartpocket-dev.nicenature.space',
-          protocol: 'wss',
-          port: 443,
-          path: '/@vite/ws',
-        }
-      : {
-          // Local development on localhost
-          host: 'localhost',
-          protocol: 'ws',
-          port: 5173,
-          path: '/@vite/ws',
-        },
+    hmr: {
+      // Local development on localhost
+      host: 'localhost',
+      protocol: 'ws',
+      port: 5173,
+      path: '/@vite/ws',
+    },
     watch: {
       // Use polling for file watching in Docker volumes
       // Poll every 50ms to catch file changes quickly
       usePolling: true,
       interval: 50,
     },
+    middlewareMode: false,
+    // Disable all caching in development
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    },
+  },
+  // Disable build cache
+  cacheDir: null,
+  // Optimize dependencies caching - disable for dev
+  optimizeDeps: {
+    noDiscovery: false,
   },
 })
 

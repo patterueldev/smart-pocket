@@ -1,8 +1,6 @@
 /**
  * Router Configuration for Smart Pocket Web
  * Defines all routes and their protection levels
- * 
- * Uses React Router's basename to handle subpath routing (/ui/)
  */
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
