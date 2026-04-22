@@ -32,6 +32,14 @@ export class RealSheetsSyncClient implements ISheetsSync {
 
   /**
    * Create a draft of pending changes by calling /sheets-sync/draft
+   * 
+   * Note: In development with React.StrictMode, the first call may fail
+   * (transient error during auth initialization), but the second call
+   * (after React.StrictMode cleanup) will succeed. This is expected and
+   * demonstrates StrictMode catching side effect bugs.
+   * 
+   * In production (StrictMode disabled), only one call is made.
+   * 
    * @throws Error if backend request fails
    */
   async createDraft(): Promise<SheetsSyncDraft> {

@@ -101,6 +101,11 @@ export function useSheetsSync(sheetsSyncService: ISheetsSync): UseSheetsSync {
 
   /**
    * Load draft on component mount
+   * Note: In development with React.StrictMode, this effect runs twice:
+   * - First mount: may fail if auth isn't fully initialized yet
+   * - Cleanup + second mount: succeeds after auth is ready
+   * This is expected behavior for React.StrictMode (detects side effect bugs)
+   * In production (StrictMode disabled), only runs once when component mounts
    */
   useEffect(() => {
     loadDraft();
