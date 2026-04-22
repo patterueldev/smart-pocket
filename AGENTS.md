@@ -568,22 +568,42 @@ gh pr create --base main --head rc/v1.0.5
 
 #### Phase 1: Version Bumping (on develop branch)
 
+⚠️ **CRITICAL**: Only bump versions for apps/libs that **actually changed**.  
+Example: If only web app gets a feature, only bump @apps/smart-pocket-web version.
+
 1. ✅ **Switch to develop**: `git checkout develop && git pull origin develop`
-2. ✅ **Bump backend version**: `npm --prefix apps/smart-pocket-backend version patch`
-3. ✅ **Bump mobile version**: `npm --prefix apps/smart-pocket-mobile version patch`
-4. ✅ **Update app.config.js**: Edit `@apps/smart-pocket-mobile/app.config.js` line 75
+2. ✅ **Identify affected apps**: Check what changed in this release
+   - Backend feature/fix? → Bump `@apps/smart-pocket-backend` version
+   - Mobile feature/fix? → Bump `@apps/smart-pocket-mobile` version (package.json + app.config.js)
+   - Web feature/fix? → Bump `@apps/smart-pocket-web` version
+   - ❌ **Don't**: Bump all apps if only one changed
+3. ✅ **Bump affected app versions**: Example for web only:
+   ```bash
+   npm --prefix apps/smart-pocket-web version patch  # Only if web changed
+   # Don't bump backend or mobile if they didn't change
+   ```
+4. ✅ **Update mobile app.config.js** (if mobile changed): Edit `@apps/smart-pocket-mobile/app.config.js` line 75
    - Change: `version: '1.1.0'` → `version: '1.1.2'` (match package.json)
    - ⚠️ **This is easy to forget but critical for TestFlight builds**
-5. ✅ **Verify all versions match**:
+   - Only needed if mobile version was bumped
+5. ✅ **Verify version consistency**:
    ```bash
-   grep '"version"' apps/smart-pocket-backend/package.json
-   grep '"version"' apps/smart-pocket-mobile/package.json
-   grep "version:" apps/smart-pocket-mobile/app.config.js  # Should match!
+   # Check which apps have versions
+   grep '"version"' apps/*/package.json
+   grep "version:" apps/smart-pocket-mobile/app.config.js  # If mobile changed
+   # All bumped apps should have matching versions
    ```
 6. ✅ **Commit with Conventional Commits format**:
    ```bash
+   # Example: only web changed
+   git add apps/smart-pocket-web/package.json
+   git commit -m "chore: bump web app version to 1.1.2
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+   
+   # Or: multiple apps changed
    git add apps/smart-pocket-{backend,mobile}/package.json apps/smart-pocket-mobile/app.config.js
-   git commit -m "chore: bump version to 1.1.2
+   git commit -m "chore: bump backend and mobile versions to 1.1.2
 
 Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
    ```
