@@ -119,7 +119,7 @@ jobs:
           echo "Triggering prod-build.yml with tag: $TAG"
           gh api repos/${{ github.repository }}/dispatches \
             -f event_type='trigger-prod-build' \
-            -f client_payload='{"tag":"'$TAG'"}'
+            -F client_payload='{"tag":"'$TAG'"}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
