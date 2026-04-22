@@ -72,7 +72,7 @@ module.exports = {
   expo: {
     name: envConfig.name,
     slug: 'smart-pocket',
-    version: '1.1.5',
+    version: '1.1.6',
     orientation: 'portrait',
     icon: './assets/images/icon.png',
     scheme: envConfig.scheme,
