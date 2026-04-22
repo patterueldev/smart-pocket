@@ -25,7 +25,7 @@ Master script to build and push both Backend and Frontend images.
 ```
 
 **Options:**
-- `-v, --version VERSION` - Docker image version tag (default: `latest`)
+- `-v, --version VERSION` - Docker image version tag (default: `staging`)
 - `-r, --registry REGISTRY` - Container registry (default: `ghcr.io`)
 - `-o, --owner OWNER` - Registry owner (default: `patterueldev`)
 - `-n, --repo REPO` - Repository name (default: `smart-pocket`)
@@ -50,7 +50,7 @@ Build and push Backend release image only.
 ```
 
 **Options:**
-- `-v, --version VERSION` - Docker image version tag (default: `latest`)
+- `-v, --version VERSION` - Docker image version tag (default: `staging`)
 - `-r, --registry REGISTRY` - Container registry (default: `ghcr.io`)
 - `-o, --owner OWNER` - Registry owner (default: `patterueldev`)
 - `-n, --repo REPO` - Repository name (default: `smart-pocket`)
@@ -76,7 +76,7 @@ Build and push Frontend release image only.
 ```
 
 **Options:**
-- `-v, --version VERSION` - Docker image version tag (default: `latest`)
+- `-v, --version VERSION` - Docker image version tag (default: `staging`)
 - `-r, --registry REGISTRY` - Container registry (default: `ghcr.io`)
 - `-o, --owner OWNER` - Registry owner (default: `patterueldev`)
 - `-n, --repo REPO` - Repository name (default: `smart-pocket`)
@@ -150,14 +150,14 @@ REGISTRY=docker.io OWNER=myusername ./scripts/build-and-push-release.sh --versio
 
 ## Output Images
 
-Images are tagged with both version and `latest`:
+Images are tagged with both version and `staging`:
 
 ```bash
 ghcr.io/patterueldev/smart-pocket/backend:v1.0.0
-ghcr.io/patterueldev/smart-pocket/backend:latest
+ghcr.io/patterueldev/smart-pocket/backend:staging
 
 ghcr.io/patterueldev/smart-pocket/frontend:v1.0.0
-ghcr.io/patterueldev/smart-pocket/frontend:latest
+ghcr.io/patterueldev/smart-pocket/frontend:staging
 ```
 
 ## Build Details

@@ -12,7 +12,7 @@ NC='\033[0m' # No Color
 REGISTRY="${REGISTRY:-ghcr.io}"
 OWNER="${OWNER:-patterueldev}"
 REPO="${REPO:-smart-pocket}"
-VERSION="${VERSION:-latest}"
+VERSION="${VERSION:-staging}"
 BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 GIT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
@@ -24,7 +24,7 @@ Usage: $(basename "$0") [OPTIONS]
 Build and push Smart Pocket Frontend release Docker image to GHCR.
 
 OPTIONS:
-  -v, --version VERSION   Docker image version tag (default: latest)
+  -v, --version VERSION   Docker image version tag (default: staging)
   -r, --registry REGISTRY Container registry (default: ghcr.io)
   -o, --owner OWNER       Registry owner (default: patterueldev)
   -n, --repo REPO         Repository name (default: smart-pocket)
@@ -131,7 +131,7 @@ echo -e "${BLUE}Building Frontend image...${NC}"
 BUILD_CMD="docker build \
   -f infrastructure/docker/Frontend.release.dockerfile \
   -t ${IMAGE}:${VERSION} \
-  -t ${IMAGE}:latest \
+  -t ${IMAGE}:staging \
   --build-arg BUILD_DATE=${BUILD_DATE} \
   --build-arg GIT_SHA=${GIT_SHA} \
   apps/smart-pocket-web"
@@ -154,11 +154,11 @@ if [ "$NO_PUSH" = false ]; then
     echo -e "${BLUE}Pushing to ${REGISTRY}...${NC}"
     
     PUSH_VERSION_CMD="docker push ${IMAGE}:${VERSION}"
-    PUSH_LATEST_CMD="docker push ${IMAGE}:latest"
+    PUSH_STAGING_CMD="docker push ${IMAGE}:staging"
     
     if [ "$DRY_RUN" = true ]; then
         echo -e "${YELLOW}[DRY RUN]${NC} ${PUSH_VERSION_CMD}"
-        echo -e "${YELLOW}[DRY RUN]${NC} ${PUSH_LATEST_CMD}"
+        echo -e "${YELLOW}[DRY RUN]${NC} ${PUSH_STAGING_CMD}"
     else
         if eval "${PUSH_VERSION_CMD}"; then
             echo -e "${GREEN}✓ Pushed ${IMAGE}:${VERSION}${NC}"
@@ -167,10 +167,10 @@ if [ "$NO_PUSH" = false ]; then
             exit 1
         fi
 
-        if eval "${PUSH_LATEST_CMD}"; then
-            echo -e "${GREEN}✓ Pushed ${IMAGE}:latest${NC}"
+        if eval "${PUSH_STAGING_CMD}"; then
+            echo -e "${GREEN}✓ Pushed ${IMAGE}:staging${NC}"
         else
-            echo -e "${RED}✗ Failed to push ${IMAGE}:latest${NC}"
+            echo -e "${RED}✗ Failed to push ${IMAGE}:staging${NC}"
             exit 1
         fi
     fi
@@ -187,13 +187,13 @@ else
         echo ""
         echo "To push the image to ${REGISTRY}, run:"
         echo -e "  ${GREEN}docker push ${IMAGE}:${VERSION}${NC}"
-        echo -e "  ${GREEN}docker push ${IMAGE}:latest${NC}"
+        echo -e "  ${GREEN}docker push ${IMAGE}:staging${NC}"
     else
         echo -e "${GREEN}✓ Build and push complete!${NC}"
         echo ""
         echo "Image available at:"
         echo -e "  ${GREEN}${IMAGE}:${VERSION}${NC}"
-        echo -e "  ${GREEN}${IMAGE}:latest${NC}"
+        echo -e "  ${GREEN}${IMAGE}:staging${NC}"
     fi
 fi
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"

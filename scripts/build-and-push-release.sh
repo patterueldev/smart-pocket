@@ -12,7 +12,7 @@ NC='\033[0m' # No Color
 REGISTRY="${REGISTRY:-ghcr.io}"
 OWNER="${OWNER:-patterueldev}"
 REPO="${REPO:-smart-pocket}"
-VERSION="${VERSION:-latest}"
+VERSION="${VERSION:-staging}"
 BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 GIT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
@@ -29,7 +29,7 @@ TARGET (optional):
   all         Build and push both (default)
 
 OPTIONS:
-  -v, --version VERSION   Docker image version tag (default: latest)
+  -v, --version VERSION   Docker image version tag (default: staging)
   -r, --registry REGISTRY Container registry (default: ghcr.io)
   -o, --owner OWNER       Registry owner (default: patterueldev)
   -n, --repo REPO         Repository name (default: smart-pocket)
@@ -138,7 +138,7 @@ build_and_push() {
     local build_cmd="docker build \
       -f ${dockerfile} \
       -t ${image}:${VERSION} \
-      -t ${image}:latest \
+      -t ${image}:staging \
       --build-arg BUILD_DATE=${BUILD_DATE} \
       --build-arg GIT_SHA=${GIT_SHA} \
       ${context}"
@@ -156,11 +156,11 @@ build_and_push() {
 
     # Push commands
     local push_version_cmd="docker push ${image}:${VERSION}"
-    local push_latest_cmd="docker push ${image}:latest"
+    local push_staging_cmd="docker push ${image}:staging"
 
     if [ "$DRY_RUN" = true ]; then
         echo -e "${YELLOW}[DRY RUN]${NC} ${push_version_cmd}"
-        echo -e "${YELLOW}[DRY RUN]${NC} ${push_latest_cmd}"
+        echo -e "${YELLOW}[DRY RUN]${NC} ${push_staging_cmd}"
     else
         echo -e "${BLUE}Pushing ${service} to ${REGISTRY}...${NC}"
         if eval "${push_version_cmd}"; then
@@ -170,10 +170,10 @@ build_and_push() {
             return 1
         fi
 
-        if eval "${push_latest_cmd}"; then
-            echo -e "${GREEN}✓ Pushed ${image}:latest${NC}"
+        if eval "${push_staging_cmd}"; then
+            echo -e "${GREEN}✓ Pushed ${image}:staging${NC}"
         else
-            echo -e "${RED}✗ Failed to push ${image}:latest${NC}"
+            echo -e "${RED}✗ Failed to push ${image}:staging${NC}"
             return 1
         fi
     fi
@@ -225,11 +225,11 @@ else
     echo "Images ready:"
     if [ "$TARGET" = "backend" ] || [ "$TARGET" = "all" ]; then
         echo -e "  ${GREEN}${BACKEND_IMAGE}:${VERSION}${NC}"
-        echo -e "  ${GREEN}${BACKEND_IMAGE}:latest${NC}"
+        echo -e "  ${GREEN}${BACKEND_IMAGE}:staging${NC}"
     fi
     if [ "$TARGET" = "frontend" ] || [ "$TARGET" = "all" ]; then
         echo -e "  ${GREEN}${FRONTEND_IMAGE}:${VERSION}${NC}"
-        echo -e "  ${GREEN}${FRONTEND_IMAGE}:latest${NC}"
+        echo -e "  ${GREEN}${FRONTEND_IMAGE}:staging${NC}"
     fi
 fi
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
