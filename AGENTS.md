@@ -564,17 +564,63 @@ gh pr create --base main --head rc/v1.0.5
 
 ### Task: Create a Release Candidate & Deploy
 
-1. **Read**: `@cicd/AGENTS.md` (quick reference) or `@cicd/README.md` (detailed)
-2. **Bump Versions**:
+**⚠️ CRITICAL CHECKLIST - DO NOT SKIP ANY STEPS**
+
+#### Phase 1: Version Bumping (on develop branch)
+
+1. ✅ **Switch to develop**: `git checkout develop && git pull origin develop`
+2. ✅ **Bump backend version**: `npm --prefix apps/smart-pocket-backend version patch`
+3. ✅ **Bump mobile version**: `npm --prefix apps/smart-pocket-mobile version patch`
+4. ✅ **Update app.config.js**: Edit `@apps/smart-pocket-mobile/app.config.js` line 75
+   - Change: `version: '1.1.0'` → `version: '1.1.2'` (match package.json)
+   - ⚠️ **This is easy to forget but critical for TestFlight builds**
+5. ✅ **Verify all versions match**:
    ```bash
-   npm --prefix apps/smart-pocket-backend version patch
-   npm --prefix apps/smart-pocket-mobile version patch
+   grep '"version"' apps/smart-pocket-backend/package.json
+   grep '"version"' apps/smart-pocket-mobile/package.json
+   grep "version:" apps/smart-pocket-mobile/app.config.js  # Should match!
    ```
-3. **Create RC Branch**: `git checkout -b rc/v1.0.5 && git push origin rc/v1.0.5`
-4. **Monitor Builds**: Check GitHub Actions for test deployment (~60 min)
-5. **Test in Beta**: Test in TestFlight/beta environments
-6. **Create PR to Main**: `gh pr create --base main --head rc/v1.0.5`
-7. **Merge PR**: Triggers production deployment (~80 min)
+6. ✅ **Commit with Conventional Commits format**:
+   ```bash
+   git add apps/smart-pocket-{backend,mobile}/package.json apps/smart-pocket-mobile/app.config.js
+   git commit -m "chore: bump version to 1.1.2
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+   ```
+
+#### Phase 2: RC Branch Creation
+
+7. ✅ **Create RC branch**: `git checkout -b rc/v1.1.2 && git push origin rc/v1.1.2`
+8. ✅ **Monitor Builds**: Check GitHub Actions for test deployment (~60 minutes)
+   - Watch for Docker builds and TestFlight uploads
+9. ✅ **Test in Beta**: Test features in TestFlight/beta environments
+
+#### Phase 3: Production Release (when ready)
+
+10. ✅ **Create PR to main** with **PROPER TEMPLATE**:
+    ```bash
+    gh pr create --base main --head rc/v1.1.2
+    ```
+11. ✅ **PR TITLE**: Must follow **Conventional Commits** format
+    - Example: `feat(web): implement refresh token support`
+    - Valid types: feat, fix, refactor, perf, test, docs, style, chore, ci
+    - Format: `<type>(<scope>): <subject>`
+    - ❌ BAD: "update stuff", "fix things", "PR merge"
+12. ✅ **PR BODY**: Must follow **pull_request_template.md** sections:
+    - **Summary** - One or two sentences
+    - **Motivation** - Why this change? Link issues/context
+    - **Testing** - How was it tested? Steps and results
+    - **Release Notes** (optional) - Notes for release process
+    - ⚠️ **Do NOT use custom format** - Always use template
+13. ✅ **Merge PR**: Triggers production deployment (~80 minutes)
+    - Only `rc/*` branches can merge to main (enforced by workflow)
+    - RC branch auto-cleans after merge
+
+**Reference Docs**:
+- PR Standards: `@AGENTS.md` § Pull Request Standards (lines 444-477)
+- Mobile version rule: `@apps/smart-pocket-mobile/AGENTS.md` line 650
+- Template file: `@.github/pull_request_template.md`
+- Detailed CI/CD: `@cicd/README.md`
 
 ---
 
