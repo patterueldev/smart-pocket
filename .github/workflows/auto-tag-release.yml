@@ -3,30 +3,26 @@
 #
 # Purpose:
 #   Automatically creates and pushes a version tag when commits are pushed to main.
-#   Extracts versions from all apps and uses the maximum version for the tag.
-#   Explicitly triggers prod-build.yml via repository_dispatch (not via tag push).
+#   Extracts version from package.json to ensure consistent tagging.
 #
 # Trigger:
 #   - Push to main branch (which occurs after PR merge)
 #
 # What it does:
-#   1. Reads versions from all affected apps (backend, mobile, web)
-#   2. Determines the greatest version across all apps
-#   3. Creates annotated tag: v{max_version}
-#   4. Pushes tag to remote
-#   5. Explicitly triggers prod-build.yml with tag via repository_dispatch
+#   1. Reads version from apps/smart-pocket-backend/package.json
+#   2. Creates annotated tag: v{version}
+#   3. Pushes tag to remote
+#   4. Tag push triggers prod-build.yml workflow
 #
 # Related Workflows:
-#   • .github/workflows/prod-build.yml (triggered via repository_dispatch)
+#   • .github/workflows/prod-build.yml (triggered by tag push)
 #   • .github/workflows/pr-base-checks.yml (enforces rc/* or hotfix/* for main)
 #
 # Notes:
 #   - Runs on every push to main (should be idempotent - only creates tag if not exists)
-#   - Only apps with changes get version bumps (backend, mobile, web have independent versions)
+#   - Both apps (backend & mobile) must have the same version in package.json
 #   - Tag format: v1.0.0 (semantic versioning)
-#   - Tag uses the greatest version across all apps
 #   - Only creates tag if version doesn't already exist
-#   - Uses repository_dispatch instead of tag push event (avoids GITHUB_TOKEN security restriction)
 #
 name: Auto Tag Release
 
@@ -37,7 +33,6 @@ on:
 
 permissions:
   contents: write
-  actions: write
 
 jobs:
   create-tag:
@@ -94,7 +89,6 @@ jobs:
 
       - name: Create and push tag
         if: steps.tag-exists.outputs.tag-exists == 'false'
-        id: create-tag
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           COMMIT_SHA="${{ github.sha }}"
@@ -110,23 +104,10 @@ jobs:
           git push origin "$TAG"
           
           echo "Tag $TAG created and pushed"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
-      - name: Trigger production build
+      - name: Skip if tag exists
+        if: steps.tag-exists.outputs.tag-exists == 'true'
         run: |
           TAG="${{ steps.version.outputs.tag }}"
-          echo "Triggering prod-build.yml with tag: $TAG"
-          gh api repos/${{ github.repository }}/dispatches \
-            -f event_type='trigger-prod-build' \
-            -f 'client_payload[tag]='$TAG
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Tag creation status
-        run: |
-          if [ "${{ steps.tag-exists.outputs.tag-exists }}" == "true" ]; then
-            echo "Tag ${{ steps.version.outputs.tag }} already exists - skipping creation"
-            echo "Ensure version in package.json is bumped to create a new tag"
-          else
-            echo "Tag ${{ steps.version.outputs.tag }} created and pushed"
-          fi
+          echo "Tag $TAG already exists - skipping creation"
+          echo "Ensure version in package.json is bumped to create a new tag"
