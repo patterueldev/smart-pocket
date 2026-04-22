@@ -6,7 +6,7 @@
 #   Only tagged commits deploy to production.
 #
 # Trigger:
-#   - Push of tag matching v*.*.* (e.g., v1.0.0, v1.0.1)
+#   - Push of tag matching v*.*.* (e.g., v1.0.0, v1.0.1, v2.0.0)
 #
 # What it does:
 #   1. Detects what changed since the previous tag
