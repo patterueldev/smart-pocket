@@ -3,6 +3,7 @@ import { AccountBalance } from '../../interfaces/IActualBudgetService';
 import { SheetBalance } from '../../interfaces/IGoogleSheetsService';
 import {
   ISheetsSync,
+  ISheetsSyncAdmin,
   Draft,
   PendingChange,
   SyncExecutionResult,
@@ -27,8 +28,9 @@ function amountsEqual(a: string, b: string): boolean {
 /**
  * Sheets Sync Service - Orchestrates sync between Actual Budget and Google Sheets
  * Handles draft creation, comparison logic, and sync execution
+ * Implements both ISheetsSync (core) and ISheetsSyncAdmin (admin operations)
  */
-class SheetsSyncService implements ISheetsSync {
+class SheetsSyncService implements ISheetsSync, ISheetsSyncAdmin {
   private draftsStore: Map<string, Draft> = new Map();
   /**
    * Create a draft with pending changes

@@ -5,6 +5,7 @@
 
 import axios from 'axios';
 import type { ISheetsSync, SheetsSyncDraft, SheetsSyncResult } from './ISheetsSync';
+import type { IAuthProvider } from './IAuthProvider';
 import type { DraftResponse, SyncResponse } from './models';
 import { transformToDisplayModel } from './models';
 import { getApiBaseUrl } from '@/utils/config';
@@ -19,12 +20,13 @@ import { getApiBaseUrl } from '@/utils/config';
  * - Request/response transformation and validation
  * - Logging for debugging and monitoring
  * - Caching of draft ID and last sync time
+ * - Depends on IAuthProvider abstraction for authentication
  */
 export class RealSheetsSyncClient implements ISheetsSync {
   private readonly baseUrl = '/sheets-sync';
   private lastSyncTimeCache: string | null = null;
 
-  constructor(private getAccessToken: () => Promise<string>) {
+  constructor(private authProvider: IAuthProvider) {
     console.log('[RealSheetsSyncClient] Initialized');
   }
 
@@ -36,7 +38,7 @@ export class RealSheetsSyncClient implements ISheetsSync {
     try {
       console.log('[RealSheetsSyncClient] Creating sheets sync draft from backend');
 
-      const token = await this.getAccessToken();
+      const token = await this.authProvider.getAccessToken();
       const apiBaseUrl = getApiBaseUrl();
 
       const response = await axios.post<DraftResponse>(
@@ -93,7 +95,7 @@ export class RealSheetsSyncClient implements ISheetsSync {
     try {
       console.log('[RealSheetsSyncClient] Executing sheets sync from draft', { draftId });
 
-      const token = await this.getAccessToken();
+      const token = await this.authProvider.getAccessToken();
       const apiBaseUrl = getApiBaseUrl();
 
       const response = await axios.post<SyncResponse>(

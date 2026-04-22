@@ -14,7 +14,7 @@ jest.mock('@/utils/config', () => ({
 }));
 
 describe('RealSheetsSyncClient', () => {
-  const mockGetAccessToken = jest.fn(() => Promise.resolve('test-token'));
+  const mockAuthProvider = { getAccessToken: jest.fn(() => Promise.resolve('test-token')) };
   let client: RealSheetsSyncClient;
 
   const createAxiosError = (status: number, message: string, data?: any) => {
@@ -42,7 +42,7 @@ describe('RealSheetsSyncClient', () => {
     (axios.isAxiosError as any).mockImplementation((error: any) => {
       return error && error.isAxiosError === true;
     });
-    client = new RealSheetsSyncClient(mockGetAccessToken);
+    client = new RealSheetsSyncClient(mockAuthProvider);
   });
 
   const createMockDraftResponse = (): DraftResponse => ({

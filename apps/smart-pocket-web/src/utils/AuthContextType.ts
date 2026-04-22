@@ -1,6 +1,9 @@
 /**
  * AuthContext - Type definition
  * Separated for use in AuthProvider and hooks
+ * 
+ * Note: This type is compatible with IAuthProvider from sheets-sync service
+ * as it provides the getAccessToken() method required by RealSheetsSyncClient
  */
 
 export interface AuthContextType {

@@ -42,8 +42,6 @@ export default defineConfig({
       'Expires': '0',
     },
   },
-  // Disable build cache
-  cacheDir: null,
   // Optimize dependencies caching - disable for dev
   optimizeDeps: {
     noDiscovery: false,

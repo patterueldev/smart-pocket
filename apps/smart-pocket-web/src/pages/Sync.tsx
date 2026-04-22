@@ -36,10 +36,11 @@ export function Sync() {
   const authContext = useAuth();
 
   // Initialize real sheets sync client with auth context
-  // The client will use the access token from auth context for Bearer authentication
+  // The client will use the auth provider (authContext) for Bearer authentication
   const sheetsSync = useMemo(() => {
-    return new RealSheetsSyncClient(authContext.getAccessToken);
-  }, [authContext.getAccessToken]);
+    // authContext implements IAuthProvider by providing getAccessToken() method
+    return new RealSheetsSyncClient(authContext);
+  }, [authContext]);
 
   const { draft, loading, syncing, error, onRefresh, onSync } =
     useSheetsSync(sheetsSync);
