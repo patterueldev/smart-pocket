@@ -486,6 +486,7 @@ gh pr create --base main --head rc/v1.0.5
 - ✅ Test deployments on RC branches (Docker 'qa', TestFlight/beta)
 - ✅ Only `rc/*` branches can merge to main (enforced)
 - ✅ Backend & mobile always same version
+- ✅ When bumping mobile version: also update `@apps/smart-pocket-mobile/app.config.js` line 75
 - ✅ ~82% reduction in Actions minutes
 - ✅ Automatic RC branch cleanup after merge
 
