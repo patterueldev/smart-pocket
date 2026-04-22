@@ -186,19 +186,14 @@ class SheetsSyncController implements ISheetsSyncController {
         return;
       }
 
-      // Get accounts to sync from draft
-      const accountsToSync = draft.pendingChanges
-        .map((change: PendingChange) => {
-          const account = draft.allAccounts.find((a: any) => a.accountName === change.accountName);
-          return account;
-        })
-        .filter((account: any) => account !== undefined);
+      // Get accounts to sync from draft using service helper
+      const accountsToSync = this.sheetsSyncService.getAccountsForSync(draft);
 
       // Convert to SheetBalance format for update
-      const balancesToUpdate = accountsToSync.map((account: any) => ({
-        accountName: account!.accountName,
-        cleared: account!.cleared,
-        uncleared: account!.uncleared,
+      const balancesToUpdate = accountsToSync.map((account) => ({
+        accountName: account.accountName,
+        cleared: account.cleared,
+        uncleared: account.uncleared,
       }));
 
       // Update Google Sheets

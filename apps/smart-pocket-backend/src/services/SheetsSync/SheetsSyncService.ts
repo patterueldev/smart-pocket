@@ -32,6 +32,21 @@ function amountsEqual(a: string, b: string): boolean {
  */
 class SheetsSyncService implements ISheetsSync, ISheetsSyncAdmin {
   private draftsStore: Map<string, Draft> = new Map();
+
+  /**
+   * Extract accounts with pending changes from a draft
+   * Maps pending changes to their account details
+   * @param draft The draft containing pending changes and all accounts
+   * @returns Array of AccountBalance objects that have pending changes
+   */
+  getAccountsForSync(draft: Draft): AccountBalance[] {
+    return draft.pendingChanges
+      .map((change) => {
+        return draft.allAccounts.find((a) => a.accountName === change.accountName);
+      })
+      .filter((account): account is AccountBalance => account !== undefined);
+  }
+
   /**
    * Create a draft with pending changes
    * Compares Actual Budget balances with last synced values from Google Sheets
@@ -170,13 +185,8 @@ class SheetsSyncService implements ISheetsSync, ISheetsSyncAdmin {
     }
 
     try {
-      // Get accounts with pending changes
-      const accountsToSync = draft.pendingChanges
-        .map((change) => {
-          const account = draft.allAccounts.find((a) => a.accountName === change.accountName);
-          return account;
-        })
-        .filter((account): account is AccountBalance => account !== undefined);
+      // Get accounts with pending changes using helper method
+      const accountsToSync = this.getAccountsForSync(draft);
 
       logger.info('Syncing accounts to Google Sheets', {
         accountCount: accountsToSync.length,

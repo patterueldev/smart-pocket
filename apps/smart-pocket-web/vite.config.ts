@@ -21,13 +21,7 @@ export default defineConfig({
       '127.0.0.1',
       'smartpocket-dev.nicenature.space',
     ],
-    hmr: {
-      // Local development on localhost
-      host: 'localhost',
-      protocol: 'ws',
-      port: 5173,
-      path: '/@vite/ws',
-    },
+    hmr: getHmrConfig(),
     watch: {
       // Use polling for file watching in Docker volumes
       // Poll every 50ms to catch file changes quickly
@@ -47,4 +41,31 @@ export default defineConfig({
     noDiscovery: false,
   },
 })
+
+/**
+ * Get HMR (Hot Module Replacement) config based on environment
+ * Supports both local development and Docker environments
+ */
+function getHmrConfig() {
+  const isDocker = process.env.NODE_ENV === 'docker'
+  
+  if (isDocker) {
+    // In Docker, HMR connects to the hostname provided by the environment
+    // This allows hot reload from remote clients (not just localhost)
+    return {
+      host: process.env.VITE_HMR_HOST || 'smartpocket-dev.nicenature.space',
+      protocol: process.env.VITE_HMR_PROTOCOL || 'ws',
+      port: parseInt(process.env.VITE_HMR_PORT || '443'),
+      path: '/@vite/ws',
+    }
+  }
+
+  // Local development: use localhost
+  return {
+    host: 'localhost',
+    protocol: 'ws',
+    port: 5173,
+    path: '/@vite/ws',
+  }
+}
 

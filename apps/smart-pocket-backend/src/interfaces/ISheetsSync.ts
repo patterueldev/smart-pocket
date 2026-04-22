@@ -53,6 +53,12 @@ export interface ISheetsSync {
   getDraft(draftId: string): Promise<Draft | null>;
 
   executeSyncFromDraft(draftId: string): Promise<SyncExecutionResult>;
+
+  /**
+   * Get accounts with pending changes from a draft
+   * Used by controller to convert to sheet format before updating
+   */
+  getAccountsForSync(draft: Draft): AccountBalance[];
 }
 
 /**

@@ -218,10 +218,11 @@ async function ensureBudgetLoaded(config: ActualBudgetConfig): Promise<void> {
     );
   }
 
-  // Use the first (and likely only) budget directory
-  const budgetId = budgetDirs[0];
-  logger.debug('Loading downloaded budget', { syncId, budgetId, cacheDir });
-  await api.loadBudget(budgetId);
+  // Use the first (and likely only) budget directory name as fallback
+  // Note: This is a directory name, not the sync ID, due to metadata.json corruption
+  const budgetDirName = budgetDirs[0];
+  logger.debug('Loading downloaded budget from directory', { syncId, budgetDirName, cacheDir });
+  await api.loadBudget(budgetDirName);
   await api.sync();
 }
 
