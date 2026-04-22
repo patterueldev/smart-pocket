@@ -17,19 +17,28 @@ const logger = container.get<Logger>('logger');
 // Instantiate controller with injected dependencies
 const authController: IAuthController = new AuthController(jwtService, logger);
 
+// Error handling wrapper for async handlers
+const asyncHandler = (fn: (req: any, res: any) => Promise<void> | void) => (
+  req: any,
+  res: any,
+  next: any
+) => {
+  Promise.resolve(fn(req, res)).catch(next);
+};
+
 // POST /auth/setup - Exchange API key for JWT tokens
-router.post('/setup', validateSetupRequest, (req: Request, res: Response) => {
+router.post('/setup', validateSetupRequest, asyncHandler((req: Request, res: Response) => {
   authController.setup(req, res);
-});
+}));
 
 // POST /auth/refresh - Refresh access token using refresh token
-router.post('/refresh', validateRefreshRequest, (req: Request, res: Response) => {
+router.post('/refresh', validateRefreshRequest, asyncHandler((req: Request, res: Response) => {
   authController.refresh(req, res);
-});
+}));
 
 // GET /auth/test - Protected endpoint for testing authentication
-router.get('/test', authMiddleware, (req: Request, res: Response) => {
+router.get('/test', authMiddleware, asyncHandler((req: Request, res: Response) => {
   authController.authTest(req, res);
-});
+}));
 
 export default router;

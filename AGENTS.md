@@ -94,7 +94,7 @@ Return to AGENTS.md for quick commands/conventions
 
 ### 🐳 Docker & Infrastructure
 - **Locations**: 
-  - `@docker/` - Dockerfile definitions
+  - `@infrastructure/docker/` - Dockerfile definitions
   - `@docker-compose.yml` - Service orchestration
 - **Purpose**: Containerization and local development environment
 - **Common Tasks**:
@@ -104,7 +104,7 @@ Return to AGENTS.md for quick commands/conventions
   - Setting up hot reload
   - Debugging container issues
 - **Guides**:
-  - `@docker/DOCKER_GUIDE.md` - Docker documentation
+  - `@infrastructure/docker/DOCKER_GUIDE.md` - Docker documentation
   - `@README.md` - Docker Compose setup
 
 ### 🚀 CI/CD & Release Workflows
@@ -150,10 +150,13 @@ smart-pocket/
 │   ├── AGENTS.md                  ← Quick reference guide
 │   └── README.md                  ← Comprehensive workflow docs
 │
-├── docker/                        ← 🐳 Container definitions
-│   ├── Backend.dev.dockerfile     ← Development container
-│   ├── Backend.prod.dockerfile    ← Production container
-│   └── DOCKER_GUIDE.md            ← Docker documentation
+├── infrastructure/                ← 🏗️ Infrastructure files
+│   └── docker/                    ← 🐳 Container definitions
+│       ├── Backend.dev.dockerfile     ← Development container
+│       ├── Backend.prod.dockerfile    ← Production container
+│       ├── Backend.test.dockerfile    ← Test container
+│       ├── Web.dev.dockerfile         ← Web dev container
+│       └── DOCKER_GUIDE.md            ← Docker documentation
 │
 ├── .github/workflows/             ← 🚀 GitHub Actions workflows
 │   ├── pr-base-checks.yml         ← Enforce rc/* only to main
@@ -320,7 +323,7 @@ w                      # Open in web browser
 
 ## 🐳 Docker & Infrastructure Guide
 
-**See**: `@docker/DOCKER_GUIDE.md` for complete Docker documentation
+**See**: `@infrastructure/docker/DOCKER_GUIDE.md` for complete Docker documentation
 
 ### Quick Reference - Docker
 
@@ -373,7 +376,7 @@ docker exec -it smart-pocket-backend sh
 - Runs optimized build output
 
 **Modifying Containers**:
-- Edit Dockerfiles in `@docker/`
+- Edit Dockerfiles in `@infrastructure/docker/`
 - Edit service configuration in `@docker-compose.yml`
 - Rebuild: `docker-compose build --no-cache`
 - Test: `docker-compose up`
@@ -415,7 +418,7 @@ docker-compose up
 | `@cicd/AGENTS.md` | **CI/CD quick reference** | **All developers** |
 | `@cicd/README.md` | **Complete CI/CD workflows** | **DevOps & release managers** |
 | `@README.md` | Project setup & Docker Compose | Everyone |
-| `@docker/DOCKER_GUIDE.md` | Docker technical details | DevOps & Docker users |
+| `@infrastructure/docker/DOCKER_GUIDE.md` | Docker technical details | DevOps & Docker users |
 | `@apps/smart-pocket-backend/README.md` | Backend API documentation | API consumers |
 | `@apps/smart-pocket-mobile/README.md` | Mobile setup | Mobile developers |
 
@@ -429,12 +432,12 @@ docker-compose up
 - Deploy to production → `@cicd/README.md`
 - Troubleshoot CI/CD failures → `@cicd/README.md`
 - Add a new backend endpoint → `@apps/smart-pocket-backend/AGENTS.md`
-- Debug Docker issues → `@docker/DOCKER_GUIDE.md`
+- Debug Docker issues → `@infrastructure/docker/DOCKER_GUIDE.md`
 - Understand backend architecture → `@apps/smart-pocket-backend/AGENTS.md`
 - Build a mobile feature → `@apps/smart-pocket-mobile/README.md`
 - Set up Cloudflare Tunnel → `@README.md`
-- Fix failing container → `@docker/DOCKER_GUIDE.md`
-- Enable hot reload → `@docker/DOCKER_GUIDE.md`
+- Fix failing container → `@infrastructure/docker/DOCKER_GUIDE.md`
+- Enable hot reload → `@infrastructure/docker/DOCKER_GUIDE.md`
 
 ---
 
@@ -501,15 +504,15 @@ gh pr create --base main --head rc/v1.0.5
 
 ### Task: Modify Development Container
 
-1. **Read**: `@docker/DOCKER_GUIDE.md`
-2. **Edit**: `@docker/Backend.dev.dockerfile`
+1. **Read**: `@infrastructure/docker/DOCKER_GUIDE.md`
+2. **Edit**: `@infrastructure/docker/Backend.dev.dockerfile`
 3. **Update**: `@docker-compose.yml` if needed
 4. **Rebuild**: `docker-compose build --no-cache`
 5. **Test**: `docker-compose up`
 
 ### Task: Debug Container Issues
 
-1. **Read**: `@docker/DOCKER_GUIDE.md` (Troubleshooting section)
+1. **Read**: `@infrastructure/docker/DOCKER_GUIDE.md` (Troubleshooting section)
 2. **Check Logs**: `docker-compose logs smart-pocket-backend`
 3. **Access Container**: `docker exec -it smart-pocket-backend sh`
 4. **Verify Volumes**: Check `docker-compose.yml` volume mounts
@@ -638,7 +641,7 @@ If you're an AI agent making changes:
 |----------|------|
 | Backend API Guide | `@apps/smart-pocket-backend/AGENTS.md` |
 | Mobile Development | `@apps/smart-pocket-mobile/README.md` |
-| Docker Documentation | `@docker/DOCKER_GUIDE.md` |
+| Docker Documentation | `@infrastructure/docker/DOCKER_GUIDE.md` |
 | Project Setup | `@README.md` |
 | Docker Compose Config | `@docker-compose.yml` |
 | Environment Template | `@.env.example` |
@@ -658,7 +661,7 @@ If you're an AI agent making changes:
 **Next Steps**:
 - Starting development? → Read `@README.md`
 - Modifying backend? → Read `@apps/smart-pocket-backend/AGENTS.md`
-- Working with Docker? → Read `@docker/DOCKER_GUIDE.md`
+- Working with Docker? → Read `@infrastructure/docker/DOCKER_GUIDE.md`
 - Developing mobile? → Read `@apps/smart-pocket-mobile/README.md`
 
 ---

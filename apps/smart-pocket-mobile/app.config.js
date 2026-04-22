@@ -28,7 +28,7 @@ const getConfig = () => {
       android: {
         package: 'dev.patteruel.smartpocket.dev',
       },
-      apiBaseUrl: 'https://smartpocket-dev.nicenature.space',
+      apiBaseUrl: 'https://smartpocketapi-dev.nicenature.space',
     },
     qa: {
       name: 'Smart Pocket QA',

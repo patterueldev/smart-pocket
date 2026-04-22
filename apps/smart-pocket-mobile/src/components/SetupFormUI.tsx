@@ -85,7 +85,7 @@ export function SetupFormUI({
           </ThemedText>
           <TextInput
             style={FORM_STYLES.input}
-            placeholder="Enter your API key"
+            placeholder="Enter API key"
             placeholderTextColor="#999"
             value={apiKey}
             onChangeText={handleApiKeyChange}

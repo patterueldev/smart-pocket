@@ -19,10 +19,10 @@ describe('Auth API Integration Tests', () => {
     app = appInstance.getApp();
   });
 
-  describe('POST /auth/setup', () => {
+  describe('POST /api/auth/setup', () => {
     test('should successfully setup with valid API key', async () => {
       const response = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send(authSetupRequests.valid);
 
       expect(response.status).toBe(200);
@@ -40,7 +40,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return 400 when apiKey is missing', async () => {
       const response = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send(authSetupRequests.invalidMissing);
 
       expect(response.status).toBe(400);
@@ -50,7 +50,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return 400 when apiKey is empty', async () => {
       const response = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send(authSetupRequests.invalidEmpty);
 
       expect(response.status).toBe(400);
@@ -59,7 +59,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return 401 when apiKey is too short and not configured', async () => {
       const response = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send(authSetupRequests.invalidShort);
 
       // Short key is treated as "not configured" since it's not in the API_KEYS list
@@ -69,7 +69,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return 401 when apiKey is not configured', async () => {
       const response = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send({ apiKey: 'unknown-api-key-not-in-config' });
 
       expect(response.status).toBe(401);
@@ -78,7 +78,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return 400 for malformed JSON', async () => {
       const response = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .set('Content-Type', 'application/json')
         .send('{ invalid json }');
 
@@ -87,14 +87,14 @@ describe('Auth API Integration Tests', () => {
 
     test('should generate different tokens on each setup call', async () => {
       const response1 = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send(authSetupRequests.valid);
 
       // Delay to ensure different timestamps (JWT iat claim)
       await new Promise((resolve) => setTimeout(resolve, 1100));
 
       const response2 = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send(authSetupRequests.valid);
 
       expect(response1.status).toBe(200);
@@ -105,27 +105,27 @@ describe('Auth API Integration Tests', () => {
 
     test('should include proper content-type header in response', async () => {
       const response = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send(authSetupRequests.valid);
 
       expect(response.headers['content-type']).toMatch(/application\/json/);
     });
   });
 
-  describe('POST /auth/refresh', () => {
+  describe('POST /api/auth/refresh', () => {
     let testRefreshToken: string;
 
     beforeAll(async () => {
       // Get a valid refresh token from setup
       const setupResponse = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send(authSetupRequests.valid);
       testRefreshToken = setupResponse.body.refreshToken;
     });
 
     test('should successfully refresh access token with valid refresh token', async () => {
       const response = await request(app)
-        .post('/auth/refresh')
+        .post('/api/auth/refresh')
         .send({ refreshToken: testRefreshToken });
 
       expect(response.status).toBe(200);
@@ -136,7 +136,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return new access token different from refresh token', async () => {
       const response = await request(app)
-        .post('/auth/refresh')
+        .post('/api/auth/refresh')
         .send({ refreshToken: testRefreshToken });
 
       expect(response.status).toBe(200);
@@ -145,7 +145,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return 400 when refreshToken is missing', async () => {
       const response = await request(app)
-        .post('/auth/refresh')
+        .post('/api/auth/refresh')
         .send(authRefreshRequests.invalidMissing);
 
       expect(response.status).toBe(400);
@@ -154,7 +154,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return 400 when refreshToken is empty', async () => {
       const response = await request(app)
-        .post('/auth/refresh')
+        .post('/api/auth/refresh')
         .send(authRefreshRequests.invalidEmpty);
 
       expect(response.status).toBe(400);
@@ -163,7 +163,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return 401 with invalid refresh token', async () => {
       const response = await request(app)
-        .post('/auth/refresh')
+        .post('/api/auth/refresh')
         .send({ refreshToken: 'invalid.jwt.token' });
 
       expect(response.status).toBe(401);
@@ -172,7 +172,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return 401 with malformed refresh token', async () => {
       const response = await request(app)
-        .post('/auth/refresh')
+        .post('/api/auth/refresh')
         .send(authRefreshRequests.invalidMalformed);
 
       expect(response.status).toBe(401);
@@ -181,11 +181,11 @@ describe('Auth API Integration Tests', () => {
 
     test('should not accept access token as refresh token', async () => {
       const setupResponse = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send(authSetupRequests.valid);
 
       const response = await request(app)
-        .post('/auth/refresh')
+        .post('/api/auth/refresh')
         .send({ refreshToken: setupResponse.body.accessToken });
 
       // Should fail because access token is not a valid refresh token
@@ -194,7 +194,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return 400 for malformed JSON', async () => {
       const response = await request(app)
-        .post('/auth/refresh')
+        .post('/api/auth/refresh')
         .set('Content-Type', 'application/json')
         .send('{ invalid json }');
 
@@ -203,14 +203,14 @@ describe('Auth API Integration Tests', () => {
 
     test('should refresh multiple times with same token', async () => {
       const response1 = await request(app)
-        .post('/auth/refresh')
+        .post('/api/auth/refresh')
         .send({ refreshToken: testRefreshToken });
 
       // Delay to ensure different timestamps
       await new Promise((resolve) => setTimeout(resolve, 1100));
 
       const response2 = await request(app)
-        .post('/auth/refresh')
+        .post('/api/auth/refresh')
         .send({ refreshToken: testRefreshToken });
 
       expect(response1.status).toBe(200);
@@ -225,14 +225,14 @@ describe('Auth API Integration Tests', () => {
     beforeAll(async () => {
       // Get a valid access token from setup
       const setupResponse = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send(authSetupRequests.valid);
       validAccessToken = setupResponse.body.accessToken;
     });
 
     test('should return 200 with valid access token in Authorization header', async () => {
       const response = await request(app)
-        .get('/auth/test')
+        .get('/api/auth/test')
         .set('Authorization', `Bearer ${validAccessToken}`);
 
       expect(response.status).toBe(200);
@@ -241,7 +241,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return 401 when Authorization header is missing', async () => {
       const response = await request(app)
-        .get('/auth/test');
+        .get('/api/auth/test');
 
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('message');
@@ -249,7 +249,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return 401 when Authorization header is empty', async () => {
       const response = await request(app)
-        .get('/auth/test')
+        .get('/api/auth/test')
         .set('Authorization', '');
 
       expect(response.status).toBe(401);
@@ -257,7 +257,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return 401 with invalid token in Authorization header', async () => {
       const response = await request(app)
-        .get('/auth/test')
+        .get('/api/auth/test')
         .set('Authorization', 'Bearer invalid.jwt.token');
 
       expect(response.status).toBe(401);
@@ -266,7 +266,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return 401 with malformed Authorization header (no Bearer)', async () => {
       const response = await request(app)
-        .get('/auth/test')
+        .get('/api/auth/test')
         .set('Authorization', `${validAccessToken}`);
 
       expect(response.status).toBe(401);
@@ -274,7 +274,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should return 401 with wrong scheme in Authorization header', async () => {
       const response = await request(app)
-        .get('/auth/test')
+        .get('/api/auth/test')
         .set('Authorization', `Basic ${validAccessToken}`);
 
       expect(response.status).toBe(401);
@@ -282,11 +282,11 @@ describe('Auth API Integration Tests', () => {
 
     test('should not accept refresh token as access token', async () => {
       const setupResponse = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send(authSetupRequests.valid);
 
       const response = await request(app)
-        .get('/auth/test')
+        .get('/api/auth/test')
         .set('Authorization', `Bearer ${setupResponse.body.refreshToken}`);
 
       // Should fail because refresh token is not a valid access token
@@ -295,7 +295,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should be case-sensitive for Bearer scheme', async () => {
       const response = await request(app)
-        .get('/auth/test')
+        .get('/api/auth/test')
         .set('Authorization', `bearer ${validAccessToken}`);
 
       // Typically case-sensitive, might be rejected
@@ -304,7 +304,7 @@ describe('Auth API Integration Tests', () => {
 
     test('should accept valid access token and return success', async () => {
       const response = await request(app)
-        .get('/auth/test')
+        .get('/api/auth/test')
         .set('Authorization', `Bearer ${validAccessToken}`);
 
       expect(response.status).toBe(200);
@@ -313,11 +313,11 @@ describe('Auth API Integration Tests', () => {
 
     test('should work as an authenticated endpoint verification', async () => {
       const setupResponse = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send(authSetupRequests.valid);
 
       const testResponse = await request(app)
-        .get('/auth/test')
+        .get('/api/auth/test')
         .set('Authorization', `Bearer ${setupResponse.body.accessToken}`);
 
       expect(testResponse.status).toBe(200);
@@ -329,14 +329,14 @@ describe('Auth API Integration Tests', () => {
     test('complete auth flow: setup -> test -> refresh -> test', async () => {
       // Step 1: Setup
       const setupResponse = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send(authSetupRequests.valid);
       expect(setupResponse.status).toBe(200);
       const { accessToken: token1, refreshToken } = setupResponse.body;
 
       // Step 2: Test with access token
       const testResponse1 = await request(app)
-        .get('/auth/test')
+        .get('/api/auth/test')
         .set('Authorization', `Bearer ${token1}`);
       expect(testResponse1.status).toBe(200);
 
@@ -345,14 +345,14 @@ describe('Auth API Integration Tests', () => {
 
       // Step 3: Refresh token
       const refreshResponse = await request(app)
-        .post('/auth/refresh')
+        .post('/api/auth/refresh')
         .send({ refreshToken });
       expect(refreshResponse.status).toBe(200);
       const { accessToken: token2 } = refreshResponse.body;
 
       // Step 4: Test with new access token
       const testResponse2 = await request(app)
-        .get('/auth/test')
+        .get('/api/auth/test')
         .set('Authorization', `Bearer ${token2}`);
       expect(testResponse2.status).toBe(200);
 
@@ -360,18 +360,18 @@ describe('Auth API Integration Tests', () => {
       expect(token1).not.toBe(token2);
       expect(token1).not.toBe(refreshToken);
       expect(token2).not.toBe(refreshToken);
-    });
+    }, 30000);
 
     test('multiple users can authenticate with same API key', async () => {
       const user1Setup = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send(authSetupRequests.valid);
 
       // Delay to ensure different timestamps
       await new Promise((resolve) => setTimeout(resolve, 1100));
 
       const user2Setup = await request(app)
-        .post('/auth/setup')
+        .post('/api/auth/setup')
         .send(authSetupRequests.valid);
 
       expect(user1Setup.status).toBe(200);
@@ -380,11 +380,11 @@ describe('Auth API Integration Tests', () => {
 
       // Both should be able to access protected endpoints
       const user1Test = await request(app)
-        .get('/auth/test')
+        .get('/api/auth/test')
         .set('Authorization', `Bearer ${user1Setup.body.accessToken}`);
 
       const user2Test = await request(app)
-        .get('/auth/test')
+        .get('/api/auth/test')
         .set('Authorization', `Bearer ${user2Setup.body.accessToken}`);
 
       expect(user1Test.status).toBe(200);

@@ -64,7 +64,7 @@ npm test -- --watch
 
 ```bash
 # Build test image
-docker build -f docker/Backend.test.dockerfile -t smart-pocket-backend-test:latest apps/smart-pocket-backend
+docker build -f infrastructure/docker/Backend.test.dockerfile -t smart-pocket-backend-test:latest apps/smart-pocket-backend
 
 # Run tests in container
 docker run --rm smart-pocket-backend-test:latest

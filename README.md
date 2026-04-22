@@ -244,10 +244,13 @@ nano apps/smart-pocket-backend/src/controllers/healthController.ts
 smart-pocket/
 ├── docker-compose.yml              # Compose configuration
 ├── .env.example                    # Environment variables template
-├── docker/
-│   ├── Backend.dev.dockerfile      # Development image
-│   ├── Backend.prod.dockerfile     # Production image
-│   └── DOCKER_GUIDE.md             # Detailed Docker guide
+├── infrastructure/
+│   └── docker/
+│       ├── Backend.dev.dockerfile      # Development image
+│       ├── Backend.prod.dockerfile     # Production image
+│       ├── Backend.test.dockerfile     # Testing image
+│       ├── Web.dev.dockerfile          # Web dev image
+│       └── DOCKER_GUIDE.md             # Detailed Docker guide
 ├── apps/
 │   └── smart-pocket-backend/
 │       ├── src/                    # Source code (TypeScript)
@@ -472,7 +475,7 @@ For production, use the optimized production image:
 ```bash
 # Build production image
 docker build \
-  -f docker/Backend.prod.dockerfile \
+  -f infrastructure/docker/Backend.prod.dockerfile \
   -t smart-pocket-backend:latest \
   ./apps/smart-pocket-backend
 
@@ -484,7 +487,7 @@ docker run \
   smart-pocket-backend:latest
 ```
 
-See `docker/DOCKER_GUIDE.md` for more production details.
+See `infrastructure/docker/DOCKER_GUIDE.md` for more production details.
 
 ---
 
@@ -501,7 +504,7 @@ See `docker/DOCKER_GUIDE.md` for more production details.
 ## Documentation
 
 - **Backend AGENTS.md**: `apps/smart-pocket-backend/AGENTS.md` - Developer guide
-- **Docker Guide**: `docker/DOCKER_GUIDE.md` - Detailed Docker documentation
+- **Docker Guide**: `infrastructure/docker/DOCKER_GUIDE.md` - Detailed Docker documentation
 - **Backend README**: `apps/smart-pocket-backend/README.md` - Backend info
 
 ---
@@ -510,7 +513,7 @@ See `docker/DOCKER_GUIDE.md` for more production details.
 
 For detailed information:
 - Backend setup: See `apps/smart-pocket-backend/README.md`
-- Docker setup: See `docker/DOCKER_GUIDE.md`
+- Docker setup: See `infrastructure/docker/DOCKER_GUIDE.md`
 - Development: See `apps/smart-pocket-backend/AGENTS.md`
 - This project: See `FAAS.md`
 

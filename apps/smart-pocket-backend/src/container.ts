@@ -1,6 +1,6 @@
 import { IJwtService } from './interfaces';
 import { JwtService } from './services/JwtService';
-import { Logger } from './utils/logger';
+import { Logger, ILogger } from './utils/logger';
 import ActualBudgetService from './services/ActualBudgetService';
 import GoogleSheetsService from './services/GoogleSheetsService';
 import SheetsSyncService from './services/SheetsSync/SheetsSyncService';
@@ -100,7 +100,7 @@ function initializeServices(): void {
   container.registerSingleton<IJwtService>('jwtService', () => new JwtService());
 
   // Register Logger as singleton (uses class constructor)
-  container.registerSingleton('logger', () => new Logger());
+  container.registerSingleton<ILogger>('logger', () => new Logger());
 
   // Register Actual Budget Service as singleton
   container.registerSingleton<IActualBudgetService>(
@@ -122,9 +122,10 @@ function initializeServices(): void {
     'sheetsSyncController',
     () =>
       new SheetsSyncController(
-        container.get<ActualBudgetService>('actualBudgetService'),
-        container.get<GoogleSheetsService>('googleSheetsService'),
-        container.get<SheetsSyncService>('sheetsSyncService')
+        container.get<IActualBudgetService>('actualBudgetService'),
+        container.get<IGoogleSheetsService>('googleSheetsService'),
+        container.get<ISheetsSync>('sheetsSyncService'),
+        container.get<Logger>('logger')
       )
   );
 }

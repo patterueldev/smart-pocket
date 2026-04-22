@@ -1,0 +1,42 @@
+services:
+  smart-pocket-backend:
+    image: ${BACKEND_IMAGE:-ghcr.io/patterueldev/smart-pocket/backend:staging}
+    container_name: smart-pocket-backend
+    ports:
+      - "3000:80"
+    volumes:
+      - ./keys:/data/keys:ro
+    environment:
+      - NODE_ENV=production
+      - API_KEYS=${API_KEYS}
+      - ACTUAL_BUDGET_SERVER_URL=${ACTUAL_BUDGET_SERVER_URL}
+      - ACTUAL_BUDGET_PASSWORD=${ACTUAL_BUDGET_PASSWORD}
+      - ACTUAL_BUDGET_ID=${ACTUAL_BUDGET_ID}
+      - GOOGLE_SHEET_ID=${GOOGLE_SHEET_ID:-}
+      - GOOGLE_SHEET_NAME=${GOOGLE_SHEET_NAME:-}
+    restart: unless-stopped
+
+  smart-pocket-frontend:
+    image: ${FRONTEND_IMAGE:-ghcr.io/patterueldev/smart-pocket/frontend:staging}
+    container_name: smart-pocket-frontend
+    ports:
+      - "5173:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    depends_on:
+      - smart-pocket-backend
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    command: 
+      - tunnel
+      - --no-autoupdate
+      - run
+      - --token
+      - ${CLOUDFLARED_TOKEN}
+    restart: unless-stopped
+    depends_on:
+      - smart-pocket-backend
+      - smart-pocket-frontend

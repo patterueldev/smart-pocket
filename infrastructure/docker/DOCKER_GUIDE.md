@@ -1,10 +1,14 @@
-# Docker Development Guide
+# Docker Development & Release Guide
 
 ## Overview
 
-The Smart Pocket Backend includes Docker support for both development and production environments.
+Smart Pocket includes Docker support for development and release (production) environments.
 
-### Development Container (`Backend.dev.dockerfile`)
+## Available Dockerfiles
+
+### Development Containers
+
+#### Backend.dev.dockerfile
 - **Purpose**: Local development with hot reload
 - **Base Image**: Node.js 24 Alpine
 - **Features**:
@@ -13,14 +17,48 @@ The Smart Pocket Backend includes Docker support for both development and produc
   - Volume mounts for live code sync
   - Development dependencies installed
 
-### Production Container (`Backend.prod.dockerfile`)
-- **Purpose**: Optimized production deployment
+#### Frontend.dev.dockerfile
+- **Purpose**: Frontend development with Vite HMR
+- **Base Image**: Node.js 24 Alpine
+- **Features**:
+  - Vite dev server with Hot Module Replacement
+  - Watch mode for file changes
+  - Volume mounts for live code sync
+
+### Release (Production) Containers
+
+#### Backend.release.dockerfile
+- **Purpose**: Optimized production deployment for backend
 - **Base Image**: Node.js 24 Alpine (multi-stage build)
 - **Features**:
-  - Minimal image size
+  - Compiled TypeScript (dist/)
   - Production dependencies only
-  - Non-root user for security
+  - nginx reverse proxy on port 80
+  - supervisor managing Node.js (port 3001) and nginx
   - Health checks included
+
+#### Frontend.release.dockerfile
+- **Purpose**: Optimized production deployment for frontend
+- **Base Image**: nginx Alpine
+- **Features**:
+  - Static nginx server (no Node.js runtime)
+  - SPA routing (all requests → index.html)
+  - Asset caching (1 year for static files)
+  - Minimal image size
+  - Health checks included
+
+#### Web.release.dockerfile (Experimental)
+- **Purpose**: Unified production build combining backend + frontend
+- **Use Case**: Single-container deployment with both services
+- **Features**:
+  - Multi-stage build for backend and frontend
+  - supervisor managing both Node.js and nginx
+  - nginx reverse proxy:
+    - `/api/*` → Node.js backend (3001)
+    - `/ui/*` and `/*` → frontend static files
+  - Shared single port (80)
+  - Health checks included
+- **Note**: Experimental. Use separate Backend/Frontend dockerfiles if this doesn't work well
 
 ## Development Workflow
 
@@ -54,7 +92,7 @@ docker-compose down
 Build development image:
 ```bash
 docker build \
-  -f docker/Backend.dev.dockerfile \
+  -f infrastructure/docker/Backend.dev.dockerfile \
   -t smart-pocket-backend:dev \
   ./apps/smart-pocket-backend
 ```
@@ -92,7 +130,7 @@ volumes:
 smart-pocket-backend:
   build: 
     context: ./apps/smart-pocket-backend
-    dockerfile: ../../docker/Backend.dev.dockerfile
+    dockerfile: ../../infrastructure/docker/Backend.dev.dockerfile
   container_name: smart-pocket-backend
   ports:
     - "3000:3000"                              # Expose port
@@ -147,7 +185,7 @@ docker-compose logs --tail=100 smart-pocket-backend
 
 ```bash
 docker build \
-  -f docker/Backend.prod.dockerfile \
+  -f infrastructure/docker/Backend.release.dockerfile \
   -t smart-pocket-backend:latest \
   ./apps/smart-pocket-backend
 ```
@@ -171,6 +209,108 @@ docker run \
 - **Non-root User**: Runs as nodejs user for security
 - **Minimal Size**: Alpine Linux + production deps only
 - **Auto-restart**: `--restart always` for uptime
+
+## Release Build Strategies
+
+### Strategy 1: Separate Backend + Frontend (Recommended)
+
+Build and deploy as two separate services:
+
+**Backend Release:**
+```bash
+docker build \
+  -f infrastructure/docker/Backend.release.dockerfile \
+  -t smart-pocket-api:latest \
+  ./apps/smart-pocket-backend
+```
+
+**Frontend Release:**
+```bash
+docker build \
+  -f infrastructure/docker/Frontend.release.dockerfile \
+  -t smart-pocket-web:latest \
+  ./apps/smart-pocket-web
+```
+
+**Benefits:**
+- ✅ Independent scaling of backend and frontend
+- ✅ Separate deployments for different update cycles
+- ✅ Backend and frontend on different domains
+- ✅ Better resource isolation
+- ✅ Easier debugging and troubleshooting
+
+### Strategy 2: Unified Web Build (Experimental)
+
+Combine backend and frontend in a single container with nginx reverse proxy:
+
+```bash
+docker build \
+  -f infrastructure/docker/Web.release.dockerfile \
+  -t smart-pocket-web:unified \
+  ./
+```
+
+**Features:**
+- Single-container deployment
+- nginx reverse proxy routes:
+  - `/api/*` → Node.js backend (port 3001)
+  - `/ui/*` and `/*` → frontend static files
+- supervisor manages both services
+- Single port (80) exposed
+
+**Benefits:**
+- ✅ Single container to manage
+- ✅ Simpler deployment
+- ✅ No cross-origin issues (same origin for API and UI)
+
+**Tradeoffs:**
+- ⚠️ Can't scale backend and frontend independently
+- ⚠️ Backend and frontend updates require rebuilding entire image
+- ⚠️ Both services must fit in one container
+- ⚠️ Harder to debug when either service has issues
+- ⚠️ Experimental - may have issues
+
+**When to Use Unified Build:**
+- Single server deployment
+- Cost-conscious (minimize container count)
+- Don't need independent scaling
+- Deployment simplicity is priority
+
+**When to Use Separate Builds:**
+- Multiple servers / Kubernetes
+- Need independent scaling
+- Frequent updates to either service
+- Want clear separation of concerns
+- Production deployments
+
+## Frontend Release Dockerfile Details
+
+The `Frontend.release.dockerfile`:
+- **Base**: nginx:latest-alpine
+- **Optimization**: SPA routing, asset caching
+- **Size**: ~10-15 MB (production bundle)
+- **Port**: 80
+- **Features**:
+  - All requests routed to index.html (SPA routing)
+  - Static assets cached with 1-year TTL
+  - index.html never cached (no-cache headers)
+  - Health check via nginx
+
+### SPA Routing Explanation
+
+The nginx config handles React Router and other SPAs:
+```nginx
+location / {
+    try_files $uri $uri/ /index.html;
+}
+```
+
+This means:
+1. If request is for a file/directory that exists → serve it
+2. Otherwise → serve index.html (let React Router handle routing)
+
+This allows URLs like `/sync`, `/setup` to work without server-side routes.
+
 
 ## Troubleshooting
 
@@ -293,7 +433,7 @@ For CI/CD pipelines, use the production Dockerfile:
 ```bash
 # Build image
 docker build \
-  -f docker/Backend.prod.dockerfile \
+  -f infrastructure/docker/Backend.release.dockerfile \
   -t smart-pocket-backend:$VERSION \
   ./apps/smart-pocket-backend
 
