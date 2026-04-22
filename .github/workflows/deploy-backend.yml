@@ -30,7 +30,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Extract metadata
@@ -39,8 +39,8 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/backend
           tags: |
-            type=raw,value=${{ inputs.env == 'prod' && 'latest' || 'qa' }}
-            type=sha,prefix=${{ inputs.env == 'prod' && 'latest-' || 'qa-' }}
+            type=raw,value=${{ inputs.env == 'prod' && 'latest' || 'staging' }}
+            type=sha,prefix=${{ inputs.env == 'prod' && 'latest-' || 'staging-' }}
             type=ref,event=branch
 
       - name: Build and push Docker image
@@ -48,13 +48,17 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./apps/smart-pocket-backend
-          file: ./infrastructure/docker/Backend.prod.dockerfile
+          file: ./infrastructure/docker/Backend.release.dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: |
+            type=registry,ref=ghcr.io/${{ github.repository }}/backend:cache
+            type=gha
+          cache-to: |
+            type=gha,mode=max
+            type=registry,ref=ghcr.io/${{ github.repository }}/backend:cache,mode=max
           build-args: |
             NODE_ENV=production
       
@@ -75,7 +79,7 @@ jobs:
         run: |
           ENV_NAME="${{ inputs.env }}"
           ENV_LABEL=$([ "$ENV_NAME" == "prod" ] && echo "Production" || echo "QA")
-          IMAGE_TAG=$([ "$ENV_NAME" == "prod" ] && echo "latest" || echo "qa")
+          IMAGE_TAG=$([ "$ENV_NAME" == "prod" ] && echo "latest" || echo "staging")
           
           echo "## 🚀 $ENV_LABEL Server Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

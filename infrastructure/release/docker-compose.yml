@@ -1,6 +1,6 @@
 services:
   smart-pocket-backend:
-    image: ${BACKEND_IMAGE:-ghcr.io/patterueldev/smart-pocket/backend:staging}
+    image: ${BACKEND_IMAGE:-ghcr.io/patterueldev/smart-pocket/backend:latest}
     container_name: smart-pocket-backend
     ports:
       - "3000:80"
@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
 
   smart-pocket-frontend:
-    image: ${FRONTEND_IMAGE:-ghcr.io/patterueldev/smart-pocket/frontend:staging}
+    image: ${FRONTEND_IMAGE:-ghcr.io/patterueldev/smart-pocket/frontend:latest}
     container_name: smart-pocket-frontend
     ports:
       - "5173:80"

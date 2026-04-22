@@ -7,6 +7,8 @@
 #
 # Trigger:
 #   - Push of tag matching v*.*.* (e.g., v1.0.0, v1.0.1)
+#   - repository_dispatch from auto-tag-release.yml (with tag input)
+#   - Manual workflow_dispatch (fallback)
 #
 # What it does:
 #   1. Detects what changed since the previous tag
@@ -18,7 +20,7 @@
 # Related Workflows:
 #   • .github/workflows/deploy-orchestrator.yml (core orchestration logic)
 #   • .github/workflows/qa-build.yml (QA entry point)
-#   • .github/workflows/auto-tag-release.yml (auto-creates tags on PR close)
+#   • .github/workflows/auto-tag-release.yml (auto-creates tags and dispatches this workflow)
 #
 name: Prod Build & Deploy
 
@@ -26,6 +28,12 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to deploy (e.g., v1.1.0)'
+        required: false
+        type: string
 
 concurrency:
   group: prod-build-${{ github.ref }}
@@ -50,8 +58,8 @@ jobs:
         id: changes
         run: |
           # For production, compare against the previous tag
-          # Get current tag
-          CURRENT_TAG="${{ github.ref_name }}"
+          # Get current tag - prioritize workflow_dispatch input, fall back to github.ref_name (tag push)
+          CURRENT_TAG="${{ inputs.tag || github.ref_name }}"
           
           # Get the most recent tag BEFORE the current one
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 --exclude="$CURRENT_TAG" 2>/dev/null || echo "")

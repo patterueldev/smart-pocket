@@ -441,6 +441,42 @@ docker-compose up
 
 ---
 
+## 📝 Pull Request Standards
+
+### PR Title Format
+**Must follow Conventional Commits**: https://www.conventionalcommits.org/
+
+**Format**: `<type>(<scope>): <subject>`
+
+**Examples**:
+- `feat(auth): add remember-me checkbox`
+- `fix(backend): remove /api prefix from routes`
+- `refactor(mobile): simplify auth flow`
+- `docs(ci): update deployment guide`
+- `test(sheets-sync): add integration tests`
+
+**Valid types**: feat, fix, refactor, perf, test, docs, style, chore, ci
+
+### PR Body Format
+**Must follow** `@.github/pull_request_template.md`
+
+**Required sections**:
+1. **Summary** - One or two sentences describing the change
+2. **Motivation** - Why is this change needed? Include issue links/context
+3. **Testing** - How was this tested? Provide steps and results
+4. **Release Notes** (optional) - Any notes for the release process
+
+**Template file**: `@.github/pull_request_template.md`
+
+### When Creating a PR
+Whether creating directly on GitHub or via `gh pr create`:
+1. ✅ **Title**: Always use Conventional Commits format
+2. ✅ **Body**: Always follow the pull_request_template.md sections
+3. ❌ Don't: Mix custom formats or skip sections
+4. ❌ Don't: Use vague titles like "fixes stuff" or "updates"
+
+---
+
 ## 🚀 CI/CD & Release Guide
 
 **Start Here**: `@cicd/AGENTS.md` (5-minute quick reference)  
@@ -486,6 +522,7 @@ gh pr create --base main --head rc/v1.0.5
 - ✅ Test deployments on RC branches (Docker 'qa', TestFlight/beta)
 - ✅ Only `rc/*` branches can merge to main (enforced)
 - ✅ Backend & mobile always same version
+- ✅ When bumping mobile version: also update `@apps/smart-pocket-mobile/app.config.js` line 75
 - ✅ ~82% reduction in Actions minutes
 - ✅ Automatic RC branch cleanup after merge
 
