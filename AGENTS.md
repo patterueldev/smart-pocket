@@ -564,17 +564,83 @@ gh pr create --base main --head rc/v1.0.5
 
 ### Task: Create a Release Candidate & Deploy
 
-1. **Read**: `@cicd/AGENTS.md` (quick reference) or `@cicd/README.md` (detailed)
-2. **Bump Versions**:
+**⚠️ CRITICAL CHECKLIST - DO NOT SKIP ANY STEPS**
+
+#### Phase 1: Version Bumping (on develop branch)
+
+⚠️ **CRITICAL**: Only bump versions for apps/libs that **actually changed**.  
+Example: If only web app gets a feature, only bump @apps/smart-pocket-web version.
+
+1. ✅ **Switch to develop**: `git checkout develop && git pull origin develop`
+2. ✅ **Identify affected apps**: Check what changed in this release
+   - Backend feature/fix? → Bump `@apps/smart-pocket-backend` version
+   - Mobile feature/fix? → Bump `@apps/smart-pocket-mobile` version (package.json + app.config.js)
+   - Web feature/fix? → Bump `@apps/smart-pocket-web` version
+   - ❌ **Don't**: Bump all apps if only one changed
+3. ✅ **Bump affected app versions**: Example for web only:
    ```bash
-   npm --prefix apps/smart-pocket-backend version patch
-   npm --prefix apps/smart-pocket-mobile version patch
+   npm --prefix apps/smart-pocket-web version patch  # Only if web changed
+   # Don't bump backend or mobile if they didn't change
    ```
-3. **Create RC Branch**: `git checkout -b rc/v1.0.5 && git push origin rc/v1.0.5`
-4. **Monitor Builds**: Check GitHub Actions for test deployment (~60 min)
-5. **Test in Beta**: Test in TestFlight/beta environments
-6. **Create PR to Main**: `gh pr create --base main --head rc/v1.0.5`
-7. **Merge PR**: Triggers production deployment (~80 min)
+4. ✅ **Update mobile app.config.js** (if mobile changed): Edit `@apps/smart-pocket-mobile/app.config.js` line 75
+   - Change: `version: '1.1.0'` → `version: '1.1.2'` (match package.json)
+   - ⚠️ **This is easy to forget but critical for TestFlight builds**
+   - Only needed if mobile version was bumped
+5. ✅ **Verify version consistency**:
+   ```bash
+   # Check which apps have versions
+   grep '"version"' apps/*/package.json
+   grep "version:" apps/smart-pocket-mobile/app.config.js  # If mobile changed
+   # All bumped apps should have matching versions
+   ```
+6. ✅ **Commit with Conventional Commits format**:
+   ```bash
+   # Example: only web changed
+   git add apps/smart-pocket-web/package.json
+   git commit -m "chore: bump web app version to 1.1.2
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+   
+   # Or: multiple apps changed
+   git add apps/smart-pocket-{backend,mobile}/package.json apps/smart-pocket-mobile/app.config.js
+   git commit -m "chore: bump backend and mobile versions to 1.1.2
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+   ```
+
+#### Phase 2: RC Branch Creation
+
+7. ✅ **Create RC branch**: `git checkout -b rc/v1.1.2 && git push origin rc/v1.1.2`
+8. ✅ **Monitor Builds**: Check GitHub Actions for test deployment (~60 minutes)
+   - Watch for Docker builds and TestFlight uploads
+9. ✅ **Test in Beta**: Test features in TestFlight/beta environments
+
+#### Phase 3: Production Release (when ready)
+
+10. ✅ **Create PR to main** with **PROPER TEMPLATE**:
+    ```bash
+    gh pr create --base main --head rc/v1.1.2
+    ```
+11. ✅ **PR TITLE**: Must follow **Conventional Commits** format
+    - Example: `feat(web): implement refresh token support`
+    - Valid types: feat, fix, refactor, perf, test, docs, style, chore, ci
+    - Format: `<type>(<scope>): <subject>`
+    - ❌ BAD: "update stuff", "fix things", "PR merge"
+12. ✅ **PR BODY**: Must follow **pull_request_template.md** sections:
+    - **Summary** - One or two sentences
+    - **Motivation** - Why this change? Link issues/context
+    - **Testing** - How was it tested? Steps and results
+    - **Release Notes** (optional) - Notes for release process
+    - ⚠️ **Do NOT use custom format** - Always use template
+13. ✅ **Merge PR**: Triggers production deployment (~80 minutes)
+    - Only `rc/*` branches can merge to main (enforced by workflow)
+    - RC branch auto-cleans after merge
+
+**Reference Docs**:
+- PR Standards: `@AGENTS.md` § Pull Request Standards (lines 444-477)
+- Mobile version rule: `@apps/smart-pocket-mobile/AGENTS.md` line 650
+- Template file: `@.github/pull_request_template.md`
+- Detailed CI/CD: `@cicd/README.md`
 
 ---
 

@@ -118,9 +118,13 @@ export function useSheetsSync(sheetsSyncService: ISheetsSync, options?: UseSheet
    * 
    * Set skipInitialLoad=true if the service requires prerequisites that aren't
    * ready at mount time (e.g., auth context). Call onRefresh() manually when ready.
+   * 
+   * Loading draft on mount is the intended behavior - this is a standard React pattern
+   * for initializing component state from external data sources (services/APIs).
    */
   useEffect(() => {
     if (!options?.skipInitialLoad) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadDraft();
     }
   }, [loadDraft, options?.skipInitialLoad]);
