@@ -75,6 +75,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     throw new Error('No access token available. Please log in again.');
   };
 
+  const getApiBaseUrl = (): string => {
+    if (!apiBaseUrl) {
+      throw new Error('API base URL not configured. Please complete setup first.');
+    }
+    return apiBaseUrl;
+  };
+
   const setup = async (apiKey: string, apiBaseUrl: string) => {
     setIsLoading(true);
     setError(null);
@@ -132,6 +139,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setup,
     logout,
     getAccessToken,
+    getApiBaseUrl,
     isLoading,
     error,
     isInitializing,

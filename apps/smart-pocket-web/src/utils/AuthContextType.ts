@@ -3,7 +3,7 @@
  * Separated for use in AuthProvider and hooks
  * 
  * Note: This type is compatible with IAuthProvider from sheets-sync service
- * as it provides the getAccessToken() method required by RealSheetsSyncClient
+ * as it provides the getAccessToken() and getApiBaseUrl() methods required by RealSheetsSyncClient
  */
 
 export interface AuthContextType {
@@ -17,4 +17,5 @@ export interface AuthContextType {
   setup: (apiKey: string, apiBaseUrl: string) => Promise<void>;
   logout: () => Promise<void>;
   getAccessToken: () => Promise<string>;
+  getApiBaseUrl: () => string;
 }

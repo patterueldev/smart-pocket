@@ -9,4 +9,10 @@ export interface IAuthProvider {
    * @throws Error if token cannot be obtained
    */
   getAccessToken(): Promise<string>;
+
+  /**
+   * Get the API base URL for backend requests
+   * @returns string API base URL (e.g., https://api.example.com)
+   */
+  getApiBaseUrl(): string;
 }

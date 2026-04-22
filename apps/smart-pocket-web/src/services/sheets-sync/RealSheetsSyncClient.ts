@@ -8,7 +8,6 @@ import type { ISheetsSync, SheetsSyncDraft, SheetsSyncResult } from './ISheetsSy
 import type { IAuthProvider } from './IAuthProvider';
 import type { DraftResponse, SyncResponse } from './models';
 import { transformToDisplayModel } from './models';
-import { getApiBaseUrl } from '@/utils/config';
 
 /**
  * RealSheetsSyncClient: Integrates with backend API for sheets sync
@@ -47,7 +46,7 @@ export class RealSheetsSyncClient implements ISheetsSync {
       console.log('[RealSheetsSyncClient] Creating sheets sync draft from backend');
 
       const token = await this.authProvider.getAccessToken();
-      const apiBaseUrl = getApiBaseUrl();
+      const apiBaseUrl = this.authProvider.getApiBaseUrl();
 
       const response = await axios.post<DraftResponse>(
         `${apiBaseUrl}${this.baseUrl}/draft`,
@@ -104,7 +103,7 @@ export class RealSheetsSyncClient implements ISheetsSync {
       console.log('[RealSheetsSyncClient] Executing sheets sync from draft', { draftId });
 
       const token = await this.authProvider.getAccessToken();
-      const apiBaseUrl = getApiBaseUrl();
+      const apiBaseUrl = this.authProvider.getApiBaseUrl();
 
       const response = await axios.post<SyncResponse>(
         `${apiBaseUrl}${this.baseUrl}/sync`,
