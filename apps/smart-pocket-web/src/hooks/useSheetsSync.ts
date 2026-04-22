@@ -27,8 +27,17 @@ interface UseSheetsSync {
   onSync: () => Promise<void>;
 }
 
-export function useSheetsSync(sheetsSyncService: ISheetsSync): UseSheetsSync {
-  const [loading, setLoading] = useState(true);
+interface UseSheetsSyncOptions {
+  /**
+   * Whether to skip initial draft load
+   * Set to true if prerequisites (like auth) are not yet available
+   * Call onRefresh() manually when ready
+   */
+  skipInitialLoad?: boolean;
+}
+
+export function useSheetsSync(sheetsSyncService: ISheetsSync, options?: UseSheetsSyncOptions): UseSheetsSync {
+  const [loading, setLoading] = useState(!options?.skipInitialLoad);
   const [syncing, setSyncing] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [draft, setDraft] = useState<SheetsSyncDraft | null>(null);
@@ -100,16 +109,21 @@ export function useSheetsSync(sheetsSyncService: ISheetsSync): UseSheetsSync {
   }, [draft, sheetsSyncService, loadDraft]);
 
   /**
-   * Load draft on component mount
+   * Load draft on component mount (unless skipInitialLoad is true)
    * Note: In development with React.StrictMode, this effect runs twice:
    * - First mount: may fail if auth isn't fully initialized yet
    * - Cleanup + second mount: succeeds after auth is ready
    * This is expected behavior for React.StrictMode (detects side effect bugs)
    * In production (StrictMode disabled), only runs once when component mounts
+   * 
+   * Set skipInitialLoad=true if the service requires prerequisites that aren't
+   * ready at mount time (e.g., auth context). Call onRefresh() manually when ready.
    */
   useEffect(() => {
-    loadDraft();
-  }, [loadDraft]);
+    if (!options?.skipInitialLoad) {
+      loadDraft();
+    }
+  }, [loadDraft, options?.skipInitialLoad]);
 
   return {
     draft,

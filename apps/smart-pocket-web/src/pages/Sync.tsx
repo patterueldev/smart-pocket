@@ -12,7 +12,7 @@
  * - Error handling and retry logic
  */
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useSheetsSync } from '@/hooks/useSheetsSync';
 import { RealSheetsSyncClient } from '@/services/sheets-sync/RealSheetsSyncClient';
 import { MainLayout } from '@/components/MainLayout';
@@ -42,8 +42,20 @@ export function Sync() {
     return new RealSheetsSyncClient(authContext);
   }, [authContext]);
 
+  // Only load draft when auth is fully initialized (has accessToken)
+  // This prevents transient auth initialization errors
+  const hasAuth = !!authContext.accessToken;
+
   const { draft, loading, syncing, error, onRefresh, onSync } =
-    useSheetsSync(sheetsSync);
+    useSheetsSync(sheetsSync, { skipInitialLoad: !hasAuth });
+
+  // Load draft when auth becomes available
+  // This ensures we only call the API when we have a valid token
+  useEffect(() => {
+    if (hasAuth && !draft && !loading) {
+      onRefresh();
+    }
+  }, [hasAuth, draft, loading, onRefresh]);
 
   // Check if there are pending changes to sync
   const hasPendingChanges = draft && draft.changes && draft.changes.length > 0;
