@@ -38,13 +38,13 @@ class App {
   }
 
   private setupRoutes(): void {
-    // API routes at root level
-    this.app.use('/health', healthRoutes);
-    this.app.use('/auth', authRoutes);
+    // API routes with /api/ prefix
+    this.app.use('/api/health', healthRoutes);
+    this.app.use('/api/auth', authRoutes);
 
-    // Mount sheets-sync routes at root
+    // Mount sheets-sync routes under /api/
     const sheetsSyncController = container.get<ISheetsSyncController>('sheetsSyncController');
-    this.app.use('/sheets-sync', createSheetsSyncRoutes(sheetsSyncController));
+    this.app.use('/api/sheets-sync', createSheetsSyncRoutes(sheetsSyncController));
 
     this.app.use((req: Request, res: Response<NotFoundResponse>) => {
       res.status(404).json({
