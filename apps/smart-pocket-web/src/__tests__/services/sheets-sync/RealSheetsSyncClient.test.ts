@@ -7,14 +7,14 @@ import axios from 'axios';
 import { RealSheetsSyncClient } from '@/services/sheets-sync/RealSheetsSyncClient';
 import type { DraftResponse, SyncResponse } from '@/services/sheets-sync/models';
 
-// Mock axios and config
+// Mock axios
 jest.mock('axios');
-jest.mock('@/utils/config', () => ({
-  getApiBaseUrl: jest.fn(() => 'http://localhost:3000'),
-}));
 
 describe('RealSheetsSyncClient', () => {
-  const mockAuthProvider = { getAccessToken: jest.fn(() => Promise.resolve('test-token')) };
+  const mockAuthProvider = {
+    getAccessToken: jest.fn(() => Promise.resolve('test-token')),
+    getApiBaseUrl: jest.fn(() => 'http://localhost:3000'),
+  };
   let client: RealSheetsSyncClient;
 
   const createAxiosError = (status: number, message: string, data?: any) => {
