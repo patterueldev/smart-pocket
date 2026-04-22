@@ -104,9 +104,9 @@ jobs:
         run: |
           TAG="${{ steps.create-tag.outputs.tag }}"
           echo "Triggering prod-build.yml with tag: $TAG"
-          gh workflow run prod-build.yml \
-            --ref main \
-            -f tag="$TAG"
+          gh api repos/${{ github.repository }}/dispatches \
+            -f event_type='trigger-prod-build' \
+            -f client_payload='{"tag":"'$TAG'"}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
