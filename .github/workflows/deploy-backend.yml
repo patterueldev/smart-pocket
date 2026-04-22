@@ -7,9 +7,6 @@ on:
         required: true
         type: string
         description: 'Deployment environment: qa or prod'
-    permissions:
-      contents: read
-      packages: write
 
 jobs:
   build-backend:
