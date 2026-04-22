@@ -28,6 +28,9 @@ on:
   push:
     tags:
       - 'v*.*.*'
+  repository_dispatch:
+    types:
+      - trigger-prod-build
   workflow_dispatch:
     inputs:
       tag:
@@ -58,8 +61,8 @@ jobs:
         id: changes
         run: |
           # For production, compare against the previous tag
-          # Get current tag - prioritize workflow_dispatch input, fall back to github.ref_name (tag push)
-          CURRENT_TAG="${{ inputs.tag || github.ref_name }}"
+          # Get current tag - prioritize: workflow_dispatch input → repository_dispatch payload → tag push
+          CURRENT_TAG="${{ inputs.tag || github.event.client_payload.tag || github.ref_name }}"
           
           # Get the most recent tag BEFORE the current one
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 --exclude="$CURRENT_TAG" 2>/dev/null || echo "")
