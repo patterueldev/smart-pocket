@@ -38,13 +38,15 @@ class App {
   }
 
   private setupRoutes(): void {
-    // API routes with /api/ prefix
-    this.app.use('/api/health', healthRoutes);
-    this.app.use('/api/auth', authRoutes);
+    // API routes at root level (no /api/ prefix)
+    // Frontend configures API base URL as https://smartpocketapi-dev.nicenature.space
+    // so routes are at root: /health, /auth/setup, /sheets-sync/draft, etc.
+    this.app.use('/health', healthRoutes);
+    this.app.use('/auth', authRoutes);
 
-    // Mount sheets-sync routes under /api/
+    // Mount sheets-sync routes
     const sheetsSyncController = container.get<ISheetsSyncController>('sheetsSyncController');
-    this.app.use('/api/sheets-sync', createSheetsSyncRoutes(sheetsSyncController));
+    this.app.use('/sheets-sync', createSheetsSyncRoutes(sheetsSyncController));
 
     this.app.use((req: Request, res: Response<NotFoundResponse>) => {
       res.status(404).json({
