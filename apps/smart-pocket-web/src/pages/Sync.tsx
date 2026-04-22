@@ -15,6 +15,7 @@
 import { useMemo, useEffect } from 'react';
 import { useSheetsSync } from '@/hooks/useSheetsSync';
 import { RealSheetsSyncClient } from '@/services/sheets-sync/RealSheetsSyncClient';
+import { ServiceFactory } from '@/services/ServiceFactory';
 import { MainLayout } from '@/components/MainLayout';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -30,17 +31,17 @@ import './Sync.css';
  * Sync Page Component
  *
  * Uses RealSheetsSyncClient to sync with the backend API
- * The auth context provides the access token for authentication
+ * The ApiClient handles automatic token refresh on 401 errors
  */
 export function Sync() {
   const authContext = useAuth();
 
-  // Initialize real sheets sync client with auth context
-  // The client will use the auth provider (authContext) for Bearer authentication
+  // Initialize real sheets sync client with the centralized ApiClient
+  // The ApiClient automatically handles token refresh on 401 errors
   const sheetsSync = useMemo(() => {
-    // authContext implements IAuthProvider by providing getAccessToken() method
-    return new RealSheetsSyncClient(authContext);
-  }, [authContext]);
+    const apiClient = ServiceFactory.getApiClient();
+    return new RealSheetsSyncClient(apiClient);
+  }, []);
 
   // Only load draft when auth is fully initialized (has accessToken)
   // This prevents transient auth initialization errors

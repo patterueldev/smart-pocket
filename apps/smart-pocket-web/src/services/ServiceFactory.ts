@@ -8,10 +8,13 @@ import { AuthService } from './auth/AuthService';
 import { MockAuthService } from './auth/MockAuthService';
 import type { IStorageService } from './storage/IStorageService';
 import { LocalStorageService } from './storage/LocalStorageService';
+import type { IApiClient } from './api/IApiClient';
+import { ApiClient } from './api/ApiClient';
 
 export class ServiceFactory {
   private static storageService: IStorageService | null = null;
   private static authService: IAuthService | null = null;
+  private static apiClient: IApiClient | null = null;
 
   /**
    * Create or return singleton StorageService
@@ -64,5 +67,18 @@ export class ServiceFactory {
   static reset(): void {
     this.storageService = null;
     this.authService = null;
+    this.apiClient = null;
+  }
+
+  /**
+   * Create or return singleton ApiClient
+   */
+  static getApiClient(): IApiClient {
+    if (!this.apiClient) {
+      const authService = this.getAuthService();
+      const storageService = this.getStorageService();
+      this.apiClient = new ApiClient(authService, storageService);
+    }
+    return this.apiClient;
   }
 }
