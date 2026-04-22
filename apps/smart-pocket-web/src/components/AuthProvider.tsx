@@ -18,6 +18,7 @@ interface AuthProviderProps {
  * AuthProvider manages authentication state for the app
  * Handles setup, logout, and token management through AuthService
  * Persists configuration to localStorage for persistence across page reloads
+ * Manages ApiClient lifecycle with automatic token refresh on 401 errors
  */
 export function AuthProvider({ children }: AuthProviderProps) {
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -28,6 +29,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [error, setError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const authService = ServiceFactory.getAuthService();
+  const apiClient = ServiceFactory.getApiClient();
 
   // Load stored auth on mount
   useEffect(() => {
@@ -45,11 +47,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
           console.log('[AuthProvider] Restoring auth state from storage');
           setApiKey(credentials.apiKey);
           setApiBaseUrl(credentials.baseUrl);
+          
+          // Initialize API client with stored token (if available)
+          if (tokens?.accessToken) {
+            console.log('[AuthProvider] Initializing API client with stored token');
+            await apiClient.initialize(credentials.baseUrl, tokens.accessToken);
+            setAccessToken(tokens.accessToken);
+          } else {
+            console.log('[AuthProvider] Initializing API client without token');
+            await apiClient.initialize(credentials.baseUrl);
+          }
+          
           setIsSetup(true);
-        }
-        // Also restore tokens if available
-        if (tokens?.accessToken) {
-          setAccessToken(tokens.accessToken);
         }
         if (!credentials) {
           console.log('[AuthProvider] No stored credentials found');
@@ -63,7 +72,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     loadStoredAuth();
-  }, [authService]);
+  }, [authService, apiClient]);
 
   const getAccessToken = async (): Promise<string> => {
     if (accessToken) {
@@ -93,6 +102,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.setItem('sp_api_key', apiKey);
       localStorage.setItem('sp_api_base_url', apiBaseUrl);
       
+      // Initialize API client with new credentials
+      console.log('[AuthProvider] Initializing API client after setup');
+      await apiClient.initialize(apiBaseUrl, tokens.accessToken);
+      
       setApiKey(apiKey);
       setApiBaseUrl(apiBaseUrl);
       setAccessToken(tokens.accessToken);
@@ -111,6 +124,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setError(null);
     try {
       await authService.logout();
+      apiClient.reset();
       localStorage.removeItem('sp_api_key');
       localStorage.removeItem('sp_api_base_url');
       setApiKey(null);

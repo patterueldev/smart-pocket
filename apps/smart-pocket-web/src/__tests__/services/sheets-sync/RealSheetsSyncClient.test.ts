@@ -1,48 +1,27 @@
 /**
  * RealSheetsSyncClient Tests
- * Verifies HTTP client implementation and error handling
+ * Verifies API client implementation and error handling
  */
 
-import axios from 'axios';
 import { RealSheetsSyncClient } from '@/services/sheets-sync/RealSheetsSyncClient';
+import type { IApiClient } from '@/services/api/IApiClient';
 import type { DraftResponse, SyncResponse } from '@/services/sheets-sync/models';
 
-// Mock axios
-jest.mock('axios');
-
 describe('RealSheetsSyncClient', () => {
-  const mockAuthProvider = {
-    getAccessToken: jest.fn(() => Promise.resolve('test-token')),
-    getApiBaseUrl: jest.fn(() => 'http://localhost:3000'),
+  const mockApiClient: jest.Mocked<IApiClient> = {
+    initialize: jest.fn(),
+    updateAccessToken: jest.fn(),
+    get: jest.fn(),
+    post: jest.fn(),
+    put: jest.fn(),
+    delete: jest.fn(),
+    reset: jest.fn(),
   };
   let client: RealSheetsSyncClient;
 
-  const createAxiosError = (status: number, message: string, data?: any) => {
-    const error = {
-      name: 'AxiosError',
-      message,
-      response: {
-        status,
-        data: data || { message },
-        statusText: message,
-        headers: {},
-        config: {} as any,
-      },
-      config: {} as any,
-      code: 'ERR_BAD_RESPONSE',
-      request: {} as any,
-      isAxiosError: true,
-    };
-    return error as any;
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
-    // Setup axios.isAxiosError to properly detect our mock errors
-    (axios.isAxiosError as any).mockImplementation((error: any) => {
-      return error && error.isAxiosError === true;
-    });
-    client = new RealSheetsSyncClient(mockAuthProvider);
+    client = new RealSheetsSyncClient(mockApiClient);
   });
 
   const createMockDraftResponse = (): DraftResponse => ({
@@ -82,7 +61,7 @@ describe('RealSheetsSyncClient', () => {
   describe('createDraft', () => {
     it('should create draft successfully', async () => {
       const mockResponse = createMockDraftResponse();
-      (axios.post as jest.Mock).mockResolvedValueOnce({ data: mockResponse });
+      mockApiClient.post.mockResolvedValueOnce(mockResponse);
 
       const draft = await client.createDraft();
 
@@ -93,41 +72,35 @@ describe('RealSheetsSyncClient', () => {
       expect(draft.updatedAccounts).toBe(1);
       expect(draft.changes.length).toBe(1);
 
-      expect(axios.post).toHaveBeenCalledWith(
-        expect.stringContaining('/sheets-sync/draft'),
-        {},
-        expect.objectContaining({
-          headers: { Authorization: 'Bearer test-token' },
-        })
-      );
+      expect(mockApiClient.post).toHaveBeenCalledWith('/sheets-sync/draft', {});
     });
 
     it('should throw error if response missing draftId', async () => {
       const mockResponse = createMockDraftResponse();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { draftId, ...responseWithoutId } = mockResponse;
-      (axios.post as jest.Mock).mockResolvedValueOnce({ data: responseWithoutId });
+      mockApiClient.post.mockResolvedValueOnce(responseWithoutId);
 
       await expect(client.createDraft()).rejects.toThrow('Invalid draft response');
     });
 
-    it('should handle HTTP 401 error', async () => {
-      (axios.post as jest.Mock).mockRejectedValueOnce(
-        createAxiosError(401, 'Unauthorized', { message: 'Invalid token' })
-      );
+    it('should handle error with 401 status', async () => {
+      const error = new Error('Unauthorized: Please check your API key');
+      mockApiClient.post.mockRejectedValueOnce(error);
 
       await expect(client.createDraft()).rejects.toThrow('Unauthorized');
     });
 
     it('should handle HTTP 500 error', async () => {
-      (axios.post as jest.Mock).mockRejectedValueOnce(
-        createAxiosError(500, 'Server Error', { message: 'Internal server error' })
-      );
+      const error = new Error('Server error: Internal server error');
+      mockApiClient.post.mockRejectedValueOnce(error);
 
       await expect(client.createDraft()).rejects.toThrow('Server error');
     });
 
     it('should handle generic error', async () => {
-      (axios.post as jest.Mock).mockRejectedValueOnce(new Error('Network failed'));
+      const error = new Error('Network failed');
+      mockApiClient.post.mockRejectedValueOnce(error);
 
       await expect(client.createDraft()).rejects.toThrow('Network failed');
     });
@@ -136,7 +109,7 @@ describe('RealSheetsSyncClient', () => {
   describe('executeSyncFromDraft', () => {
     it('should execute sync successfully', async () => {
       const mockResponse = createMockSyncResponse();
-      (axios.post as jest.Mock).mockResolvedValueOnce({ data: mockResponse });
+      mockApiClient.post.mockResolvedValueOnce(mockResponse);
 
       const result = await client.executeSyncFromDraft('draft-123');
 
@@ -145,17 +118,11 @@ describe('RealSheetsSyncClient', () => {
       expect(result.accountsUpdated).toBe(1);
       expect(result.accountsAdded).toBe(1);
 
-      expect(axios.post).toHaveBeenCalledWith(
-        expect.stringContaining('/sheets-sync/sync'),
-        { draftId: 'draft-123' },
-        expect.objectContaining({
-          headers: { Authorization: 'Bearer test-token' },
-        })
-      );
+      expect(mockApiClient.post).toHaveBeenCalledWith('/sheets-sync/sync', { draftId: 'draft-123' });
     });
 
     it('should throw error if response is empty', async () => {
-      (axios.post as jest.Mock).mockResolvedValueOnce({ data: null });
+      mockApiClient.post.mockResolvedValueOnce(null);
 
       await expect(client.executeSyncFromDraft('draft-123')).rejects.toThrow(
         'Invalid sync response'
@@ -163,20 +130,17 @@ describe('RealSheetsSyncClient', () => {
     });
 
     it('should handle HTTP 404 error', async () => {
-      (axios.post as jest.Mock).mockRejectedValueOnce(
-        createAxiosError(404, 'Not Found', { message: 'Draft not found' })
-      );
+      const error = new Error('Not found: Draft not found');
+      mockApiClient.post.mockRejectedValueOnce(error);
 
-      await expect(client.executeSyncFromDraft('invalid-id')).rejects.toThrow(
-        'Not found'
-      );
+      await expect(client.executeSyncFromDraft('invalid-id')).rejects.toThrow('Not found');
     });
   });
 
   describe('hasPendingChanges', () => {
     it('should return true if there are pending changes', async () => {
       const mockResponse = createMockDraftResponse();
-      (axios.post as jest.Mock).mockResolvedValueOnce({ data: mockResponse });
+      mockApiClient.post.mockResolvedValueOnce(mockResponse);
 
       const hasPending = await client.hasPendingChanges();
 
@@ -187,7 +151,7 @@ describe('RealSheetsSyncClient', () => {
       const mockResponse = createMockDraftResponse();
       mockResponse.summary.newAccounts = 0;
       mockResponse.summary.updatedAccounts = 0;
-      (axios.post as jest.Mock).mockResolvedValueOnce({ data: mockResponse });
+      mockApiClient.post.mockResolvedValueOnce(mockResponse);
 
       const hasPending = await client.hasPendingChanges();
 
@@ -195,7 +159,7 @@ describe('RealSheetsSyncClient', () => {
     });
 
     it('should return false on error', async () => {
-      (axios.post as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+      mockApiClient.post.mockRejectedValueOnce(new Error('Network error'));
 
       const hasPending = await client.hasPendingChanges();
 
@@ -206,7 +170,7 @@ describe('RealSheetsSyncClient', () => {
   describe('getLastSyncTime', () => {
     it('should return last sync time', async () => {
       const mockResponse = createMockDraftResponse();
-      (axios.post as jest.Mock).mockResolvedValueOnce({ data: mockResponse });
+      mockApiClient.post.mockResolvedValueOnce(mockResponse);
 
       const syncTime = await client.getLastSyncTime();
 
@@ -216,21 +180,21 @@ describe('RealSheetsSyncClient', () => {
     it('should return cached sync time', async () => {
       const mockResponse = createMockSyncResponse();
       const syncedAt = mockResponse.syncedAt;
-      (axios.post as jest.Mock).mockResolvedValueOnce({ data: mockResponse });
+      mockApiClient.post.mockResolvedValueOnce(mockResponse);
 
       await client.executeSyncFromDraft('draft-123');
 
       // Clear the mock to verify cache is used
-      (axios.post as jest.Mock).mockClear();
+      mockApiClient.post.mockClear();
 
       const syncTime = await client.getLastSyncTime();
 
       expect(syncTime).toBe(syncedAt);
-      expect(axios.post).not.toHaveBeenCalled(); // Cache was used
+      expect(mockApiClient.post).not.toHaveBeenCalled(); // Cache was used
     });
 
     it('should return null on error', async () => {
-      (axios.post as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+      mockApiClient.post.mockRejectedValueOnce(new Error('Network error'));
 
       const syncTime = await client.getLastSyncTime();
 
@@ -241,19 +205,19 @@ describe('RealSheetsSyncClient', () => {
   describe('clearCache', () => {
     it('should clear cached sync time', async () => {
       const mockSyncResponse = createMockSyncResponse();
-      (axios.post as jest.Mock).mockResolvedValueOnce({ data: mockSyncResponse });
+      mockApiClient.post.mockResolvedValueOnce(mockSyncResponse);
 
       await client.executeSyncFromDraft('draft-123');
 
       client.clearCache();
 
       const mockDraftResponse = createMockDraftResponse();
-      (axios.post as jest.Mock).mockResolvedValueOnce({ data: mockDraftResponse });
+      mockApiClient.post.mockResolvedValueOnce(mockDraftResponse);
 
       await client.getLastSyncTime();
 
       // After clearing cache, should call API again
-      expect(axios.post).toHaveBeenCalledTimes(2);
+      expect(mockApiClient.post).toHaveBeenCalledTimes(2);
     });
   });
 });

@@ -1,11 +1,10 @@
 /**
  * RealSheetsSyncClient: Real implementation of ISheetsSync
- * Makes actual HTTP calls to backend /sheets-sync endpoints
+ * Makes actual HTTP calls to backend /sheets-sync endpoints using centralized ApiClient
  */
 
-import axios from 'axios';
 import type { ISheetsSync, SheetsSyncDraft, SheetsSyncResult } from './ISheetsSync';
-import type { IAuthProvider } from './IAuthProvider';
+import type { IApiClient } from '../api/IApiClient';
 import type { DraftResponse, SyncResponse } from './models';
 import { transformToDisplayModel } from './models';
 
@@ -14,18 +13,19 @@ import { transformToDisplayModel } from './models';
  * Implements ISheetsSync interface for production use
  *
  * Features:
- * - HTTP calls to /sheets-sync/draft and /sheets-sync/sync endpoints
+ * - HTTP calls to /sheets-sync/draft and /sheets-sync/sync endpoints via centralized ApiClient
+ * - Automatic token refresh on 401 errors (handled by ApiClient interceptor)
  * - Comprehensive error handling with meaningful messages
  * - Request/response transformation and validation
  * - Logging for debugging and monitoring
- * - Caching of draft ID and last sync time
- * - Depends on IAuthProvider abstraction for authentication
+ * - Caching of last sync time
+ * - Depends on IApiClient for HTTP requests (injected, not imported)
  */
 export class RealSheetsSyncClient implements ISheetsSync {
   private readonly baseUrl = '/sheets-sync';
   private lastSyncTimeCache: string | null = null;
 
-  constructor(private authProvider: IAuthProvider) {
+  constructor(private apiClient: IApiClient) {
     console.log('[RealSheetsSyncClient] Initialized');
   }
 
@@ -39,51 +39,42 @@ export class RealSheetsSyncClient implements ISheetsSync {
    * 
    * In production (StrictMode disabled), only one call is made.
    * 
+   * On 401 error: ApiClient automatically refreshes token and retries request
+   * 
    * @throws Error if backend request fails
    */
   async createDraft(): Promise<SheetsSyncDraft> {
     try {
       console.log('[RealSheetsSyncClient] Creating sheets sync draft from backend');
 
-      const token = await this.authProvider.getAccessToken();
-      const apiBaseUrl = this.authProvider.getApiBaseUrl();
-
-      const response = await axios.post<DraftResponse>(
-        `${apiBaseUrl}${this.baseUrl}/draft`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          timeout: 30000,
-        }
+      const response = await this.apiClient.post<DraftResponse>(
+        `${this.baseUrl}/draft`,
+        {}
       );
 
       // Validate response
-      if (!response.data || !response.data.draftId) {
+      if (!response || !response.draftId) {
         throw new Error('Invalid draft response: missing draftId');
       }
-
-      const data = response.data;
 
       // Cache the draft ID for subsequent sync operations
       // Note: Currently not used, but kept in response validation
 
       console.log('[RealSheetsSyncClient] Sheets sync draft created', {
-        draftId: data.draftId,
-        totalAccounts: data.summary.totalAccounts,
-        newAccounts: data.summary.newAccounts,
-        updatedAccounts: data.summary.updatedAccounts,
+        draftId: response.draftId,
+        totalAccounts: response.summary.totalAccounts,
+        newAccounts: response.summary.newAccounts,
+        updatedAccounts: response.summary.updatedAccounts,
       });
 
       return {
-        draftId: data.draftId,
-        totalAccounts: data.summary.totalAccounts,
-        newAccounts: data.summary.newAccounts,
-        updatedAccounts: data.summary.updatedAccounts,
-        unchangedAccounts: data.summary.unchangedAccounts,
-        changes: data.pendingChanges.map((change) => transformToDisplayModel(change)),
-        createdAt: data.timestamp,
+        draftId: response.draftId,
+        totalAccounts: response.summary.totalAccounts,
+        newAccounts: response.summary.newAccounts,
+        updatedAccounts: response.summary.updatedAccounts,
+        unchangedAccounts: response.summary.unchangedAccounts,
+        changes: response.pendingChanges.map((change) => transformToDisplayModel(change)),
+        createdAt: response.timestamp,
         lastSyncTime: null,
       };
     } catch (error) {
@@ -95,6 +86,9 @@ export class RealSheetsSyncClient implements ISheetsSync {
 
   /**
    * Execute sync based on a draft ID by calling /sheets-sync/sync
+   * 
+   * On 401 error: ApiClient automatically refreshes token and retries request
+   * 
    * @param draftId - ID of the draft to sync
    * @throws Error if backend request fails or draft not found
    */
@@ -102,44 +96,33 @@ export class RealSheetsSyncClient implements ISheetsSync {
     try {
       console.log('[RealSheetsSyncClient] Executing sheets sync from draft', { draftId });
 
-      const token = await this.authProvider.getAccessToken();
-      const apiBaseUrl = this.authProvider.getApiBaseUrl();
-
-      const response = await axios.post<SyncResponse>(
-        `${apiBaseUrl}${this.baseUrl}/sync`,
-        { draftId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          timeout: 30000,
-        }
+      const response = await this.apiClient.post<SyncResponse>(
+        `${this.baseUrl}/sync`,
+        { draftId }
       );
 
       // Validate response
-      if (!response.data) {
+      if (!response) {
         throw new Error('Invalid sync response: empty response');
       }
 
-      const data = response.data;
-
       // Cache the last sync time
-      this.lastSyncTimeCache = data.syncedAt;
+      this.lastSyncTimeCache = response.syncedAt;
 
       console.log('[RealSheetsSyncClient] Sheets sync executed successfully', {
         draftId,
-        success: data.success,
-        accountsUpdated: data.accountsUpdated,
-        accountsAdded: data.accountsAdded,
-        syncedAt: data.syncedAt,
+        success: response.success,
+        accountsUpdated: response.accountsUpdated,
+        accountsAdded: response.accountsAdded,
+        syncedAt: response.syncedAt,
       });
 
       return {
-        success: data.success,
-        syncedAt: data.syncedAt,
-        accountsUpdated: data.accountsUpdated,
-        accountsAdded: data.accountsAdded,
-        message: data.message,
+        success: response.success,
+        syncedAt: response.syncedAt,
+        accountsUpdated: response.accountsUpdated,
+        accountsAdded: response.accountsAdded,
+        message: response.message,
       };
     } catch (error) {
       const errorMessage = this.formatError(error, 'Failed to execute sheets sync');
@@ -186,10 +169,12 @@ export class RealSheetsSyncClient implements ISheetsSync {
    * Format error messages for consistency
    * Extracts meaningful error information from various error types
    */
-  private formatError(error: any, defaultMessage: string): string {
-    if (axios.isAxiosError(error)) {
-      const status = error.response?.status;
-      const data = error.response?.data as any;
+  private formatError(error: unknown, defaultMessage: string): string {
+    // Check for axios error structure
+    if (error && typeof error === 'object' && 'response' in error) {
+      const err = error as Record<string, unknown>;
+      const status = (err.response as Record<string, unknown> | undefined)?.status;
+      const data = (err.response as Record<string, unknown> | undefined)?.data as Record<string, unknown> | undefined;
 
       switch (status) {
         case 400:
