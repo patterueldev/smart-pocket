@@ -97,10 +97,15 @@ jobs:
     uses: ./.github/workflows/deploy-orchestrator.yml
     with:
       env: qa
-      backend: ${{ needs.detect-changes.outputs.backend }}
-      frontend: ${{ needs.detect-changes.outputs.frontend }}
-      android: ${{ needs.detect-changes.outputs.android }}
-      ios: ${{ needs.detect-changes.outputs.ios }}
+      frontend: true
+      backend: false
+      android: false
+      ios: false
+      # TODO: CHANGE BACK TO DYNAMIC ONCE WE PROVE STABILITY
+      # backend: ${{ needs.detect-changes.outputs.backend }}
+      # frontend: ${{ needs.detect-changes.outputs.frontend }}
+      # android: ${{ needs.detect-changes.outputs.android }}
+      # ios: ${{ needs.detect-changes.outputs.ios }}
     secrets: inherit
     permissions:
       contents: read
