@@ -31,6 +31,10 @@ RUN mkdir -p /etc/nginx/conf.d /var/run/nginx /var/log/nginx /var/cache/nginx &&
     chown -R nginx:nginx /var/run/nginx /var/cache/nginx /var/log/nginx
 
 # Configure nginx as reverse proxy for Node.js
+# Remove the default server configuration that comes with Alpine nginx
+RUN rm -f /etc/nginx/http.d/default.conf
+
+# Create the server config in http.d (which is properly included in the http block)
 RUN printf '%s\n' \
   'server {' \
   '    listen 80 default_server;' \
@@ -38,7 +42,7 @@ RUN printf '%s\n' \
   '    client_max_body_size 10M;' \
   '    ' \
   '    location / {' \
-  '        proxy_pass http://localhost:3001;' \
+  '        proxy_pass http://[::1]:3000;' \
   '        proxy_http_version 1.1;' \
   '        proxy_set_header Upgrade $http_upgrade;' \
   '        proxy_set_header Connection "upgrade";' \
@@ -51,7 +55,7 @@ RUN printf '%s\n' \
   '        proxy_send_timeout 60s;' \
   '        proxy_read_timeout 60s;' \
   '    }' \
-  '}' > /etc/nginx/conf.d/default.conf
+  '}' > /etc/nginx/http.d/default.conf
 
 # Create supervisord configuration for managing Node.js and nginx
 RUN mkdir -p /etc/supervisor/conf.d
