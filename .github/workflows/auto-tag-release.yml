@@ -4,6 +4,7 @@
 # Purpose:
 #   Automatically creates and pushes a version tag when commits are pushed to main.
 #   Extracts version from package.json to ensure consistent tagging.
+#   Explicitly triggers prod-build.yml via repository_dispatch (not via tag push).
 #
 # Trigger:
 #   - Push to main branch (which occurs after PR merge)
@@ -12,10 +13,10 @@
 #   1. Reads version from apps/smart-pocket-backend/package.json
 #   2. Creates annotated tag: v{version}
 #   3. Pushes tag to remote
-#   4. Tag push triggers prod-build.yml workflow
+#   4. Explicitly triggers prod-build.yml with tag via repository_dispatch
 #
 # Related Workflows:
-#   • .github/workflows/prod-build.yml (triggered by tag push)
+#   • .github/workflows/prod-build.yml (triggered via repository_dispatch)
 #   • .github/workflows/pr-base-checks.yml (enforces rc/* or hotfix/* for main)
 #
 # Notes:
@@ -23,6 +24,7 @@
 #   - Both apps (backend & mobile) must have the same version in package.json
 #   - Tag format: v1.0.0 (semantic versioning)
 #   - Only creates tag if version doesn't already exist
+#   - Uses repository_dispatch instead of tag push event (avoids GITHUB_TOKEN security restriction)
 #
 name: Auto Tag Release
 
@@ -33,6 +35,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   create-tag:
@@ -78,6 +81,7 @@ jobs:
 
       - name: Create and push tag
         if: steps.tag-exists.outputs.tag-exists == 'false'
+        id: create-tag
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           COMMIT_SHA="${{ github.sha }}"
@@ -93,6 +97,18 @@ jobs:
           git push origin "$TAG"
           
           echo "Tag $TAG created and pushed"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Trigger production build
+        if: steps.tag-exists.outputs.tag-exists == 'false'
+        run: |
+          TAG="${{ steps.create-tag.outputs.tag }}"
+          echo "Triggering prod-build.yml with tag: $TAG"
+          gh workflow run prod-build.yml \
+            --ref main \
+            -f tag="$TAG"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Skip if tag exists
         if: steps.tag-exists.outputs.tag-exists == 'true'
