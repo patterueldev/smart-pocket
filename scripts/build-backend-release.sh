@@ -97,7 +97,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Image name
-IMAGE="${REGISTRY}/${OWNER}/${REPO}-backend"
+IMAGE="${REGISTRY}/${OWNER}/smart-pocket/backend"
 
 # Print configuration
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"

@@ -14,7 +14,7 @@ COPY . .
 RUN npm run build
 
 # Runtime stage with nginx
-FROM nginx:latest-alpine
+FROM nginx:alpine
 
 # Copy built frontend from builder
 COPY --from=builder /app/dist /usr/share/nginx/html

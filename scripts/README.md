@@ -153,11 +153,11 @@ REGISTRY=docker.io OWNER=myusername ./scripts/build-and-push-release.sh --versio
 Images are tagged with both version and `latest`:
 
 ```bash
-ghcr.io/patterueldev/smart-pocket-backend:v1.0.0
-ghcr.io/patterueldev/smart-pocket-backend:latest
+ghcr.io/patterueldev/smart-pocket/backend:v1.0.0
+ghcr.io/patterueldev/smart-pocket/backend:latest
 
-ghcr.io/patterueldev/smart-pocket-frontend:v1.0.0
-ghcr.io/patterueldev/smart-pocket-frontend:latest
+ghcr.io/patterueldev/smart-pocket/frontend:v1.0.0
+ghcr.io/patterueldev/smart-pocket/frontend:latest
 ```
 
 ## Build Details
