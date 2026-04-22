@@ -113,9 +113,8 @@ jobs:
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Trigger production build
-        if: steps.tag-exists.outputs.tag-exists == 'false'
         run: |
-          TAG="${{ steps.create-tag.outputs.tag }}"
+          TAG="${{ steps.version.outputs.tag }}"
           echo "Triggering prod-build.yml with tag: $TAG"
           gh api repos/${{ github.repository }}/dispatches \
             -f event_type='trigger-prod-build' \
@@ -123,9 +122,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Skip if tag exists
-        if: steps.tag-exists.outputs.tag-exists == 'true'
+      - name: Tag creation status
         run: |
-          TAG="${{ steps.version.outputs.tag }}"
-          echo "Tag $TAG already exists - skipping creation"
-          echo "Ensure version in package.json is bumped to create a new tag"
+          if [ "${{ steps.tag-exists.outputs.tag-exists }}" == "true" ]; then
+            echo "Tag ${{ steps.version.outputs.tag }} already exists - skipping creation"
+            echo "Ensure version in package.json is bumped to create a new tag"
+          else
+            echo "Tag ${{ steps.version.outputs.tag }} created and pushed"
+          fi
