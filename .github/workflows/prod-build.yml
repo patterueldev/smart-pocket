@@ -1,47 +1,133 @@
 #
-# Prod Build & Deploy Entry Point
+# Release & Deploy - Unified Workflow
 #
 # Purpose:
-#   Triggers build and deployment pipeline when a production tag is pushed.
-#   Only tagged commits deploy to production.
+#   Single workflow that orchestrates the complete release process:
+#   1. Creates version tag based on app versions
+#   2. Detects what changed since previous tag
+#   3. Triggers deployment for changed apps
 #
 # Trigger:
-#   - Push of tag matching v*.*.* (e.g., v1.0.0, v1.0.1)
-#   - repository_dispatch from auto-tag-release.yml (with tag input)
-#   - Manual workflow_dispatch (fallback)
+#   - Push to main branch (PR merge)
 #
 # What it does:
-#   1. Detects what changed since the previous tag
-#   2. Passes control to deploy-orchestrator.yml with env=prod
-#   3. Conditionally deploys backend/mobile to production environment
-#   4. Uses 'latest' Docker tag and production app schemes
-#   5. Displays summary of results
+#   1. Reads versions from all apps (backend, mobile, web)
+#   2. Determines greatest version across all apps
+#   3. Creates annotated tag if version is new
+#   4. Compares current vs previous tag to detect changes
+#   5. Calls deploy-orchestrator.yml with detected changes
+#   6. Conditionally deploys changed apps to production
 #
 # Related Workflows:
-#   • .github/workflows/deploy-orchestrator.yml (core orchestration logic)
+#   • .github/workflows/deploy-orchestrator.yml (core deployment logic)
 #   • .github/workflows/qa-build.yml (QA entry point)
-#   • .github/workflows/auto-tag-release.yml (auto-creates tags and dispatches this workflow)
+#   • .github/workflows/pr-develop-checks.yml (feature branch checks)
 #
-name: Prod Build & Deploy
+# Notes:
+#   - Runs on every push to main (idempotent - skips tag creation if exists)
+#   - Only deploys when new tag is created (prevents duplicate deployments)
+#   - Apps can have independent versions (only affected apps get bumped)
+#   - Tag format: v1.0.0 (semantic versioning)
+#
+
+name: Release & Deploy
 
 on:
   push:
-    tags:
-      - 'v*.*.*'
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag to deploy (e.g., v1.1.0)'
-        required: false
-        type: string
+    branches:
+      - main
 
-concurrency:
-  group: prod-build-${{ github.ref }}
-  cancel-in-progress: true
+permissions:
+  contents: write
 
 jobs:
+  create-tag:
+    name: Create Release Tag
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
+      tag-created: ${{ steps.tag-exists.outputs.tag-exists == 'false' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git credentials
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+
+      - name: Read versions from all apps
+        id: version
+        run: |
+          # Read versions from each app
+          BACKEND_VERSION=$(jq -r '.version' apps/smart-pocket-backend/package.json)
+          MOBILE_VERSION=$(jq -r '.version' apps/smart-pocket-mobile/package.json)
+          WEB_VERSION=$(jq -r '.version' apps/smart-pocket-web/package.json)
+          
+          echo "Backend version: $BACKEND_VERSION"
+          echo "Mobile version: $MOBILE_VERSION"
+          echo "Web version: $WEB_VERSION"
+          
+          # Find the greatest version
+          VERSION=$(printf "%s\n%s\n%s" "$BACKEND_VERSION" "$MOBILE_VERSION" "$WEB_VERSION" | sort -V | tail -1)
+          TAG="v$VERSION"
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          
+          echo "Greatest version across all apps: $VERSION"
+          echo "Tag to create: $TAG"
+
+      - name: Check if tag already exists
+        id: tag-exists
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "tag-exists=true" >> $GITHUB_OUTPUT
+            echo "Tag $TAG already exists"
+          else
+            echo "tag-exists=false" >> $GITHUB_OUTPUT
+            echo "Tag $TAG does not exist, will create it"
+          fi
+
+      - name: Create and push tag
+        if: steps.tag-exists.outputs.tag-exists == 'false'
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          COMMIT_SHA="${{ github.sha }}"
+          COMMIT_MSG=$(git log -1 --pretty=%B $COMMIT_SHA)
+          
+          # Create annotated tag with commit info
+          git tag -a "$TAG" -m "Release $TAG
+          
+          Commit: $COMMIT_SHA
+          Message: $COMMIT_MSG"
+          
+          # Push tag to remote
+          git push origin "$TAG"
+          
+          echo "Tag $TAG created and pushed"
+
+      - name: Tag creation status
+        run: |
+          if [ "${{ steps.tag-exists.outputs.tag-exists }}" == "true" ]; then
+            echo "Tag ${{ steps.version.outputs.tag }} already exists - skipping deployment"
+            echo "Bump app version in package.json to create a new tag"
+          else
+            echo "Tag ${{ steps.version.outputs.tag }} created successfully"
+            echo "Proceeding with deployment..."
+          fi
+
   detect-changes:
     name: Detect changed files
+    needs: create-tag
+    if: needs.create-tag.outputs.tag-created == 'true'
     runs-on: ubuntu-latest
     outputs:
       backend: ${{ steps.changes.outputs.backend }}
@@ -58,8 +144,7 @@ jobs:
         id: changes
         run: |
           # For production, compare against the previous tag
-          # Get current tag - prioritize workflow_dispatch input, fall back to github.ref_name (tag push)
-          CURRENT_TAG="${{ inputs.tag || github.ref_name }}"
+          CURRENT_TAG="${{ needs.create-tag.outputs.tag }}"
           
           # Get the most recent tag BEFORE the current one
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 --exclude="$CURRENT_TAG" 2>/dev/null || echo "")
@@ -116,8 +201,9 @@ jobs:
           echo "- iOS changed: ${{ steps.changes.outputs.ios }}"
 
   deploy:
-    name: Orchestrate Prod Build & Deploy
-    needs: detect-changes
+    name: Orchestrate Production Build & Deploy
+    needs: [create-tag, detect-changes]
+    if: needs.create-tag.outputs.tag-created == 'true'
     uses: ./.github/workflows/deploy-orchestrator.yml
     with:
       env: prod
